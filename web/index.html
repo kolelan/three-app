@@ -542,8 +542,8 @@
             name: '2 — Винтовка',
             title: 'Винтовка',
             icon: '🎯',
-            desc: 'ПКМ — зум · WASD — камера · колесо — ближе/дальше · ЛКМ по прицелу',
-            help: '2: ПКМ зум · WASD камера · колесо · ЛКМ',
+            desc: 'ПКМ — зум · в зуме WASD — камера · ходьба медленнее · ЛКМ по прицелу',
+            help: '2: ПКМ зум · WASD в зуме · ходьба медл. · ЛКМ',
             slotLabel: '② Винтовка'
         },
         3: {
@@ -558,6 +558,7 @@
     const SNIPER_FOV_MIN = 8;
     const SNIPER_FOV_MAX = 45;
     const SNIPER_FOV_DEFAULT = 28;
+    const SNIPER_MOVE_MULT = 0.55;
     const SNIPER_CAM_SPEED = 1.1;
     const SNIPER_CAM_PITCH_LIMIT = 0.95;
     const SNIPER_CAM_YAW_LIMIT = 1.15;
@@ -1504,7 +1505,7 @@
                 event.preventDefault();
                 break;
             case 'Space':
-                if (currentWeapon !== WEAPON.SNIPER && !event.repeat && onGround) {
+                if (!(currentWeapon === WEAPON.SNIPER && sniperScoped) && !event.repeat && onGround) {
                     velocityY = JUMP_VELOCITY;
                     onGround = false;
                 }
@@ -1552,10 +1553,11 @@
 
             if (isSniper && sniperScoped) {
                 updateSniperCamera(delta);
-            } else if (!isSniper) {
+            } else {
                 if (keys.a && !keys.d) rotate += rotSpeed;
                 if (!keys.a && keys.d) rotate -= rotSpeed;
 
+                const walkSpeed = isSniper ? moveSpeed * SNIPER_MOVE_MULT : moveSpeed;
                 let moveX = 0, moveZ = 0;
                 if (keys.w && !keys.s) { moveX += Math.sin(rotate); moveZ += Math.cos(rotate); }
                 if (!keys.w && keys.s) { moveX -= Math.sin(rotate); moveZ -= Math.cos(rotate); }
@@ -1567,17 +1569,14 @@
                     moveZ /= len;
                 }
 
-                let newX = position.x + moveX * moveSpeed;
-                let newZ = position.z + moveZ * moveSpeed;
+                let newX = position.x + moveX * walkSpeed;
+                let newZ = position.z + moveZ * walkSpeed;
                 const margin = 0.7;
                 newX = Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, newX));
                 newZ = Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, newZ));
                 const resolved = resolveCoverCollision(newX, newZ);
                 position.x = resolved.x;
                 position.z = resolved.z;
-            } else {
-                if (keys.a && !keys.d) rotate += rotSpeed;
-                if (!keys.a && keys.d) rotate -= rotSpeed;
             }
 
             velocityY -= GRAVITY * delta;
