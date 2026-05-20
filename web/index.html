@@ -55,6 +55,14 @@
             font-size: 22px; pointer-events: none;
         }
         #game-over.visible { display: flex; pointer-events: auto; }
+        #victory {
+            display: none; position: fixed; inset: 0; z-index: 16;
+            background: rgba(0,30,10,0.8); color: #fff;
+            flex-direction: column; align-items: center; justify-content: center;
+            font-size: 26px; pointer-events: none; text-align: center;
+        }
+        #victory.visible { display: flex; pointer-events: auto; }
+        #victory .sub { font-size: 15px; margin-top: 14px; opacity: 0.9; color: #aaffaa; }
         @media (min-width: 768px) {
             #controls { left: auto; right: 16px; top: 130px; bottom: auto; max-width: 340px; text-align: left; }
         }
@@ -73,13 +81,19 @@
     <div>💥 Уничтожено: <span id="stat-destroyed">0</span></div>
 </div>
 <div id="controls">
-    [W][S][A][D] · [Пробел] Прыжок · [ЛКМ] Выстрел · [ПКМ] Импульс · [R] Рестарт<br>
+    [W][S] Вперёд/назад · [A][D] Поворот · [Q][E] Шаг влево/вправо · [Пробел] Прыжок<br>
+    [ЛКМ] Выстрел · [ПКМ] Импульс · [R] Рестарт<br>
     <span style="opacity:0.75">Серые блоки — укрытия · 🔴 красные — атакуют</span>
 </div>
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
 <div id="game-over">
     <div>💀 Игра окончена</div>
     <div style="font-size:14px; margin-top:12px; opacity:0.8">Нажми R или кнопку рестарта</div>
+</div>
+<div id="victory">
+    <div>🎉 Поздравляем!</div>
+    <div class="sub">Все опасные враги уничтожены — арена зачищена!</div>
+    <div class="sub" style="margin-top:8px">Нажми R для новой игры</div>
 </div>
 
 <script type="importmap">
@@ -90,14 +104,14 @@
     import * as THREE from 'three';
 
     const WORLD = {
-        width: 72,
-        depth: 96,
-        halfW: 36,
-        halfD: 48,
-        ceilingY: 7,
-        wallHeight: 7,
+        width: 108,
+        depth: 144,
+        halfW: 54,
+        halfD: 72,
+        ceilingY: 8,
+        wallHeight: 8,
         eyeOffset: 0.55,
-        pitKillY: -3
+        pitKillY: -3.5
     };
 
     const MAP_SX = WORLD.width / 48;
@@ -127,7 +141,10 @@
         { x: 0, z: -24, r: 2.6, depth: 3.0 },
         { x: 22, z: 22, r: 2.5, depth: 2.8 },
         { x: -24, z: -28, r: 2.4, depth: 2.7 },
-        { x: 26, z: -30, r: 2.3, depth: 2.9 }
+        { x: 26, z: -30, r: 2.3, depth: 2.9 },
+        { x: -30, z: 30, r: 2.6, depth: 3.1 },
+        { x: 32, z: 10, r: 2.2, depth: 2.6 },
+        { x: -8, z: -35, r: 2.5, depth: 3.0 }
     ]);
 
     const COVER_LAYOUT = scaleLayout([
@@ -145,7 +162,10 @@
         { x: -16, z: 10, w: 0.8, h: 2, d: 3 },
         { x: 24, z: -24, w: 4, h: 2, d: 0.8 },
         { x: -28, z: 28, w: 0.8, h: 2, d: 4 },
-        { x: 0, z: -32, w: 5, h: 1.8, d: 0.7 }
+        { x: 0, z: -32, w: 5, h: 1.8, d: 0.7 },
+        { x: 32, z: 12, w: 4, h: 2.2, d: 0.8 },
+        { x: -34, z: -12, w: 0.8, h: 2.2, d: 5 },
+        { x: 10, z: 38, w: 6, h: 1.9, d: 0.8 }
     ]);
 
     const ENEMY_LAYOUT = scaleLayout([
@@ -177,9 +197,12 @@
     ]);
 
     function getTerrainHeight(x, z) {
-        let h = Math.sin(x * 0.18) * 0.6 + Math.cos(z * 0.15) * 0.55;
-        h += Math.sin((x + z) * 0.12) * 0.4;
-        h += Math.cos(x * 0.35 - z * 0.28) * 0.25;
+        let h = Math.sin(x * 0.11) * 1.15 + Math.cos(z * 0.09) * 1.05;
+        h += Math.sin((x + z) * 0.07) * 0.75;
+        h += Math.cos(x * 0.22 - z * 0.19) * 0.55;
+        h += Math.sin(x * 0.38) * Math.cos(z * 0.31) * 0.45;
+        h += Math.sin(x * 0.06) * Math.sin(z * 0.055) * 0.9;
+        h += Math.cos(x * 0.14 + z * 0.17) * Math.sin(z * 0.12) * 0.35;
         for (const pit of PITS) {
             const dist = Math.hypot(x - pit.x, z - pit.z);
             if (dist < pit.r) {
@@ -192,9 +215,9 @@
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0d0d18);
-    scene.fog = new THREE.Fog(0x0d0d18, 35, 120);
+    scene.fog = new THREE.Fog(0x0d0d18, 45, 165);
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 320);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 420);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -217,7 +240,7 @@
     const enemyBullets = [];
 
     function buildTerrain() {
-        const geo = new THREE.PlaneGeometry(WORLD.width, WORLD.depth, 96, 128);
+        const geo = new THREE.PlaneGeometry(WORLD.width, WORLD.depth, 128, 168);
         geo.rotateX(-Math.PI / 2);
         const pos = geo.attributes.position;
         for (let i = 0; i < pos.count; i++) {
@@ -272,6 +295,7 @@
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             mesh.userData.isCover = true;
+            mesh.userData.blocksBullets = true;
             mesh.userData.halfW = c.w / 2;
             mesh.userData.halfD = c.d / 2;
             mesh.userData.height = c.h;
@@ -342,8 +366,8 @@
         group.userData.basePos = { x: cfg.x, z: cfg.z };
         group.userData.phase = Math.random() * Math.PI * 2;
         group.userData.lastShot = 0;
-        group.userData.chaseRange = dangerous ? 32 : 0;
-        group.userData.shootRange = dangerous ? 30 : 0;
+        group.userData.chaseRange = dangerous ? 38 : 0;
+        group.userData.shootRange = dangerous ? 36 : 0;
         group.userData.chaseSpeed = dangerous ? 3.8 : 0;
         group.userData.fireRate = dangerous ? (type === 'shooter' ? 0.9 : 1.4) : 0;
         group.userData.contactDamage = dangerous ? 1 : 0;
@@ -416,8 +440,9 @@
     let invincibleUntil = 0;
     let lastShotTime = 0;
     let gameActive = true;
+    let victoryShown = false;
 
-    const keys = { w: false, a: false, s: false, d: false };
+    const keys = { w: false, a: false, s: false, d: false, strafeLeft: false, strafeRight: false };
     let position = { x: 0, z: 0 };
     let rotate = 0;
     const GRAVITY = 16;
@@ -431,6 +456,7 @@
     const statDestroyedEl = document.getElementById('stat-destroyed');
     const livesEl = document.getElementById('lives');
     const gameOverEl = document.getElementById('game-over');
+    const victoryEl = document.getElementById('victory');
     const infoEl = document.getElementById('info');
 
     function getGroundY(x, z) {
@@ -455,6 +481,26 @@
             o = o.parent;
         }
         return null;
+    }
+
+    function isCoverObject(obj) {
+        let o = obj;
+        while (o) {
+            if (o.userData?.isCover) return true;
+            o = o.parent;
+        }
+        return false;
+    }
+
+    function countDangerousEnemies() {
+        return enemies.filter((e) => e.userData.dangerous).length;
+    }
+
+    function checkVictory() {
+        if (victoryShown || !gameActive || countDangerousEnemies() > 0) return;
+        victoryShown = true;
+        victoryEl.classList.add('visible');
+        infoEl.innerHTML = '🏆 Победа!<div style="font-size:12px; opacity:0.8;">Все опасные враги уничтожены</div>';
     }
 
     const losBlockers = () => [...covers, terrain];
@@ -540,7 +586,9 @@
         target.scale.setScalar(0.55 + ratio * 0.45);
         if (target.userData.health <= 0) {
             stats.destroyed++;
+            const wasDangerous = target.userData.dangerous;
             removeShootable(target);
+            if (wasDangerous) checkVictory();
         }
         updateStatsUI();
     }
@@ -738,8 +786,13 @@
             raycaster.set(bullet.position, norm);
 
             if (isPlayer) {
-                const hits = raycaster.intersectObjects(shootables, true);
-                if (hits.length > 0) {
+                const hits = raycaster.intersectObjects([...covers, ...shootables], true);
+                if (hits.length > 0 && hits[0].distance < 0.4) {
+                    if (isCoverObject(hits[0].object)) {
+                        scene.remove(bullet);
+                        list.splice(i, 1);
+                        continue;
+                    }
                     const root = getShootableRoot(hits[0].object);
                     if (root) {
                         onTargetHit(root);
@@ -749,6 +802,12 @@
                     }
                 }
             } else {
+                const coverHits = raycaster.intersectObjects(covers, false);
+                if (coverHits.length > 0 && coverHits[0].distance < 0.35) {
+                    scene.remove(bullet);
+                    list.splice(i, 1);
+                    continue;
+                }
                 if (!playerBehindCover(bullet.position)) {
                     const playerPos = getPlayerPos();
                     if (bullet.position.distanceTo(playerPos) < 0.55) {
@@ -761,7 +820,7 @@
             }
 
             const blockHits = raycaster.intersectObjects(blockers, false);
-            if (blockHits.length > 0 && blockHits[0].distance < 0.2) {
+            if (blockHits.length > 0 && blockHits[0].distance < 0.35) {
                 scene.remove(bullet);
                 list.splice(i, 1);
                 continue;
@@ -887,6 +946,7 @@
         lastImpulseTime = 0;
         clearImpulseWaves();
         gameActive = true;
+        victoryShown = false;
         position.x = spawnPoint.x;
         position.z = spawnPoint.z;
         rotate = 0;
@@ -894,6 +954,7 @@
         velocityY = 0;
         onGround = true;
         gameOverEl.classList.remove('visible');
+        victoryEl.classList.remove('visible');
         infoEl.innerHTML = '🎮 3D Арена<div style="font-size:12px; opacity:0.8;">Укрывайся за блоками · красные враги опасны</div>';
         for (const cfg of ENEMY_LAYOUT) spawnEnemy(cfg);
         spawnStaticTargets();
@@ -935,6 +996,16 @@
             case 'KeyA': keys.a = true; break;
             case 'KeyS': keys.s = true; break;
             case 'KeyD': keys.d = true; break;
+            case 'KeyQ': keys.strafeLeft = true; break;
+            case 'KeyE': keys.strafeRight = true; break;
+            case 'ArrowLeft':
+                keys.strafeLeft = true;
+                event.preventDefault();
+                break;
+            case 'ArrowRight':
+                keys.strafeRight = true;
+                event.preventDefault();
+                break;
             case 'Space':
                 if (!event.repeat && onGround) {
                     velocityY = JUMP_VELOCITY;
@@ -951,6 +1022,10 @@
             case 'KeyA': keys.a = false; break;
             case 'KeyS': keys.s = false; break;
             case 'KeyD': keys.d = false; break;
+            case 'KeyQ': keys.strafeLeft = false; break;
+            case 'KeyE': keys.strafeRight = false; break;
+            case 'ArrowLeft': keys.strafeLeft = false; break;
+            case 'ArrowRight': keys.strafeRight = false; break;
         }
     }
 
@@ -981,6 +1056,8 @@
             let moveX = 0, moveZ = 0;
             if (keys.w && !keys.s) { moveX += Math.sin(rotate); moveZ += Math.cos(rotate); }
             if (!keys.w && keys.s) { moveX -= Math.sin(rotate); moveZ -= Math.cos(rotate); }
+            if (keys.strafeLeft) { moveX -= Math.cos(rotate); moveZ += Math.sin(rotate); }
+            if (keys.strafeRight) { moveX += Math.cos(rotate); moveZ -= Math.sin(rotate); }
             if (moveX !== 0 || moveZ !== 0) {
                 const len = Math.hypot(moveX, moveZ);
                 moveX /= len;
