@@ -112,6 +112,44 @@
         #scope-reticle::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%); }
         #scope-reticle::after { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%); }
         #scope-reticle.active { display: block; }
+        #setup-panel {
+            display: none; position: fixed; inset: 0; z-index: 20;
+            background: rgba(8, 10, 22, 0.92); color: #eee;
+            align-items: center; justify-content: center; padding: 20px;
+            overflow-y: auto;
+        }
+        #setup-panel.visible { display: flex; }
+        #setup-panel .setup-card {
+            width: min(420px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+            background: rgba(30, 32, 55, 0.95); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px; padding: 22px 24px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+        #setup-panel h2 { margin: 0 0 6px; font-size: 20px; color: #aad8ff; }
+        #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin-bottom: 18px; }
+        #setup-panel label {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; margin: 12px 0 4px; gap: 12px;
+        }
+        #setup-panel label span.val { font-family: monospace; color: #ffeebb; min-width: 3.5em; text-align: right; }
+        #setup-panel input[type="range"] { width: 100%; margin: 0 0 4px; accent-color: #6688ff; }
+        #setup-panel input[type="number"] {
+            width: 72px; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.35); color: #fff; font-family: monospace;
+        }
+        #setup-panel .setup-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        #setup-panel button {
+            padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.3); font-family: inherit; color: #fff;
+        }
+        #setup-panel #btn-regen-terrain {
+            flex: 1; min-width: 140px; background: rgba(40, 60, 100, 0.9);
+        }
+        #setup-panel #btn-regen-terrain:hover { background: rgba(55, 80, 130, 0.95); }
+        #setup-panel #btn-start-game {
+            flex: 1; min-width: 140px; background: rgba(30, 100, 50, 0.95);
+            border-color: #6fcf97; font-weight: bold;
+        }
+        #setup-panel #btn-start-game:hover { background: rgba(40, 130, 65, 1); }
         @media (max-width: 767px) {
             #controls { max-width: calc(100vw - 32px); }
             #stats { max-width: calc(100vw - 32px); }
@@ -154,12 +192,37 @@
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
 <div id="game-over">
     <div>💀 Игра окончена</div>
-    <div style="font-size:14px; margin-top:12px; opacity:0.8">Нажми R или кнопку рестарта</div>
+    <div style="font-size:14px; margin-top:12px; opacity:0.8">Нажми R — настройка арены и новая игра</div>
 </div>
 <div id="victory">
     <div>🎉 Поздравляем!</div>
     <div class="sub">Все опасные враги уничтожены — арена зачищена!</div>
-    <div class="sub" style="margin-top:8px">Нажми R для новой игры</div>
+    <div class="sub" style="margin-top:8px">Нажми R для настройки и новой игры</div>
+</div>
+<div id="setup-panel">
+    <div class="setup-card">
+        <h2>⚙️ Настройка арены</h2>
+        <p class="setup-sub">Измените параметры, перегенерируйте рельеф или начните игру</p>
+        <label>Ширина карты <span class="val" id="val-width">108</span></label>
+        <input type="range" id="inp-width" min="64" max="160" step="4" value="108">
+        <label>Глубина карты <span class="val" id="val-depth">144</span></label>
+        <input type="range" id="inp-depth" min="80" max="200" step="4" value="144">
+        <label>Сид рельефа
+            <input type="number" id="inp-terrain-seed" min="0.3" max="3" step="0.1" value="1">
+        </label>
+        <label>Жизни <span class="val" id="val-lives">5</span></label>
+        <input type="range" id="inp-lives" min="1" max="10" step="1" value="5">
+        <label>Ямы <span class="val" id="val-pits">13</span></label>
+        <input type="range" id="inp-pits" min="0" max="13" step="1" value="13">
+        <label>Укрытия <span class="val" id="val-covers">17</span></label>
+        <input type="range" id="inp-covers" min="0" max="17" step="1" value="17">
+        <label>Врагов <span class="val" id="val-enemies">18</span></label>
+        <input type="range" id="inp-enemies" min="0" max="18" step="1" value="18">
+        <div class="setup-actions">
+            <button type="button" id="btn-regen-terrain">🔄 Перегенерировать рельеф</button>
+            <button type="button" id="btn-start-game">▶ Начать игру</button>
+        </div>
+    </div>
 </div>
 
 <script type="module">
@@ -202,8 +265,23 @@
         pitKillY: -3.5
     };
 
-    const MAP_SX = WORLD.width / 48;
-    const MAP_SZ = WORLD.depth / 64;
+    let MAP_SX = WORLD.width / 48;
+    let MAP_SZ = WORLD.depth / 64;
+    let PITS = [];
+    let COVER_LAYOUT = [];
+
+    const arenaSettings = {
+        mapWidth: 108,
+        mapDepth: 144,
+        terrainSeed: 1,
+        lives: 5,
+        pitCount: 13,
+        coverCount: 17,
+        enemyCount: 18
+    };
+
+    const shellMeshes = [];
+    const pitMeshes = [];
 
     function scaleLayout(items, scaleSpan = false) {
         return items.map((it) => {
@@ -219,7 +297,32 @@
         return pairs.map(([x, z]) => [x * MAP_SX, z * MAP_SZ]);
     }
 
-    const PITS = scaleLayout([
+    function applyArenaDimensions() {
+        WORLD.width = arenaSettings.mapWidth;
+        WORLD.depth = arenaSettings.mapDepth;
+        WORLD.halfW = WORLD.width / 2;
+        WORLD.halfD = WORLD.depth / 2;
+        MAP_SX = WORLD.width / 48;
+        MAP_SZ = WORLD.depth / 64;
+        scene.fog.far = Math.max(120, WORLD.width + WORLD.depth);
+        fillLight.distance = Math.max(120, WORLD.width + WORLD.depth);
+    }
+
+    function rebuildLayoutData() {
+        PITS = scaleLayout(BASE_PITS.slice(0, arenaSettings.pitCount));
+        COVER_LAYOUT = scaleLayout(BASE_COVERS.slice(0, arenaSettings.coverCount));
+    }
+
+    function getEnemySpawnList() {
+        const n = Math.min(arenaSettings.enemyCount, BASE_ENEMY_LAYOUT.length);
+        return scaleLayout(BASE_ENEMY_LAYOUT.slice(0, n), true);
+    }
+
+    function getStaticTargetList() {
+        return scalePoints(BASE_STATIC_TARGETS);
+    }
+
+    const BASE_PITS = [
         { x: 10, z: 6, r: 2.4, depth: 2.8 },
         { x: -12, z: -10, r: 2.2, depth: 2.6 },
         { x: 8, z: -18, r: 2.5, depth: 2.9 },
@@ -233,9 +336,9 @@
         { x: -30, z: 30, r: 2.6, depth: 3.1 },
         { x: 32, z: 10, r: 2.2, depth: 2.6 },
         { x: -8, z: -35, r: 2.5, depth: 3.0 }
-    ]);
+    ];
 
-    const COVER_LAYOUT = scaleLayout([
+    const BASE_COVERS = [
         { x: -6, z: 4, w: 3, h: 1.8, d: 0.7 },
         { x: 6, z: -3, w: 0.7, h: 1.8, d: 3 },
         { x: -14, z: -6, w: 4, h: 2, d: 0.8 },
@@ -254,9 +357,9 @@
         { x: 32, z: 12, w: 4, h: 2.2, d: 0.8 },
         { x: -34, z: -12, w: 0.8, h: 2.2, d: 5 },
         { x: 10, z: 38, w: 6, h: 1.9, d: 0.8 }
-    ]);
+    ];
 
-    const ENEMY_LAYOUT = scaleLayout([
+    const BASE_ENEMY_LAYOUT = [
         { x: -8, z: 6, type: 'patrol', axis: 'x', span: 6, speed: 1.6 },
         { x: 12, z: -6, type: 'patrol', axis: 'z', span: 7, speed: 1.8 },
         { x: -14, z: -12, type: 'patrol', axis: 'x', span: 5, speed: 1.5 },
@@ -276,21 +379,22 @@
         { x: -20, z: 18, type: 'shooter', dangerous: true, health: 4 },
         { x: 10, z: 0, type: 'chaser', dangerous: true, health: 4 },
         { x: -10, z: -4, type: 'shooter', dangerous: true, health: 3 }
-    ], true);
+    ];
 
-    const STATIC_TARGETS = scalePoints([
+    const BASE_STATIC_TARGETS = [
         [-10, -2], [11, 5], [-5, -18], [15, -12], [2, -10],
         [-15, 8], [8, 18], [-18, -8], [20, 2],
         [28, -28], [-30, 20], [0, 35]
-    ]);
+    ];
 
     function getTerrainHeight(x, z) {
-        let h = Math.sin(x * 0.11) * 1.15 + Math.cos(z * 0.09) * 1.05;
-        h += Math.sin((x + z) * 0.07) * 0.75;
-        h += Math.cos(x * 0.22 - z * 0.19) * 0.55;
-        h += Math.sin(x * 0.38) * Math.cos(z * 0.31) * 0.45;
-        h += Math.sin(x * 0.06) * Math.sin(z * 0.055) * 0.9;
-        h += Math.cos(x * 0.14 + z * 0.17) * Math.sin(z * 0.12) * 0.35;
+        const t = arenaSettings.terrainSeed;
+        let h = Math.sin(x * 0.11 * t) * 1.15 + Math.cos(z * 0.09 * t) * 1.05;
+        h += Math.sin((x + z) * 0.07 * t) * 0.75;
+        h += Math.cos(x * 0.22 * t - z * 0.19 * t) * 0.55;
+        h += Math.sin(x * 0.38 * t) * Math.cos(z * 0.31 * t) * 0.45;
+        h += Math.sin(x * 0.06 * t) * Math.sin(z * 0.055 * t) * 0.9;
+        h += Math.cos(x * 0.14 * t + z * 0.17 * t) * Math.sin(z * 0.12 * t) * 0.35;
         for (const pit of PITS) {
             const dist = Math.hypot(x - pit.x, z - pit.z);
             if (dist < pit.r) {
@@ -330,8 +434,32 @@
     const bullets = [];
     const enemyBullets = [];
 
+    function disposeMesh(mesh) {
+        scene.remove(mesh);
+        mesh.geometry?.dispose();
+        if (mesh.material) {
+            if (Array.isArray(mesh.material)) mesh.material.forEach((m) => m.dispose());
+            else mesh.material.dispose();
+        }
+    }
+
+    function clearArenaMeshes() {
+        if (terrain) {
+            disposeMesh(terrain);
+            terrain = null;
+        }
+        for (const m of pitMeshes) disposeMesh(m);
+        pitMeshes.length = 0;
+        for (const m of covers) disposeMesh(m);
+        covers.length = 0;
+        for (const m of shellMeshes) disposeMesh(m);
+        shellMeshes.length = 0;
+    }
+
     function buildTerrain() {
-        const geo = new THREE.PlaneGeometry(WORLD.width, WORLD.depth, 128, 168);
+        const segsW = Math.max(64, Math.round(WORLD.width * 1.2));
+        const segsD = Math.max(80, Math.round(WORLD.depth * 1.2));
+        const geo = new THREE.PlaneGeometry(WORLD.width, WORLD.depth, segsW, segsD);
         geo.rotateX(-Math.PI / 2);
         const pos = geo.attributes.position;
         for (let i = 0; i < pos.count; i++) {
@@ -345,13 +473,14 @@
         terrain.receiveShadow = true;
         scene.add(terrain);
 
-        const pitMat = new THREE.MeshStandardMaterial({ color: 0x150800, roughness: 1 });
         for (const pit of PITS) {
             const floor = new THREE.Mesh(
-                new THREE.CylinderGeometry(pit.r * 0.95, pit.r, 0.15, 24), pitMat
+                new THREE.CylinderGeometry(pit.r * 0.95, pit.r, 0.15, 24),
+                new THREE.MeshStandardMaterial({ color: 0x150800, roughness: 1 })
             );
             floor.position.set(pit.x, getTerrainHeight(pit.x, pit.z) - pit.depth + 0.05, pit.z);
             scene.add(floor);
+            pitMeshes.push(floor);
         }
     }
 
@@ -360,10 +489,11 @@
         const wh = WORLD.wallHeight;
         const cy = wh / 2 - 0.5;
         const mk = (w, h, d, x, y, z) => {
-            const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+            const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat.clone());
             m.position.set(x, y, z);
             m.receiveShadow = true;
             scene.add(m);
+            shellMeshes.push(m);
         };
         mk(WORLD.width + 0.4, wh, 0.3, 0, cy, -WORLD.halfD);
         mk(WORLD.width + 0.4, wh, 0.3, 0, cy, WORLD.halfD);
@@ -375,6 +505,7 @@
         );
         ceiling.position.y = WORLD.ceilingY;
         scene.add(ceiling);
+        shellMeshes.push(ceiling);
     }
 
     function buildCovers() {
@@ -394,6 +525,20 @@
             covers.push(mesh);
         }
     }
+
+    function rebuildArenaGeometry() {
+        applyArenaDimensions();
+        rebuildLayoutData();
+        clearArenaMeshes();
+        buildTerrain();
+        buildArenaShell();
+        buildCovers();
+        position.x = Math.max(-WORLD.halfW + 1, Math.min(WORLD.halfW - 1, position.x));
+        position.z = Math.max(-WORLD.halfD + 1, Math.min(WORLD.halfD - 1, position.z));
+        playerY = getGroundY(position.x, position.z);
+        applyCameraLook();
+    }
+
 
     function createEnemyVisual(dangerous, type) {
         const group = new THREE.Group();
@@ -486,7 +631,7 @@
 
     function spawnStaticTargets() {
         const mat = new THREE.MeshStandardMaterial({ color: 0xcc5555, metalness: 0.3 });
-        for (const [x, z] of STATIC_TARGETS) {
+        for (const [x, z] of getStaticTargetList()) {
             const cube = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), mat.clone());
             cube.position.set(x, getTerrainHeight(x, z) + 0.28, z);
             cube.castShadow = true;
@@ -498,15 +643,18 @@
         }
     }
 
-    function buildWorld() {
-        buildTerrain();
-        buildArenaShell();
-        buildCovers();
-        for (const cfg of ENEMY_LAYOUT) spawnEnemy(cfg);
+    function spawnWorldEntities() {
+        for (const cfg of getEnemySpawnList()) spawnEnemy(cfg);
         spawnStaticTargets();
     }
 
-    buildWorld();
+    function buildWorld() {
+        applyArenaDimensions();
+        rebuildLayoutData();
+        buildTerrain();
+        buildArenaShell();
+        buildCovers();
+    }
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -585,7 +733,7 @@
     let lives = 5;
     let invincibleUntil = 0;
     let lastShotTime = 0;
-    let gameActive = true;
+    let gameActive = false;
     let victoryShown = false;
 
     const keys = { w: false, a: false, s: false, d: false, strafeLeft: false, strafeRight: false };
@@ -611,6 +759,8 @@
     const weaponSlotEls = document.querySelectorAll('.weapon-slot');
     const scopeOverlayEl = document.getElementById('scope-overlay');
     const scopeReticleEl = document.getElementById('scope-reticle');
+    const crosshairEl = document.getElementById('crosshair');
+    const setupPanelEl = document.getElementById('setup-panel');
 
     function getGroundY(x, z) {
         return getTerrainHeight(x, z) + WORLD.eyeOffset;
@@ -1373,26 +1523,75 @@
         enemies.length = 0;
     }
 
-    function resetGame() {
+    function readArenaSettingsFromUI() {
+        arenaSettings.mapWidth = Number(document.getElementById('inp-width').value);
+        arenaSettings.mapDepth = Number(document.getElementById('inp-depth').value);
+        arenaSettings.terrainSeed = Number(document.getElementById('inp-terrain-seed').value);
+        arenaSettings.lives = Number(document.getElementById('inp-lives').value);
+        arenaSettings.pitCount = Number(document.getElementById('inp-pits').value);
+        arenaSettings.coverCount = Number(document.getElementById('inp-covers').value);
+        arenaSettings.enemyCount = Number(document.getElementById('inp-enemies').value);
+        document.getElementById('val-width').textContent = arenaSettings.mapWidth;
+        document.getElementById('val-depth').textContent = arenaSettings.mapDepth;
+        document.getElementById('val-lives').textContent = arenaSettings.lives;
+        document.getElementById('val-pits').textContent = arenaSettings.pitCount;
+        document.getElementById('val-covers').textContent = arenaSettings.coverCount;
+        document.getElementById('val-enemies').textContent = arenaSettings.enemyCount;
+        const maxEnemies = BASE_ENEMY_LAYOUT.length;
+        const maxPits = BASE_PITS.length;
+        const maxCovers = BASE_COVERS.length;
+        document.getElementById('inp-enemies').max = maxEnemies;
+        document.getElementById('inp-pits').max = maxPits;
+        document.getElementById('inp-covers').max = maxCovers;
+        if (arenaSettings.enemyCount > maxEnemies) arenaSettings.enemyCount = maxEnemies;
+        if (arenaSettings.pitCount > maxPits) arenaSettings.pitCount = maxPits;
+        if (arenaSettings.coverCount > maxCovers) arenaSettings.coverCount = maxCovers;
+    }
+
+    function syncSetupLabels() {
+        readArenaSettingsFromUI();
+    }
+
+    function clearCombatState() {
         clearBullets(bullets);
         clearBullets(enemyBullets);
         clearEnemiesAndTargets();
-        stats.shots = 0;
-        stats.hits = 0;
-        stats.destroyed = 0;
-        lives = 5;
-        invincibleUntil = 0;
-        lastShotTime = 0;
-        lastImpulseTime = 0;
-        lastAreaStrike = 0;
         clearImpulseWaves();
         clearAreaTarget();
         for (const r of rockets) scene.remove(r);
         rockets.length = 0;
         for (const ex of areaExplosions) scene.remove(ex.mesh);
         areaExplosions.length = 0;
+    }
+
+    function openSetupPanel() {
+        gameActive = false;
+        sniperScoped = false;
+        updateScopeVisual();
+        clearCombatState();
         setWeapon(WEAPON.STANDARD);
-        gameActive = true;
+        victoryShown = false;
+        gameOverEl.classList.remove('visible');
+        victoryEl.classList.remove('visible');
+        infoEl.innerHTML = '🎮 3D Арена<div style="font-size:12px; opacity:0.8;">Настройте арену и нажмите «Начать игру»</div>';
+        setupPanelEl.classList.add('visible');
+        syncSetupLabels();
+        applyCameraLook();
+    }
+
+    function startGame() {
+        readArenaSettingsFromUI();
+        rebuildArenaGeometry();
+        clearCombatState();
+        stats.shots = 0;
+        stats.hits = 0;
+        stats.destroyed = 0;
+        lives = arenaSettings.lives;
+        invincibleUntil = 0;
+        lastShotTime = 0;
+        lastImpulseTime = 0;
+        lastAreaStrike = 0;
+        setWeapon(WEAPON.STANDARD);
         victoryShown = false;
         position.x = spawnPoint.x;
         position.z = spawnPoint.z;
@@ -1402,15 +1601,31 @@
         onGround = true;
         gameOverEl.classList.remove('visible');
         victoryEl.classList.remove('visible');
+        setupPanelEl.classList.remove('visible');
         infoEl.innerHTML = '🎮 3D Арена<div style="font-size:12px; opacity:0.8;">Укрывайся за блоками · красные враги опасны</div>';
-        for (const cfg of ENEMY_LAYOUT) spawnEnemy(cfg);
-        spawnStaticTargets();
+        spawnWorldEntities();
         updateStatsUI();
+        gameActive = true;
+        renderer.domElement.focus();
     }
 
-    document.getElementById('restart-btn').addEventListener('click', resetGame);
+    function resetGame() {
+        openSetupPanel();
+    }
 
-    const crosshairEl = document.getElementById('crosshair');
+    buildWorld();
+    openSetupPanel();
+
+    document.getElementById('restart-btn').addEventListener('click', resetGame);
+    document.getElementById('btn-start-game').addEventListener('click', startGame);
+    document.getElementById('btn-regen-terrain').addEventListener('click', () => {
+        readArenaSettingsFromUI();
+        rebuildArenaGeometry();
+    });
+    for (const id of ['inp-width', 'inp-depth', 'inp-lives', 'inp-pits', 'inp-covers', 'inp-enemies']) {
+        document.getElementById(id).addEventListener('input', syncSetupLabels);
+    }
+    document.getElementById('inp-terrain-seed').addEventListener('change', syncSetupLabels);
 
     function updateCrosshair(clientX, clientY) {
         crosshairEl.style.left = `${clientX}px`;
@@ -1483,7 +1698,7 @@
 
     function keyDown(event) {
         if (event.code === 'KeyR') {
-            resetGame();
+            openSetupPanel();
             return;
         }
         if (tryCycleWeapon(event)) return;
