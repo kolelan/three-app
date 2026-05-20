@@ -1,18 +1,30 @@
 {
+  "id": "./",
   "name": "3D Арена",
-  "short_name": "3D Арена",
-  "description": "3D арена на Three.js: рельеф, лабиринт, враги и пять видов оружия",
-  "start_url": ".",
+  "short_name": "Арена",
+  "description": "Браузерная 3D-арена на Three.js: рельеф, лабиринт, враги, пять видов оружия и режим дальнего боя.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#111122",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
+  "theme_color": "#0d0d18",
+  "background_color": "#0d0d18",
+  "categories": ["games", "entertainment"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Crect x='20' y='20' width='60' height='60' fill='%23ff00aa'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230d0d18'/%3E%3Crect x='18' y='18' width='64' height='64' fill='%23ff00aa'/%3E%3C/svg%3E",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230d0d18'/%3E%3Crect x='22' y='22' width='56' height='56' fill='%23ff00aa'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

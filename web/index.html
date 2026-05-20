@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Арена</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#0d0d18">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="3D Arena">
+    <meta name="apple-mobile-web-app-title" content="3D Арена">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Crect x='20' y='20' width='60' height='60' fill='%23ff00aa'/%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Crect x='20' y='20' width='60' height='60' fill='%23ff00aa'/%3E%3C/svg%3E">
     <style>
@@ -469,8 +469,8 @@
         depth: 144,
         halfW: 54,
         halfD: 72,
-        ceilingY: 8,
-        wallHeight: 8,
+        ceilingY: 14,
+        wallHeight: 14,
         eyeOffset: 0.55,
         pitKillY: -3.5,
         spawnFootMinY: -2.2,
@@ -538,6 +538,10 @@
     const shellMeshes = [];
     const pitMeshes = [];
     const mazePieces = [];
+    const mazeGroundSpawns = [];
+    const mazeFootprint = { active: false, halfW: 0, halfD: 0 };
+    const BOSS_OUTSIDE_RADIUS = 1.55;
+    const BOSS_SPAWN_PAD = 3.8;
     const mazeMeshes = [];
     let mazeRngState = 1;
     let bossesToSpawn = 0;
@@ -955,6 +959,8 @@
         for (const m of mazeMeshes) disposeMesh(m);
         mazeMeshes.length = 0;
         mazePieces.length = 0;
+        mazeGroundSpawns.length = 0;
+        mazeFootprint.active = false;
     }
 
     function generateMazeGrid(cols, rows, maxFloors) {
@@ -975,7 +981,7 @@
                 const blob = nx * nx + nz * nz;
                 const wobble = 0.14 * Math.sin(ang * 4 + seedAng) + 0.09 * Math.cos(ang * 6 - seedAng * 2);
                 const noise = (mazeRand() - 0.5) * 0.28;
-                const inside = blob < 0.9 + wobble + noise;
+                const inside = blob < 1.02 + wobble + noise;
                 grid[r][c] = { inside, floors: 0, c, r, gate: false };
             }
         }
@@ -989,9 +995,9 @@
                 if (!grid[r][c].inside) continue;
                 const dist = Math.hypot((c - cx) / (cols * 0.45), (r - rz) / (rows * 0.45));
                 let fl = 1;
-                if (dist < 0.28) fl = maxFloors;
-                else if (dist < 0.55) fl = 1 + Math.floor(mazeRand() * maxFloors);
-                else fl = 1 + Math.floor(mazeRand() * Math.min(2, maxFloors));
+                if (dist < 0.2) fl = maxFloors;
+                else if (dist < 0.38 && maxFloors > 1) fl = 1 + Math.floor(mazeRand() * Math.min(2, maxFloors));
+                else fl = 1;
                 fl = Math.max(1, Math.min(maxFloors, fl));
                 grid[r][c].floors = fl;
                 if (fl === maxFloors) hasMax = true;
@@ -1009,7 +1015,7 @@
             }
         }
         openings.sort(() => mazeRand() - 0.5);
-        for (let i = 0; i < Math.min(3, openings.length); i++) openings[i].gate = true;
+        for (let i = 0; i < Math.min(5, openings.length); i++) openings[i].gate = true;
 
         return { grid, cols, rows, cx, rz };
     }
@@ -1043,12 +1049,14 @@
         const rows = grid.length;
         const cols = grid[0].length;
         const cellData = grid[r][c];
-        const wallH = 2.15;
+        const wallH = 2.35;
+        const edgeThick = 0.2;
+        const edgeSpan = cell * 0.96;
         const edges = [
-            { nr: r - 1, nc: c, wx: px, wz: pz - cell / 2, w: cell * 0.92, d: 0.32 },
-            { nr: r + 1, nc: c, wx: px, wz: pz + cell / 2, w: cell * 0.92, d: 0.32 },
-            { nr: r, nc: c - 1, wx: px - cell / 2, wz: pz, w: 0.32, d: cell * 0.92 },
-            { nr: r, nc: c + 1, wx: px + cell / 2, wz: pz, w: 0.32, d: cell * 0.92 }
+            { nr: r - 1, nc: c, wx: px, wz: pz - cell / 2, w: edgeSpan, d: edgeThick },
+            { nr: r + 1, nc: c, wx: px, wz: pz + cell / 2, w: edgeSpan, d: edgeThick },
+            { nr: r, nc: c - 1, wx: px - cell / 2, wz: pz, w: edgeThick, d: edgeSpan },
+            { nr: r, nc: c + 1, wx: px + cell / 2, wz: pz, w: edgeThick, d: edgeSpan }
         ];
         for (const e of edges) {
             const inBounds = e.nr >= 0 && e.nr < rows && e.nc >= 0 && e.nc < cols;
@@ -1058,19 +1066,19 @@
             const exterior = !neighIn;
             const heightGap = neighIn && neighFloors < floorIdx + 1;
             if (!exterior && !heightGap) {
-                if (floorIdx === 0 && neighIn && mazeRand() > 0.78) {
-                    createMazeWall(e.wx, e.wz, e.w, e.d, 2.05, yBase, { isWindow: mazeRand() > 0.55 });
+                if (floorIdx === 0 && neighIn && mazeRand() > 0.96) {
+                    createMazeWall(e.wx, e.wz, e.w * 0.7, e.d * 0.7, 1.65, yBase, { isWindow: true });
                 }
                 continue;
             }
             if (floorIdx >= cellData.floors) continue;
             const isGate = exterior && floorIdx === 0 && cellData.gate;
-            const tall = exterior && floorIdx > 0 && mazeRand() > 0.4;
-            const h = tall ? 3.4 : wallH;
+            const tall = exterior && floorIdx > 0 && mazeRand() > 0.55;
+            const h = tall ? 3.15 : wallH;
             createMazeWall(e.wx, e.wz, e.w, e.d, h, yBase, {
                 isWindow: isGate,
                 jumpable: h <= jumpReach + floorIdx * floorStep,
-                hasRoof: floorIdx === cellData.floors - 1 && mazeRand() > 0.4,
+                hasRoof: floorIdx === cellData.floors - 1 && !isGate && mazeRand() > 0.72,
                 roofY: yBase + h + 0.35
             });
         }
@@ -1081,13 +1089,16 @@
         if (!arenaSettings.mazeEnabled) return;
         mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed) % 2147483646);
         const maxFloors = arenaSettings.mazeFloors;
-        const cell = 3.2;
-        const { grid, cols, rows } = generateMazeGrid(11, 11, maxFloors);
+        const cell = 4.4;
+        const { grid, cols, rows } = generateMazeGrid(9, 9, maxFloors);
         const halfW = (cols * cell) / 2;
         const halfD = (rows * cell) / 2;
         const baseY = getTerrainHeight(0, 0) + 0.15;
-        const floorStep = Math.min(2.65, Math.max(0.55, arenaSettings.jumpHeight * 0.88));
-        const jumpReach = arenaSettings.jumpHeight + 0.2;
+        const floorStep = Math.min(
+            arenaSettings.jumpHeight * 0.92,
+            Math.max(0.9, arenaSettings.jumpHeight - 0.15)
+        );
+        const jumpReach = arenaSettings.jumpHeight + 0.45;
         const tile = cell;
 
         for (let r = 0; r < rows; r++) {
@@ -1101,18 +1112,27 @@
                     if (!cellNeedsFloorAt(grid, r, c, f)) continue;
                     const y0 = baseY + f * floorStep;
                     createMazeFloorTile(px, pz, tile, y0);
+                    if (f === 0) {
+                        mazeGroundSpawns.push({
+                            x: px,
+                            z: pz,
+                            y: y0 + 0.28,
+                            gate: !!data.gate
+                        });
+                    }
                     if (f < data.floors) {
                         buildMazeCellWalls(px, pz, cell, y0, r, c, grid, f, jumpReach, floorStep);
                     }
                 }
 
-                if (data.floors >= 2 && mazeRand() > 0.55) {
+                if (data.floors >= 2 && mazeRand() > 0.88) {
                     const y0 = baseY + (data.floors - 1) * floorStep;
-                    const platH = 1.1 + mazeRand() * 0.35;
+                    const platSize = tile * 0.55;
+                    const platH = 0.55 + mazeRand() * 0.25;
                     if (platH + y0 - baseY <= jumpReach + (data.floors - 1) * floorStep) {
-                        createMazeWall(px, pz, tile, tile, platH, y0, {
+                        createMazeWall(px, pz, platSize, platSize, platH, y0, {
                             jumpable: true,
-                            hasRoof: mazeRand() > 0.45,
+                            hasRoof: mazeRand() > 0.75,
                             roofY: y0 + platH + 0.35,
                             color: 0x6a7078
                         });
@@ -1121,34 +1141,69 @@
             }
         }
 
-        for (let i = 0; i < 2 + maxFloors; i++) {
-            const r = 1 + Math.floor(mazeRand() * (rows - 2));
-            const c = 1 + Math.floor(mazeRand() * (cols - 2));
-            if (!grid[r][c].inside) continue;
-            const px = -halfW + cell / 2 + c * cell;
-            const pz = -halfD + cell / 2 + r * cell;
-            const topFloor = grid[r][c].floors - 1;
-            const y0 = baseY + topFloor * floorStep;
-            const tallH = jumpReach + 1.1 + mazeRand() * 1.2;
-            createMazeWall(px, pz, 0.85, 0.85, tallH, y0, {
-                jumpable: false,
-                color: 0x353a44,
-                hasRoof: topFloor === maxFloors - 1 && mazeRand() > 0.35,
-                roofY: y0 + tallH + 0.35
-            });
-        }
+        mazeFootprint.halfW = halfW;
+        mazeFootprint.halfD = halfD;
+        mazeFootprint.active = true;
     }
 
-    function getMazeWalkHeight(x, z, footY) {
+    function isInsideMazeBuilding(x, z, margin = 0) {
+        if (!mazeFootprint.active) return false;
+        return Math.abs(x) < mazeFootprint.halfW + margin
+            && Math.abs(z) < mazeFootprint.halfD + margin;
+    }
+
+    function clampBossOutsideBuilding(x, z) {
+        if (!mazeFootprint.active) return { x, z };
+        const hw = mazeFootprint.halfW + BOSS_OUTSIDE_RADIUS;
+        const hd = mazeFootprint.halfD + BOSS_OUTSIDE_RADIUS;
+        if (Math.abs(x) >= hw || Math.abs(z) >= hd) return { x, z };
+        const pushX = hw - Math.abs(x);
+        const pushZ = hd - Math.abs(z);
+        if (pushX < pushZ) x = Math.sign(x || 1) * hw;
+        else z = Math.sign(z || 1) * hd;
+        return { x, z };
+    }
+
+    function getBossOutsideSpawnPosition(i, n) {
+        if (!mazeFootprint.active) {
+            const ang = (i / Math.max(1, n)) * Math.PI * 2;
+            const ring = 14;
+            return { x: Math.cos(ang) * ring, z: Math.sin(ang) * ring };
+        }
+        const hw = mazeFootprint.halfW;
+        const hd = mazeFootprint.halfD;
+        const pad = BOSS_SPAWN_PAD + (i % 2) * 1.5;
+        const side = i % 4;
+        const t = (i + 0.5) / Math.max(1, n);
+        const along = (t - 0.5) * (side < 2 ? hd * 1.35 : hw * 1.35);
+        if (side === 0) return { x: along, z: hd + pad };
+        if (side === 1) return { x: along, z: -hd - pad };
+        if (side === 2) return { x: -hw - pad, z: along };
+        return { x: hw + pad, z: along };
+    }
+
+    function resolveBossMovement(x, z) {
+        let resolved = resolveCoverCollision(x, z);
+        resolved = clampBossOutsideBuilding(resolved.x, resolved.z);
+        return resolved;
+    }
+
+    function getMazeWalkHeight(x, z, refFootY, maxAbove = 0.55, maxBelow = 1.15) {
         let best = -Infinity;
-        const snap = 1.75;
+        const snap = 2.15;
         for (const p of mazePieces) {
             if (!p.jumpable) continue;
             if (Math.abs(x - p.x) > p.hw + snap || Math.abs(z - p.z) > p.hd + snap) continue;
             const top = p.yBase + p.h;
-            if (top <= footY + 0.5) best = Math.max(best, top);
+            if (top <= refFootY + maxAbove && top >= refFootY - maxBelow) {
+                best = Math.max(best, top);
+            }
         }
         return best;
+    }
+
+    function getMazeStandSupportAt(x, z, footY) {
+        return getMazeWalkHeight(x, z, footY, 0.42, 0.55);
     }
 
     function isUnderMazeRoof(x, y, z) {
@@ -1216,10 +1271,12 @@
 
     function canPlayerJump() {
         if (rangedMode) return false;
-        if (velocityY > 0.8) return false;
+        if (velocityY > 0.55) return false;
         const footY = getFootY();
-        const support = getSupportYAt(position.x, position.z, footY + 0.4);
-        return footY <= support + 0.4;
+        const mazeStand = getMazeStandSupportAt(position.x, position.z, footY);
+        const terrain = getTerrainHeight(position.x, position.z);
+        const support = Math.max(terrain, mazeStand > -Infinity ? mazeStand : terrain);
+        return footY <= support + 0.55;
     }
 
     function getMazeLosMeshes() {
@@ -1289,7 +1346,7 @@
         const type = cfg.type || 'patrol';
         const group = createEnemyVisual(dangerous, type);
         const gy = cfg.inMaze
-            ? getSupportYAt(cfg.x, cfg.z, 1e5)
+            ? (cfg.spawnY ?? getSupportYAt(cfg.x, cfg.z, getTerrainHeight(cfg.x, cfg.z) + 0.5))
             : getTerrainHeight(cfg.x, cfg.z);
         group.position.set(cfg.x, gy, cfg.z);
         group.castShadow = true;
@@ -1349,15 +1406,18 @@
     function getMazeEnemySpawns() {
         const list = [];
         const n = arenaSettings.mazeEnemyCount;
-        if (!arenaSettings.mazeEnabled || n <= 0) return list;
+        if (!arenaSettings.mazeEnabled || n <= 0 || mazeGroundSpawns.length === 0) return list;
         mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed * 7919) % 2147483646);
         const types = ['chaser', 'shooter', 'chaser', 'shooter'];
+        const pool = mazeGroundSpawns.filter((s) => !s.gate);
+        const use = pool.length > 0 ? pool : mazeGroundSpawns;
         for (let i = 0; i < n; i++) {
-            const ang = mazeRand() * Math.PI * 2;
-            const rad = 2 + mazeRand() * 8;
+            const sp = use[Math.floor(mazeRand() * use.length)];
+            const jitter = 0.65;
             list.push({
-                x: Math.cos(ang) * rad,
-                z: Math.sin(ang) * rad,
+                x: sp.x + (mazeRand() - 0.5) * jitter,
+                z: sp.z + (mazeRand() - 0.5) * jitter,
+                spawnY: sp.y,
                 type: types[i % types.length],
                 dangerous: true,
                 health: 3 + Math.floor(mazeRand() * 3),
@@ -1576,38 +1636,58 @@
         return playerY - WORLD.eyeOffset;
     }
 
-    function getSupportYAt(x, z, refFootY) {
+    function getSupportYAt(x, z, refFootY, maxAbove, maxBelow) {
         let y = getTerrainHeight(x, z);
-        const mazeTop = getMazeWalkHeight(x, z, refFootY);
+        const mazeTop = getMazeWalkHeight(
+            x, z, refFootY,
+            maxAbove ?? 0.55,
+            maxBelow ?? 1.15
+        );
         if (mazeTop > -Infinity) y = Math.max(y, mazeTop);
         return y;
     }
 
     function getLandingRefFoot(footY, velocityY) {
-        if (velocityY <= 0) {
-            return footY + arenaSettings.jumpHeight + 1.2;
-        }
-        return footY + 0.35;
+        if (velocityY > 0.55) return footY + 0.35;
+        if (velocityY < -0.35) return footY + arenaSettings.jumpHeight * 0.65;
+        return footY + 0.15;
     }
 
-    function sweepMazeLanding(footY, nextFootY) {
-        const snap = 1.75;
+    function sweepMazeLanding(prevFootY, nextFootY) {
+        const snap = 2.15;
+        let bestTop = null;
         for (const p of mazePieces) {
             if (!p.jumpable) continue;
             if (Math.abs(position.x - p.x) > p.hw + snap || Math.abs(position.z - p.z) > p.hd + snap) {
                 continue;
             }
             const top = p.yBase + p.h;
-            if (footY >= top - 0.35 && nextFootY <= top + 0.35) {
-                return top + WORLD.eyeOffset;
+            const crossedDown = prevFootY > top - 0.12 && nextFootY <= top + 0.48;
+            const onPlatform = nextFootY <= top + 0.12 && nextFootY >= top - 0.5
+                && velocityY <= 0.15 && prevFootY >= top - 0.65;
+            if (crossedDown || onPlatform) {
+                if (bestTop == null || top > bestTop) bestTop = top;
             }
         }
-        return null;
+        return bestTop != null ? bestTop + WORLD.eyeOffset : null;
     }
 
     function getPlayerSupportFootY() {
         const footY = getFootY();
-        return getSupportYAt(position.x, position.z, getLandingRefFoot(footY, velocityY));
+        if (velocityY > 0.45) {
+            return getSupportYAt(position.x, position.z, footY + 0.35, 0.45, 2.8);
+        }
+        if (velocityY < -0.2) {
+            return getSupportYAt(
+                position.x, position.z,
+                getLandingRefFoot(footY, velocityY),
+                0.5,
+                arenaSettings.jumpHeight + 1.2
+            );
+        }
+        const mazeStand = getMazeStandSupportAt(position.x, position.z, footY);
+        const terrain = getTerrainHeight(position.x, position.z);
+        return Math.max(terrain, mazeStand > -Infinity ? mazeStand : terrain);
     }
 
     function isPlayerInVoid() {
@@ -1657,35 +1737,32 @@
 
     function isSafeSpawnAt(x, z) {
         if (isInsidePitZone(x, z)) return false;
-        const footY = getSupportYAt(x, z, 1e5);
+        const groundRef = getTerrainHeight(x, z) + 0.35;
+        const footY = getSupportYAt(x, z, groundRef);
         if (footY < WORLD.spawnFootMinY) return false;
         if (arenaSettings.spawnInMaze && arenaSettings.mazeEnabled) {
-            if (getMazeWalkHeight(x, z, 1e5) <= -Infinity) return false;
+            if (getMazeWalkHeight(x, z, groundRef) <= -Infinity) return false;
         }
         return true;
     }
 
     function collectSpawnCandidates() {
         const list = [];
+        if (arenaSettings.mazeEnabled && mazeGroundSpawns.length > 0) {
+            for (const sp of mazeGroundSpawns) {
+                if (sp.gate) list.push({ x: sp.x, z: sp.z, priority: 2 });
+                else list.push({ x: sp.x, z: sp.z, priority: 1 });
+            }
+        }
         if (arenaSettings.spawnInMaze && arenaSettings.mazeEnabled) {
-            for (const p of mazePieces) {
-                if (!p.jumpable || p.h > 0.4) continue;
-                list.push({ x: p.x, z: p.z });
-            }
-            mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed * 997) % 2147483646);
-            for (let i = 0; i < 24; i++) {
-                list.push({
-                    x: (mazeRand() - 0.5) * 7,
-                    z: (mazeRand() - 0.5) * 7
-                });
-            }
+            /* точки уже из mazeGroundSpawns */
         } else if (arenaSettings.mazeEnabled) {
-            const zOut = (arenaSettings.mapDepth > 100) ? 12 : 8;
+            const zOut = (arenaSettings.mapDepth > 100) ? 14 : 10;
+            const xOut = (mazeGroundSpawns.find((s) => s.gate) || { x: 20 }).x;
             list.push(
-                { x: 20, z: zOut },
-                { x: 22, z: zOut + 4 },
-                { x: 18, z: zOut - 3 },
-                { x: 24, z: zOut - 2 }
+                { x: xOut, z: zOut, priority: 3 },
+                { x: xOut + 3, z: zOut + 2, priority: 3 },
+                { x: xOut - 2, z: zOut - 2, priority: 3 }
             );
         } else {
             list.push({ x: 0, z: 0 });
@@ -1700,6 +1777,7 @@
 
     function resolveSpawnPoint() {
         const candidates = collectSpawnCandidates();
+        candidates.sort((a, b) => (b.priority || 0) - (a.priority || 0));
         for (let i = candidates.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             const tmp = candidates[i];
@@ -2027,9 +2105,9 @@
     function createBossMesh() {
         const shape = arenaSettings.bossShape;
         let geo;
-        if (shape === 'box') geo = new THREE.BoxGeometry(1.4, 2, 1.4);
-        else if (shape === 'sphere') geo = new THREE.SphereGeometry(1.1, 20, 20);
-        else geo = new THREE.OctahedronGeometry(1.15, 0);
+        if (shape === 'box') geo = new THREE.BoxGeometry(1.75, 2.45, 1.75);
+        else if (shape === 'sphere') geo = new THREE.SphereGeometry(1.38, 20, 20);
+        else geo = new THREE.OctahedronGeometry(1.42, 0);
         const col = parseBossColor();
         const mat = new THREE.MeshStandardMaterial({
             color: col, emissive: col, emissiveIntensity: 0.35,
@@ -2037,7 +2115,7 @@
         });
         const group = new THREE.Group();
         const body = new THREE.Mesh(geo, mat);
-        body.position.y = 0.9;
+        body.position.y = 1.05;
         group.add(body);
         const light = new THREE.PointLight(col, arenaSettings.bossGlow, 14);
         light.position.y = 1.2;
@@ -2051,18 +2129,20 @@
     function spawnBossWave() {
         const n = bossesToSpawn;
         bossesToSpawn = 0;
-        infoEl.innerHTML = '⚠️ Боссы!<div style="font-size:12px; opacity:0.85;">Уничтожьте боссов для победы</div>';
-        const ring = 5;
+        infoEl.innerHTML =
+            '⚠️ Боссы снаружи!<div style="font-size:12px; opacity:0.85;">'
+            + 'Зачистите лабиринт и стреляйте из окон — босс не пролезет внутрь</div>';
         for (let i = 0; i < n; i++) {
-            const ang = (i / n) * Math.PI * 2;
-            const bx = Math.cos(ang) * ring;
-            const bz = Math.sin(ang) * ring;
+            const sp = getBossOutsideSpawnPosition(i, n);
+            const bx = sp.x;
+            const bz = sp.z;
             const group = createBossMesh();
-            const gy = getSupportYAt(bx, bz, 1e5);
+            const gy = getSupportYAt(bx, bz, getTerrainHeight(bx, bz) + 0.5);
             group.position.set(bx, gy, bz);
             group.userData.shootable = true;
             group.userData.enemy = true;
             group.userData.isBoss = true;
+            group.userData.stayOutsideMaze = true;
             group.userData.dangerous = true;
             group.userData.type = 'chaser';
             group.userData.health = arenaSettings.bossHealth;
@@ -2677,7 +2757,7 @@
     }
 
     function getEnemyCenterY(enemy) {
-        if (enemy.userData.isBoss) return enemy.position.y + 1.0;
+        if (enemy.userData.isBoss) return enemy.position.y + 1.15;
         return enemy.position.y + (enemy.userData.dangerous ? 0.55 : 0.35);
     }
 
@@ -2695,7 +2775,10 @@
     }
 
     function getEnemyGroundY(enemy, x, z) {
-        const footProbe = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
+        if (enemy.userData.inMaze) {
+            return getSupportYAt(x, z, getTerrainHeight(x, z) + 0.55);
+        }
+        const footProbe = enemy.position.y - (enemy.userData.isBoss ? 1.05 : 0.4);
         return getSupportYAt(x, z, footProbe + 0.45);
     }
 
@@ -2825,10 +2908,14 @@
         enemy.userData.knockbackZ *= damping;
         enemy.userData.knockbackY = 0;
 
-        const footY = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
-        const headY = footY + (enemy.userData.isBoss ? 1.9 : 1.5);
-        let resolved = resolveCoverCollision(x, z);
-        resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+        let resolved = enemy.userData.isBoss
+            ? resolveBossMovement(x, z)
+            : (() => {
+                const footY = enemy.position.y - 0.4;
+                const headY = footY + 1.5;
+                let r = resolveCoverCollision(x, z);
+                return resolveMazeCollision(r.x, r.z, footY, headY);
+            })();
         placeEnemyAt(enemy, resolved.x, resolved.z, delta);
         return true;
     }
@@ -3233,6 +3320,11 @@
                 const len = Math.hypot(dx, dz) || 1;
                 x = enemy.position.x + (dx / len) * enemy.userData.chaseSpeed * delta;
                 z = enemy.position.z + (dz / len) * enemy.userData.chaseSpeed * delta;
+                if (enemy.userData.isBoss) {
+                    const clamped = clampBossOutsideBuilding(x, z);
+                    x = clamped.x;
+                    z = clamped.z;
+                }
             } else if (type === 'patrol' && enemy.userData.patrol) {
                 const p = enemy.userData.patrol;
                 const off = Math.sin(time * p.speed + enemy.userData.phase)
@@ -3252,10 +3344,15 @@
                 }
             }
 
-            let resolved = resolveCoverCollision(x, z);
-            const footY = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
-            const headY = footY + (enemy.userData.isBoss ? 1.9 : 1.5);
-            resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+            let resolved;
+            if (enemy.userData.isBoss) {
+                resolved = resolveBossMovement(x, z);
+            } else {
+                const footY = enemy.position.y - 0.4;
+                const headY = footY + 1.5;
+                resolved = resolveCoverCollision(x, z);
+                resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+            }
             placeEnemyAt(enemy, resolved.x, resolved.z, delta);
         }
     }
@@ -3703,11 +3800,16 @@
                 velocityY = 0;
                 onGround = true;
             } else {
-                const supportY = getSupportYAt(
-                    position.x, position.z, getLandingRefFoot(footY, velocityY)
-                );
+                const supportY = velocityY < -0.15
+                    ? getSupportYAt(
+                        position.x, position.z,
+                        getLandingRefFoot(footY, velocityY),
+                        0.55,
+                        arenaSettings.jumpHeight + 1.35
+                    )
+                    : getSupportYAt(position.x, position.z, footY + 0.2, 0.45, 0.65);
                 const groundY = supportY + WORLD.eyeOffset;
-                if (playerY <= groundY && velocityY <= 0) {
+                if (playerY <= groundY + 0.08 && velocityY <= 0) {
                     playerY = groundY;
                     velocityY = 0;
                     onGround = true;
