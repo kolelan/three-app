@@ -6,9 +6,11 @@
     <title>3D Арена</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="3D Arena">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Crect x='20' y='20' width='60' height='60' fill='%23ff00aa'/%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23000000'/%3E%3Crect x='20' y='20' width='60' height='60' fill='%23ff00aa'/%3E%3C/svg%3E">
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -18,11 +20,15 @@
             z-index: 10; backdrop-filter: blur(5px); user-select: none;
         }
         #info { top: 16px; left: 16px; font-size: 14px; }
-        #stats { top: 16px; right: 16px; font-family: monospace; font-size: 13px; line-height: 1.5; }
+        #stats {
+            top: 16px; right: 16px; max-width: 230px;
+            font-family: monospace; font-size: 13px; line-height: 1.5;
+        }
         #controls {
-            bottom: 16px; left: 16px; right: 16px; text-align: center;
-            font-family: monospace; font-size: 12px; letter-spacing: 1px;
-            border: 1px solid rgba(255,255,255,0.2);
+            bottom: 16px; left: 16px; right: auto; top: auto;
+            max-width: min(400px, calc(100vw - 200px));
+            text-align: left; font-family: monospace; font-size: 12px;
+            letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.2);
         }
         #lives { color: #ff8888; font-weight: bold; }
         #crosshair {
@@ -63,8 +69,52 @@
         }
         #victory.visible { display: flex; pointer-events: auto; }
         #victory .sub { font-size: 15px; margin-top: 14px; opacity: 0.9; color: #aaffaa; }
-        @media (min-width: 768px) {
-            #controls { left: auto; right: 16px; top: 130px; bottom: auto; max-width: 340px; text-align: left; }
+        #weapon-panel {
+            margin-top: 10px; padding: 10px 12px; border-radius: 8px;
+            border: 2px solid rgba(255, 220, 100, 0.5);
+            background: rgba(0, 0, 0, 0.35);
+        }
+        #weapon-panel.weapon-1 { border-color: rgba(255, 220, 80, 0.85); box-shadow: 0 0 12px rgba(255, 200, 50, 0.25); }
+        #weapon-panel.weapon-2 { border-color: rgba(100, 200, 255, 0.85); box-shadow: 0 0 12px rgba(80, 160, 255, 0.3); }
+        #weapon-panel.weapon-3 { border-color: rgba(255, 120, 60, 0.9); box-shadow: 0 0 12px rgba(255, 80, 30, 0.35); }
+        #weapon-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
+        #weapon-panel-main { display: flex; align-items: center; gap: 10px; }
+        #weapon-icon { font-size: 28px; line-height: 1; width: 36px; text-align: center; }
+        #weapon-title { font-size: 15px; font-weight: bold; color: #ffeebb; }
+        #weapon-panel.weapon-2 #weapon-title { color: #aad8ff; }
+        #weapon-panel.weapon-3 #weapon-title { color: #ffbb88; }
+        #weapon-desc { font-size: 11px; opacity: 0.85; margin-top: 2px; line-height: 1.3; }
+        #weapon-slots { display: flex; gap: 6px; margin-top: 8px; }
+        .weapon-slot {
+            flex: 1; text-align: center; font-size: 10px; padding: 4px 2px;
+            border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
+            opacity: 0.45; transition: opacity 0.15s, background 0.15s;
+        }
+        .weapon-slot.active { opacity: 1; font-weight: bold; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.5); }
+        .weapon-slot.slot-1.active { color: #ffe066; }
+        .weapon-slot.slot-2.active { color: #88ccff; }
+        .weapon-slot.slot-3.active { color: #ff9955; }
+        #scope-overlay {
+            display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, transparent 42%, rgba(0,0,0,0.28) 62%, rgba(0,0,0,0.65) 100%);
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.35);
+        }
+        #scope-overlay.active { display: block; }
+        #scope-reticle {
+            display: none; position: fixed; left: 50%; top: 50%; width: 100px; height: 100px;
+            transform: translate(-50%, -50%); pointer-events: none; z-index: 12;
+            border: 1px solid rgba(255,80,80,0.75); border-radius: 50%;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.5);
+        }
+        #scope-reticle::before, #scope-reticle::after {
+            content: ''; position: absolute; background: rgba(255,60,60,0.85);
+        }
+        #scope-reticle::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%); }
+        #scope-reticle::after { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%); }
+        #scope-reticle.active { display: block; }
+        @media (max-width: 767px) {
+            #controls { max-width: calc(100vw - 32px); }
+            #stats { max-width: calc(100vw - 32px); }
         }
     </style>
 </head>
@@ -79,10 +129,26 @@
     <div>🔫 Выстрелов: <span id="stat-shots">0</span></div>
     <div>🎯 Попаданий: <span id="stat-hits">0</span></div>
     <div>💥 Уничтожено: <span id="stat-destroyed">0</span></div>
+    <div id="weapon-panel" class="weapon-1">
+        <div id="weapon-panel-label">Текущее оружие</div>
+        <div id="weapon-panel-main">
+            <div id="weapon-icon">🔫</div>
+            <div>
+                <div id="weapon-title">Стандарт</div>
+                <div id="weapon-desc">ЛКМ — выстрел · ПКМ — импульс</div>
+            </div>
+        </div>
+        <div id="weapon-slots">
+            <div class="weapon-slot slot-1 active" data-slot="1">① Стандарт</div>
+            <div class="weapon-slot slot-2" data-slot="2">② Винтовка</div>
+            <div class="weapon-slot slot-3" data-slot="3">③ Ракета</div>
+        </div>
+    </div>
 </div>
+<div id="scope-overlay"></div>
+<div id="scope-reticle"></div>
 <div id="controls">
-    [W][S] Вперёд/назад · [A][D] Поворот · [Q][E] Шаг влево/вправо · [Пробел] Прыжок<br>
-    [ЛКМ] Выстрел · [ПКМ] Импульс · [R] Рестарт<br>
+    [B] Смена оружия · [1][2][3] · [W][S][A][D][Q][E] · [Пробел] · [R]<br>
     <span style="opacity:0.75">Серые блоки — укрытия · 🔴 красные — атакуют</span>
 </div>
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
@@ -96,12 +162,34 @@
     <div class="sub" style="margin-top:8px">Нажми R для новой игры</div>
 </div>
 
-<script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
-</script>
-
 <script type="module">
-    import * as THREE from 'three';
+    const THREE_SOURCES = [
+        './vendor/three.module.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js',
+        'https://esm.sh/three@0.128.0?bundle',
+        'https://unpkg.com/three@0.128.0/build/three.module.js'
+    ];
+
+    let THREE;
+    for (const url of THREE_SOURCES) {
+        try {
+            THREE = await import(url);
+            console.log('Three.js загружен:', url);
+            break;
+        } catch (err) {
+            console.warn('Не удалось загрузить Three.js с', url, err);
+        }
+    }
+
+    if (!THREE) {
+        document.body.innerHTML =
+            '<div style="color:#fff;background:#200;padding:24px;font-family:sans-serif">' +
+            '<h2>Не удалось загрузить Three.js</h2>' +
+            '<p>Проверьте интернет или положите файл <code>three.module.js</code> в папку <code>web/vendor/</code>.</p>' +
+            '<p>Источник: <a href="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js" style="color:#8cf">jsDelivr</a></p></div>';
+        throw new Error('Three.js load failed');
+    }
 
     const WORLD = {
         width: 108,
@@ -222,6 +310,9 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
+    renderer.domElement.tabIndex = 0;
+    renderer.domElement.style.outline = 'none';
+    renderer.domElement.addEventListener('click', () => renderer.domElement.focus());
 
     scene.add(new THREE.AmbientLight(0x353550));
     const sun = new THREE.DirectionalLight(0xffffff, 0.95);
@@ -419,6 +510,7 @@
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+    const aimMouse = new THREE.Vector2(0, 0);
     const tmpVec = new THREE.Vector3();
     const tmpVec2 = new THREE.Vector3();
     const bulletGeometry = new THREE.SphereGeometry(0.06, 8, 8);
@@ -433,6 +525,59 @@
     const IMPULSE_COOLDOWN = 1.25;
     const impulseWaves = [];
     let lastImpulseTime = 0;
+    const rockets = [];
+    const areaExplosions = [];
+
+    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3 };
+    const WEAPON_INFO = {
+        1: {
+            name: '1 — Стандарт',
+            title: 'Стандарт',
+            icon: '🔫',
+            desc: 'ЛКМ — выстрел · ПКМ — импульс',
+            help: '1: ЛКМ выстрел · ПКМ импульс',
+            slotLabel: '① Стандарт'
+        },
+        2: {
+            name: '2 — Винтовка',
+            title: 'Винтовка',
+            icon: '🎯',
+            desc: 'ПКМ — зум · WASD — камера · колесо — ближе/дальше · ЛКМ по прицелу',
+            help: '2: ПКМ зум · WASD камера · колесо · ЛКМ',
+            slotLabel: '② Винтовка'
+        },
+        3: {
+            name: '3 — Ракетница',
+            title: 'Ракетница',
+            icon: '🚀',
+            desc: 'ПКМ — метка · ЛКМ — удар сверху',
+            help: '3: ПКМ метка · ЛКМ удар ракетой',
+            slotLabel: '③ Ракета'
+        }
+    };
+    const SNIPER_FOV_MIN = 8;
+    const SNIPER_FOV_MAX = 45;
+    const SNIPER_FOV_DEFAULT = 28;
+    const SNIPER_CAM_SPEED = 1.1;
+    const SNIPER_CAM_PITCH_LIMIT = 0.95;
+    const SNIPER_CAM_YAW_LIMIT = 1.15;
+    const NORMAL_FOV = 75;
+    const SNIPER_COOLDOWN = 0.85;
+    const SNIPER_SPEED = 70;
+    const SNIPER_DAMAGE = 2;
+    const AREA_RADIUS = 6;
+    const AREA_COOLDOWN = 1.8;
+    const ROCKET_DAMAGE = 3;
+
+    let currentWeapon = WEAPON.STANDARD;
+    let sniperScoped = false;
+    let sniperFov = SNIPER_FOV_DEFAULT;
+    let sniperCamPitch = 0;
+    let sniperCamYaw = 0;
+    let areaTarget = null;
+    let areaMarker = null;
+    let lastAreaStrike = 0;
+    let targetFov = NORMAL_FOV;
 
     const stats = { shots: 0, hits: 0, destroyed: 0 };
     const spawnPoint = { x: 0, z: 0 };
@@ -458,6 +603,13 @@
     const gameOverEl = document.getElementById('game-over');
     const victoryEl = document.getElementById('victory');
     const infoEl = document.getElementById('info');
+    const weaponPanelEl = document.getElementById('weapon-panel');
+    const weaponIconEl = document.getElementById('weapon-icon');
+    const weaponTitleEl = document.getElementById('weapon-title');
+    const weaponDescEl = document.getElementById('weapon-desc');
+    const weaponSlotEls = document.querySelectorAll('.weapon-slot');
+    const scopeOverlayEl = document.getElementById('scope-overlay');
+    const scopeReticleEl = document.getElementById('scope-reticle');
 
     function getGroundY(x, z) {
         return getTerrainHeight(x, z) + WORLD.eyeOffset;
@@ -543,21 +695,66 @@
         return { x, z };
     }
 
-    function setMouseNDC(event) {
+    function setMouseNDCFromClient(clientX, clientY) {
         const rect = renderer.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        const y = -((clientY - rect.top) / rect.height) * 2 + 1;
+        mouse.set(x, y);
+        aimMouse.set(x, y);
+    }
+
+    function setMouseNDC(event) {
+        setMouseNDCFromClient(event.clientX, event.clientY);
+    }
+
+    function updateSniperCamera(delta) {
+        const speed = SNIPER_CAM_SPEED * delta;
+        if (keys.w) sniperCamPitch = Math.min(SNIPER_CAM_PITCH_LIMIT, sniperCamPitch + speed);
+        if (keys.s) sniperCamPitch = Math.max(-SNIPER_CAM_PITCH_LIMIT, sniperCamPitch - speed);
+        if (keys.a) sniperCamYaw = Math.min(SNIPER_CAM_YAW_LIMIT, sniperCamYaw + speed);
+        if (keys.d) sniperCamYaw = Math.max(-SNIPER_CAM_YAW_LIMIT, sniperCamYaw - speed);
+    }
+
+    function getSniperLookTarget(out) {
+        const yaw = rotate + sniperCamYaw;
+        const cosP = Math.cos(sniperCamPitch);
+        return out.set(
+            position.x + Math.sin(yaw) * cosP,
+            playerY + Math.sin(sniperCamPitch) - 0.3,
+            position.z + Math.cos(yaw) * cosP
+        );
+    }
+
+    function getSniperAimDirection() {
+        applyCameraLook();
+        raycaster.setFromCamera(mouse, camera);
+        return raycaster.ray.direction.clone().normalize();
+    }
+
+    function applyCameraLook() {
+        camera.position.set(position.x, playerY, position.z);
+        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
+            camera.fov = targetFov;
+            camera.updateProjectionMatrix();
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(getSniperLookTarget(tmpVec));
+        } else {
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(position.x + Math.sin(rotate), playerY - 0.3, position.z + Math.cos(rotate));
+        }
+        camera.updateMatrixWorld();
     }
 
     function syncCameraForRaycast() {
-        camera.position.set(position.x, playerY, position.z);
-        camera.lookAt(position.x + Math.sin(rotate), playerY - 0.3, position.z + Math.cos(rotate));
-        camera.updateMatrixWorld();
+        applyCameraLook();
     }
 
     function getShootDirectionFromMouse(event) {
         setMouseNDC(event);
-        syncCameraForRaycast();
+        applyCameraLook();
+        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
+            return getSniperAimDirection();
+        }
         raycaster.setFromCamera(mouse, camera);
         return raycaster.ray.direction.clone();
     }
@@ -572,25 +769,124 @@
         if (si !== -1) shootables.splice(si, 1);
     }
 
-    function onTargetHit(target) {
+    function onTargetHit(target, damage = 1) {
         if (!target.userData.shootable) return;
-        stats.hits++;
-        target.userData.health--;
-        target.traverse((child) => {
-            if (child.isMesh && child.material) {
-                child.material = child.material.clone();
-                child.material.emissive?.setHex(0xff3333);
+        for (let d = 0; d < damage; d++) {
+            if (target.userData.health <= 0) break;
+            stats.hits++;
+            target.userData.health--;
+            target.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    child.material = child.material.clone();
+                    child.material.emissive?.setHex(0xff3333);
+                }
+            });
+            const ratio = target.userData.health / target.userData.maxHealth;
+            target.scale.setScalar(0.55 + ratio * 0.45);
+            if (target.userData.health <= 0) {
+                stats.destroyed++;
+                const wasDangerous = target.userData.dangerous;
+                removeShootable(target);
+                if (wasDangerous) checkVictory();
+                return;
             }
-        });
-        const ratio = target.userData.health / target.userData.maxHealth;
-        target.scale.setScalar(0.55 + ratio * 0.45);
-        if (target.userData.health <= 0) {
-            stats.destroyed++;
-            const wasDangerous = target.userData.dangerous;
-            removeShootable(target);
-            if (wasDangerous) checkVictory();
         }
         updateStatsUI();
+    }
+
+    function setWeapon(id) {
+        currentWeapon = id;
+        sniperScoped = false;
+        sniperFov = SNIPER_FOV_DEFAULT;
+        sniperCamPitch = 0;
+        sniperCamYaw = 0;
+        targetFov = NORMAL_FOV;
+        if (id !== WEAPON.AREA) clearAreaTarget();
+        updateScopeVisual();
+        updateWeaponUI();
+    }
+
+    function cycleWeapon() {
+        const next = currentWeapon === WEAPON.STANDARD ? WEAPON.SNIPER
+            : currentWeapon === WEAPON.SNIPER ? WEAPON.AREA
+            : WEAPON.STANDARD;
+        setWeapon(next);
+    }
+
+    function updateWeaponUI() {
+        const info = WEAPON_INFO[currentWeapon];
+        weaponPanelEl.className = `weapon-${currentWeapon}`;
+        weaponPanelEl.id = 'weapon-panel';
+        weaponIconEl.textContent = info.icon;
+        weaponTitleEl.textContent = info.title;
+        weaponDescEl.textContent = info.desc;
+        weaponSlotEls.forEach((slot) => {
+            const id = Number(slot.dataset.slot);
+            slot.classList.toggle('active', id === currentWeapon);
+            slot.textContent = WEAPON_INFO[id].slotLabel;
+        });
+    }
+
+    function updateScopeVisual() {
+        const scoped = currentWeapon === WEAPON.SNIPER && sniperScoped;
+        scopeOverlayEl.classList.toggle('active', scoped);
+        scopeReticleEl.classList.toggle('active', scoped);
+        targetFov = scoped ? sniperFov : NORMAL_FOV;
+        crosshairEl.classList.add('visible');
+    }
+
+    function updateScopeAtMouse(clientX, clientY) {
+        if (!(currentWeapon === WEAPON.SNIPER && sniperScoped)) return;
+        updateCrosshair(clientX, clientY);
+        scopeReticleEl.style.left = `${clientX}px`;
+        scopeReticleEl.style.top = `${clientY}px`;
+        const xPct = (clientX / window.innerWidth) * 100;
+        const yPct = (clientY / window.innerHeight) * 100;
+        scopeOverlayEl.style.background =
+            `radial-gradient(circle at ${xPct}% ${yPct}%, transparent 42%, rgba(0,0,0,0.28) 62%, rgba(0,0,0,0.65) 100%)`;
+    }
+
+    function raycastGround(event) {
+        setMouseNDC(event);
+        syncCameraForRaycast();
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObject(terrain, false);
+        return hits.length > 0 ? hits[0].point : null;
+    }
+
+    function clearAreaMarker() {
+        if (areaMarker) {
+            scene.remove(areaMarker);
+            areaMarker = null;
+        }
+    }
+
+    function clearAreaTarget() {
+        clearAreaMarker();
+        areaTarget = null;
+    }
+
+    function updateAreaMarker() {
+        clearAreaMarker();
+        if (!areaTarget) return;
+        const gy = getTerrainHeight(areaTarget.x, areaTarget.z) + 0.08;
+        areaMarker = new THREE.Mesh(
+            new THREE.RingGeometry(AREA_RADIUS * 0.85, AREA_RADIUS, 40),
+            new THREE.MeshBasicMaterial({
+                color: 0xff6600, transparent: true, opacity: 0.75, side: THREE.DoubleSide
+            })
+        );
+        areaMarker.rotation.x = -Math.PI / 2;
+        areaMarker.position.set(areaTarget.x, gy, areaTarget.z);
+        scene.add(areaMarker);
+    }
+
+    function markArea(event) {
+        if (!gameActive) return;
+        const point = raycastGround(event);
+        if (!point) return;
+        areaTarget = { x: point.x, z: point.z };
+        updateAreaMarker();
     }
 
     function clearBullets(list) {
@@ -598,7 +894,7 @@
         list.length = 0;
     }
 
-    function shoot(event) {
+    function shootStandard(event) {
         if (!gameActive) return;
         const now = performance.now() / 1000;
         if (now - lastShotTime < FIRE_COOLDOWN) return;
@@ -610,9 +906,152 @@
         bullet.position.set(position.x, playerY, position.z);
         bullet.userData.velocity = direction.multiplyScalar(BULLET_SPEED);
         bullet.userData.life = 4;
+        bullet.userData.damage = 1;
         bullet.userData.fromPlayer = true;
         scene.add(bullet);
         bullets.push(bullet);
+    }
+
+    function shootSniper(event) {
+        if (!gameActive || !sniperScoped) return;
+        const now = performance.now() / 1000;
+        if (now - lastShotTime < SNIPER_COOLDOWN) return;
+        lastShotTime = now;
+        stats.shots++;
+        updateStatsUI();
+        setMouseNDC(event);
+        const direction = getSniperAimDirection();
+        const bullet = new THREE.Mesh(
+            new THREE.SphereGeometry(0.04, 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffeedd })
+        );
+        bullet.position.set(position.x, playerY, position.z);
+        bullet.userData.velocity = direction.multiplyScalar(SNIPER_SPEED);
+        bullet.userData.life = 10;
+        bullet.userData.damage = SNIPER_DAMAGE;
+        bullet.userData.fromPlayer = true;
+        scene.add(bullet);
+        bullets.push(bullet);
+    }
+
+    function fireAreaStrike() {
+        if (!gameActive || !areaTarget) return;
+        const now = performance.now() / 1000;
+        if (now - lastAreaStrike < AREA_COOLDOWN) return;
+        lastAreaStrike = now;
+        stats.shots++;
+        updateStatsUI();
+
+        const x = areaTarget.x;
+        const z = areaTarget.z;
+        const groundY = getTerrainHeight(x, z);
+        const rocket = new THREE.Mesh(
+            new THREE.ConeGeometry(0.25, 1.2, 8),
+            new THREE.MeshBasicMaterial({ color: 0xff4400 })
+        );
+        rocket.rotation.x = Math.PI;
+        rocket.position.set(x, groundY + 40, z);
+        rocket.userData.type = 'rocket';
+        rocket.userData.targetY = groundY + 0.3;
+        rocket.userData.speed = 32;
+        rocket.userData.x = x;
+        rocket.userData.z = z;
+        scene.add(rocket);
+        rockets.push(rocket);
+        clearAreaTarget();
+    }
+
+    function spawnAreaExplosion(x, z) {
+        const gy = getTerrainHeight(x, z) + 0.2;
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.5, AREA_RADIUS, 36),
+            new THREE.MeshBasicMaterial({
+                color: 0xffaa00, transparent: true, opacity: 0.9, side: THREE.DoubleSide
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(x, gy, z);
+        scene.add(ring);
+        areaExplosions.push({ mesh: ring, life: 0.6, maxLife: 0.6, maxScale: 1.2 });
+
+        const px = position.x;
+        const pz = position.z;
+        for (const target of [...shootables]) {
+            const tx = target.position.x;
+            const tz = target.position.z;
+            if (Math.hypot(tx - x, tz - z) < AREA_RADIUS) {
+                onTargetHit(target, ROCKET_DAMAGE);
+            }
+        }
+        for (const enemy of enemies) {
+            if (Math.hypot(enemy.position.x - x, enemy.position.z - z) < AREA_RADIUS) {
+                const push = 10;
+                const dx = enemy.position.x - x;
+                const dz = enemy.position.z - z;
+                const len = Math.hypot(dx, dz) || 1;
+                enemy.userData.knockbackX = (dx / len) * push;
+                enemy.userData.knockbackZ = (dz / len) * push;
+                enemy.userData.knockbackUntil = performance.now() / 1000 + 0.5;
+                enemy.userData.stunnedUntil = performance.now() / 1000 + 0.8;
+            }
+        }
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+            const b = enemyBullets[i];
+            if (Math.hypot(b.position.x - x, b.position.z - z) < AREA_RADIUS) {
+                scene.remove(b);
+                enemyBullets.splice(i, 1);
+            }
+        }
+    }
+
+    function updateRockets(delta) {
+        for (let i = rockets.length - 1; i >= 0; i--) {
+            const rocket = rockets[i];
+            rocket.position.y -= rocket.userData.speed * delta;
+            rocket.rotation.y += delta * 8;
+            if (rocket.position.y <= rocket.userData.targetY) {
+                spawnAreaExplosion(rocket.userData.x, rocket.userData.z);
+                scene.remove(rocket);
+                rockets.splice(i, 1);
+            }
+        }
+    }
+
+    function updateAreaExplosions(delta) {
+        for (let i = areaExplosions.length - 1; i >= 0; i--) {
+            const ex = areaExplosions[i];
+            ex.life -= delta;
+            const t = 1 - ex.life / ex.maxLife;
+            ex.mesh.scale.set(1 + t * ex.maxScale, 1 + t * ex.maxScale, 1);
+            ex.mesh.material.opacity = 0.9 * (ex.life / ex.maxLife);
+            if (ex.life <= 0) {
+                scene.remove(ex.mesh);
+                areaExplosions.splice(i, 1);
+            }
+        }
+    }
+
+    function handlePrimaryClick(event) {
+        if (currentWeapon === WEAPON.STANDARD) shootStandard(event);
+        else if (currentWeapon === WEAPON.SNIPER) shootSniper(event);
+        else if (currentWeapon === WEAPON.AREA) fireAreaStrike();
+    }
+
+    function handleSecondaryDown(event) {
+        event.preventDefault();
+        if (currentWeapon === WEAPON.STANDARD) fireImpulse();
+        else if (currentWeapon === WEAPON.SNIPER) toggleSniperScope();
+        else if (currentWeapon === WEAPON.AREA) markArea(event);
+    }
+
+    function toggleSniperScope() {
+        sniperScoped = !sniperScoped;
+        if (sniperScoped) {
+            sniperFov = SNIPER_FOV_DEFAULT;
+            sniperCamPitch = 0;
+            sniperCamYaw = 0;
+        }
+        updateScopeVisual();
     }
 
     function spawnImpulseWave() {
@@ -795,7 +1234,7 @@
                     }
                     const root = getShootableRoot(hits[0].object);
                     if (root) {
-                        onTargetHit(root);
+                        onTargetHit(root, bullet.userData.damage || 1);
                         scene.remove(bullet);
                         list.splice(i, 1);
                         continue;
@@ -944,7 +1383,14 @@
         invincibleUntil = 0;
         lastShotTime = 0;
         lastImpulseTime = 0;
+        lastAreaStrike = 0;
         clearImpulseWaves();
+        clearAreaTarget();
+        for (const r of rockets) scene.remove(r);
+        rockets.length = 0;
+        for (const ex of areaExplosions) scene.remove(ex.mesh);
+        areaExplosions.length = 0;
+        setWeapon(WEAPON.STANDARD);
         gameActive = true;
         victoryShown = false;
         position.x = spawnPoint.x;
@@ -971,25 +1417,76 @@
     }
 
     document.addEventListener('mousemove', (e) => {
+        setMouseNDCFromClient(e.clientX, e.clientY);
         updateCrosshair(e.clientX, e.clientY);
         crosshairEl.classList.add('visible');
+        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
+            updateScopeAtMouse(e.clientX, e.clientY);
+        }
     });
     document.addEventListener('mouseleave', () => crosshairEl.classList.remove('visible'));
     updateCrosshair(window.innerWidth / 2, window.innerHeight / 2);
 
     renderer.domElement.addEventListener('mousedown', (e) => {
-        if (e.button === 0) shoot(e);
-        else if (e.button === 2) {
-            e.preventDefault();
-            fireImpulse();
-        }
+        if (e.button === 0) handlePrimaryClick(e);
+        else if (e.button === 2) handleSecondaryDown(e);
     });
+    renderer.domElement.addEventListener('wheel', (e) => {
+        if (currentWeapon !== WEAPON.SNIPER || !sniperScoped) return;
+        e.preventDefault();
+        sniperFov += e.deltaY * 0.04;
+        sniperFov = Math.max(SNIPER_FOV_MIN, Math.min(SNIPER_FOV_MAX, sniperFov));
+        targetFov = sniperFov;
+    }, { passive: false });
+
+    function isWeaponKey(event) {
+        if (event.ctrlKey || event.altKey || event.metaKey) return false;
+        if (event.repeat) return false;
+        return true;
+    }
+
+    function trySelectWeapon(event) {
+        if (!isWeaponKey(event)) return false;
+        const byCode = {
+            Digit1: WEAPON.STANDARD,
+            Digit2: WEAPON.SNIPER,
+            Digit3: WEAPON.AREA,
+            Numpad1: WEAPON.STANDARD,
+            Numpad2: WEAPON.SNIPER,
+            Numpad3: WEAPON.AREA
+        };
+        let weaponId = byCode[event.code];
+        if (weaponId == null) {
+            const byKey = {
+                '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA,
+                '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA
+            };
+            weaponId = byKey[event.key];
+        }
+        if (weaponId == null) return false;
+        setWeapon(weaponId);
+        event.preventDefault();
+        return true;
+    }
+
+    function tryCycleWeapon(event) {
+        if (!isWeaponKey(event)) return false;
+        const key = event.key;
+        if (event.code === 'KeyB' || key === 'b' || key === 'B' || key === 'и' || key === 'И') {
+            cycleWeapon();
+            event.preventDefault();
+            return true;
+        }
+        return false;
+    }
 
     function keyDown(event) {
         if (event.code === 'KeyR') {
             resetGame();
             return;
         }
+        if (tryCycleWeapon(event)) return;
+        if (trySelectWeapon(event)) return;
         if (!gameActive) return;
         switch (event.code) {
             case 'KeyW': keys.w = true; break;
@@ -1007,7 +1504,7 @@
                 event.preventDefault();
                 break;
             case 'Space':
-                if (!event.repeat && onGround) {
+                if (currentWeapon !== WEAPON.SNIPER && !event.repeat && onGround) {
                     velocityY = JUMP_VELOCITY;
                     onGround = false;
                 }
@@ -1029,8 +1526,9 @@
         }
     }
 
-    window.addEventListener('keydown', keyDown);
-    window.addEventListener('keyup', keyUp);
+    window.addEventListener('keydown', keyDown, true);
+    window.addEventListener('keyup', keyUp, true);
+    renderer.domElement.focus();
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -1050,28 +1548,37 @@
         if (gameActive) {
             const moveSpeed = 3.4 * delta;
             const rotSpeed = 2.0 * delta;
-            if (keys.a && !keys.d) rotate += rotSpeed;
-            if (!keys.a && keys.d) rotate -= rotSpeed;
+            const isSniper = currentWeapon === WEAPON.SNIPER;
 
-            let moveX = 0, moveZ = 0;
-            if (keys.w && !keys.s) { moveX += Math.sin(rotate); moveZ += Math.cos(rotate); }
-            if (!keys.w && keys.s) { moveX -= Math.sin(rotate); moveZ -= Math.cos(rotate); }
-            if (keys.strafeLeft) { moveX -= Math.cos(rotate); moveZ += Math.sin(rotate); }
-            if (keys.strafeRight) { moveX += Math.cos(rotate); moveZ -= Math.sin(rotate); }
-            if (moveX !== 0 || moveZ !== 0) {
-                const len = Math.hypot(moveX, moveZ);
-                moveX /= len;
-                moveZ /= len;
+            if (isSniper && sniperScoped) {
+                updateSniperCamera(delta);
+            } else if (!isSniper) {
+                if (keys.a && !keys.d) rotate += rotSpeed;
+                if (!keys.a && keys.d) rotate -= rotSpeed;
+
+                let moveX = 0, moveZ = 0;
+                if (keys.w && !keys.s) { moveX += Math.sin(rotate); moveZ += Math.cos(rotate); }
+                if (!keys.w && keys.s) { moveX -= Math.sin(rotate); moveZ -= Math.cos(rotate); }
+                if (keys.strafeLeft) { moveX += Math.cos(rotate); moveZ -= Math.sin(rotate); }
+                if (keys.strafeRight) { moveX -= Math.cos(rotate); moveZ += Math.sin(rotate); }
+                if (moveX !== 0 || moveZ !== 0) {
+                    const len = Math.hypot(moveX, moveZ);
+                    moveX /= len;
+                    moveZ /= len;
+                }
+
+                let newX = position.x + moveX * moveSpeed;
+                let newZ = position.z + moveZ * moveSpeed;
+                const margin = 0.7;
+                newX = Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, newX));
+                newZ = Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, newZ));
+                const resolved = resolveCoverCollision(newX, newZ);
+                position.x = resolved.x;
+                position.z = resolved.z;
+            } else {
+                if (keys.a && !keys.d) rotate += rotSpeed;
+                if (!keys.a && keys.d) rotate -= rotSpeed;
             }
-
-            let newX = position.x + moveX * moveSpeed;
-            let newZ = position.z + moveZ * moveSpeed;
-            const margin = 0.7;
-            newX = Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, newX));
-            newZ = Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, newZ));
-            const resolved = resolveCoverCollision(newX, newZ);
-            position.x = resolved.x;
-            position.z = resolved.z;
 
             velocityY -= GRAVITY * delta;
             playerY += velocityY * delta;
@@ -1088,16 +1595,23 @@
             checkEnemyContact();
         }
 
-        camera.position.set(position.x, playerY, position.z);
-        camera.lookAt(position.x + Math.sin(rotate), playerY - 0.3, position.z + Math.cos(rotate));
+        camera.fov += (targetFov - camera.fov) * Math.min(1, delta * 12);
+        camera.updateProjectionMatrix();
+
+        applyCameraLook();
+
         updateBullets(bullets, delta, true);
         updateBullets(enemyBullets, delta, false);
         updateImpulseWaves(delta);
+        updateRockets(delta);
+        updateAreaExplosions(delta);
+        if (areaMarker) areaMarker.material.opacity = 0.55 + Math.sin(time * 4) * 0.2;
         renderer.render(scene, camera);
     }
 
     animate();
     updateStatsUI();
+    updateWeaponUI();
 </script>
 </body>
 </html>
