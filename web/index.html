@@ -74,7 +74,7 @@
     <div style="font-size:12px; opacity:0.8;">Нажми на сцену для активации управления</div>
 </div>
 <div id="controls">
-    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо | [Пробел] Прыжок
+    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо | [Пробел] Прыжок | [ЛКМ] Выстрел
 </div>
 
 <!-- Подключаем Three.js из CDN (вместо локального файла) -->
@@ -211,6 +211,78 @@
     smallCube.position.set(-0.8, -0.3, 3.2);
     smallCube.castShadow = true;
     scene.add(smallCube);
+
+    const shootables = [cube1, cube2, sphere, smallCube];
+    const raycaster = new THREE.Raycaster();
+    const shootDirection = new THREE.Vector3();
+    const bulletGeometry = new THREE.SphereGeometry(0.06, 8, 8);
+    const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff66 });
+    const bullets = [];
+    const BULLET_SPEED = 18;
+    const FIRE_COOLDOWN = 0.25;
+    let lastShotTime = 0;
+
+    function getShootDirection() {
+        shootDirection.set(
+            Math.sin(rotate),
+            -0.3,
+            Math.cos(rotate)
+        ).normalize();
+        return shootDirection;
+    }
+
+    function onTargetHit(target) {
+        if (!shootables.includes(target)) return;
+        target.material = target.material.clone();
+        target.material.emissive.setHex(0xff3333);
+        target.scale.multiplyScalar(0.75);
+        if (target.scale.x < 0.12) {
+            scene.remove(target);
+            const index = shootables.indexOf(target);
+            if (index !== -1) shootables.splice(index, 1);
+        }
+    }
+
+    function shoot() {
+        const now = performance.now() / 1000;
+        if (now - lastShotTime < FIRE_COOLDOWN) return;
+        lastShotTime = now;
+
+        const direction = getShootDirection();
+        const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+        bullet.position.set(position.x, playerY, position.z);
+        bullet.userData.velocity = direction.clone().multiplyScalar(BULLET_SPEED);
+        bullet.userData.life = 2;
+        scene.add(bullet);
+        bullets.push(bullet);
+    }
+
+    function updateBullets(delta) {
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            const bullet = bullets[i];
+            const velocity = bullet.userData.velocity;
+            bullet.position.addScaledVector(velocity, delta);
+            bullet.userData.life -= delta;
+
+            raycaster.set(bullet.position, velocity.clone().normalize());
+            const hits = raycaster.intersectObjects(shootables, false);
+            if (hits.length > 0) {
+                onTargetHit(hits[0].object);
+                scene.remove(bullet);
+                bullets.splice(i, 1);
+                continue;
+            }
+
+            if (bullet.userData.life <= 0) {
+                scene.remove(bullet);
+                bullets.splice(i, 1);
+            }
+        }
+    }
+
+    renderer.domElement.addEventListener('mousedown', (event) => {
+        if (event.button === 0) shoot();
+    });
 
     // --- 4. Управление с клавиатуры (WASD) ---
     // Состояние клавиш
@@ -350,6 +422,8 @@
         cube2.rotation.x = time * 0.7;
         sphere.position.y = -0.1 + Math.sin(time * 3) * 0.05;
 
+        updateBullets(delta);
+
         // Рендеринг сцены
         renderer.render(scene, camera);
 
@@ -364,7 +438,7 @@
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
     // Вывод сообщения в консоль об успешной загрузке
-    console.log('Игра запущена! Управление: WASD, Пробел — прыжок');
+    console.log('Игра запущена! Управление: WASD, Пробел — прыжок, ЛКМ — выстрел');
 </script>
 </body>
 </html>
