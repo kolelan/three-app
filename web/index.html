@@ -74,7 +74,7 @@
     <div style="font-size:12px; opacity:0.8;">Нажми на сцену для активации управления</div>
 </div>
 <div id="controls">
-    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо | [Пробел] Прыжок | [ЛКМ] Выстрел
+    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо | [Пробел] Прыжок | [ЛКМ] Выстрел в точку под курсором
 </div>
 
 <!-- Подключаем Three.js из CDN (вместо локального файла) -->
@@ -214,7 +214,7 @@
 
     const shootables = [cube1, cube2, sphere, smallCube];
     const raycaster = new THREE.Raycaster();
-    const shootDirection = new THREE.Vector3();
+    const mouse = new THREE.Vector2();
     const bulletGeometry = new THREE.SphereGeometry(0.06, 8, 8);
     const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff66 });
     const bullets = [];
@@ -222,13 +222,25 @@
     const FIRE_COOLDOWN = 0.25;
     let lastShotTime = 0;
 
-    function getShootDirection() {
-        shootDirection.set(
-            Math.sin(rotate),
-            -0.3,
-            Math.cos(rotate)
-        ).normalize();
-        return shootDirection;
+    function setMouseNDC(event) {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    function syncCameraForRaycast() {
+        camera.position.set(position.x, playerY, position.z);
+        const lookAtX = position.x + Math.sin(rotate);
+        const lookAtZ = position.z + Math.cos(rotate);
+        camera.lookAt(lookAtX, playerY - 0.3, lookAtZ);
+        camera.updateMatrixWorld();
+    }
+
+    function getShootDirectionFromMouse(event) {
+        setMouseNDC(event);
+        syncCameraForRaycast();
+        raycaster.setFromCamera(mouse, camera);
+        return raycaster.ray.direction.clone();
     }
 
     function onTargetHit(target) {
@@ -243,12 +255,12 @@
         }
     }
 
-    function shoot() {
+    function shoot(event) {
         const now = performance.now() / 1000;
         if (now - lastShotTime < FIRE_COOLDOWN) return;
         lastShotTime = now;
 
-        const direction = getShootDirection();
+        const direction = getShootDirectionFromMouse(event);
         const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
         bullet.position.set(position.x, playerY, position.z);
         bullet.userData.velocity = direction.clone().multiplyScalar(BULLET_SPEED);
@@ -281,7 +293,7 @@
     }
 
     renderer.domElement.addEventListener('mousedown', (event) => {
-        if (event.button === 0) shoot();
+        if (event.button === 0) shoot(event);
     });
 
     // --- 4. Управление с клавиатуры (WASD) ---
@@ -438,7 +450,7 @@
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
     // Вывод сообщения в консоль об успешной загрузке
-    console.log('Игра запущена! Управление: WASD, Пробел — прыжок, ЛКМ — выстрел');
+    console.log('Игра запущена! Управление: WASD, Пробел — прыжок, ЛКМ — выстрел по курсору');
 </script>
 </body>
 </html>
