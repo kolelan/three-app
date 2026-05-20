@@ -107,6 +107,7 @@
         #weapon-panel.weapon-2 { border-color: rgba(100, 200, 255, 0.85); box-shadow: 0 0 12px rgba(80, 160, 255, 0.3); }
         #weapon-panel.weapon-3 { border-color: rgba(255, 120, 60, 0.9); box-shadow: 0 0 12px rgba(255, 80, 30, 0.35); }
         #weapon-panel.weapon-4 { border-color: rgba(180, 255, 100, 0.9); box-shadow: 0 0 12px rgba(120, 255, 60, 0.3); }
+        #weapon-panel.weapon-5 { border-color: rgba(255, 90, 40, 0.95); box-shadow: 0 0 14px rgba(255, 60, 20, 0.4); }
         #weapon-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
         #weapon-panel-main { display: flex; align-items: center; gap: 10px; }
         #weapon-icon { font-size: 28px; line-height: 1; width: 36px; text-align: center; }
@@ -114,6 +115,7 @@
         #weapon-panel.weapon-2 #weapon-title { color: #aad8ff; }
         #weapon-panel.weapon-3 #weapon-title { color: #ffbb88; }
         #weapon-panel.weapon-4 #weapon-title { color: #bbff99; }
+        #weapon-panel.weapon-5 #weapon-title { color: #ffaa77; }
         #weapon-desc { font-size: 11px; opacity: 0.85; margin-top: 2px; line-height: 1.3; }
         #weapon-slots { display: flex; gap: 6px; margin-top: 8px; }
         .weapon-slot {
@@ -126,6 +128,7 @@
         .weapon-slot.slot-2.active { color: #88ccff; }
         .weapon-slot.slot-3.active { color: #ff9955; }
         .weapon-slot.slot-4.active { color: #aaff66; }
+        .weapon-slot.slot-5.active { color: #ff8844; }
         #weapon-slots { flex-wrap: wrap; }
         #scope-overlay {
             display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none;
@@ -281,6 +284,7 @@
             <div class="weapon-slot slot-2" data-slot="2">② Винтовка</div>
             <div class="weapon-slot slot-3" data-slot="3">③ Ракета</div>
             <div class="weapon-slot slot-4" data-slot="4">④ Мины</div>
+            <div class="weapon-slot slot-5" data-slot="5">⑤ Огнемёт</div>
         </div>
     </div>
 </div>
@@ -1211,7 +1215,7 @@
     }
 
     function canPlayerJump() {
-        if (currentWeapon === WEAPON.SNIPER && sniperScoped) return false;
+        if (rangedMode) return false;
         if (velocityY > 0.8) return false;
         const footY = getFootY();
         const support = getSupportYAt(position.x, position.z, footY + 0.4);
@@ -1406,6 +1410,8 @@
     const aimMouse = new THREE.Vector2(0, 0);
     const tmpVec = new THREE.Vector3();
     const tmpVec2 = new THREE.Vector3();
+    const tmpVec3 = new THREE.Vector3();
+    const flameForward = new THREE.Vector3(0, 0, 1);
     const bulletGeometry = new THREE.SphereGeometry(0.06, 8, 8);
     const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff66 });
     const enemyBulletMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
@@ -1430,53 +1436,65 @@
     const mines = [];
     let lastMinePlace = 0;
 
-    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4 };
+    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5 };
     const WEAPON_INFO = {
         1: {
             name: '1 — Стандарт',
             title: 'Стандарт',
             icon: '🔫',
-            desc: 'ЛКМ — выстрел · ПКМ — импульс (отброс + урон)',
-            help: '1: ЛКМ выстрел · ПКМ импульс и урон',
+            desc: 'ЛКМ — выстрел · ПКМ — импульс · G — дальний бой',
+            help: '1: ЛКМ · ПКМ · G — прицеливание WASD',
             slotLabel: '① Стандарт'
         },
         2: {
             name: '2 — Винтовка',
             title: 'Винтовка',
             icon: '🎯',
-            desc: 'ПКМ — зум · WASD — камера · быстрый точный ЛКМ',
-            help: '2: ПКМ зум · WASD · быстрый точный выстрел',
+            desc: 'G — дальний бой (WASD) · ЛКМ — выстрел · колесо — кратность',
+            help: '2: G дальний бой · WASD прицел · ЛКМ',
             slotLabel: '② Винтовка'
         },
         3: {
             name: '3 — Ракетница',
             title: 'Ракетница',
             icon: '🚀',
-            desc: 'ПКМ — метка по поверхности · ЛКМ — удар (не сквозь крышу)',
-            help: '3: ПКМ метка · ЛКМ ракета · укрытые под крышей в безопасности',
+            desc: 'ПКМ — метка · ЛКМ — удар · G — дальний бой',
+            help: '3: G дальний бой · ПКМ метка · ЛКМ',
             slotLabel: '③ Ракета'
         },
         4: {
             name: '4 — Мины',
             title: 'Мины',
             icon: '💣',
-            desc: 'ПКМ — установить · ЛКМ — взорвать · срабатывание у врага',
-            help: '4: ПКМ мина · ЛКМ взрыв',
+            desc: 'ПКМ — мина · ЛКМ — взрыв · G — дальний бой',
+            help: '4: G дальний бой · ПКМ мина · ЛКМ',
             slotLabel: '④ Мины'
+        },
+        5: {
+            name: '5 — Огнемёт',
+            title: 'Огнемёт',
+            icon: '🔥',
+            desc: 'ЛКМ — жарить (удерживать) · G — дальний бой',
+            help: '5: ЛКМ удерживать · G — прицеливание WASD',
+            slotLabel: '⑤ Огнемёт'
         }
     };
+    const FLAME_RANGE = 8.5;
+    const FLAME_MIN_DOT = Math.cos(0.42);
+    const FLAME_TICK = 0.11;
+    const FLAME_DAMAGE = 1;
     const MINE_TRIGGER_RADIUS = 3.2;
     const MINE_BLAST_RADIUS = 6.5;
     const MINE_MAX_DAMAGE = 3;
     const MINE_PLACE_COOLDOWN = 0.4;
     const MINE_MAX_COUNT = 24;
-    const SNIPER_FOV_MIN = 8;
-    const SNIPER_FOV_MAX = 45;
-    const SNIPER_FOV_DEFAULT = 28;
+    const RANGED_FOV_MIN = 8;
+    const RANGED_FOV_MAX = 45;
+    const RANGED_FOV_DEFAULT = 28;
+    const RANGED_CAM_SPEED = 1.1;
+    const RANGED_CAM_PITCH_LIMIT = 0.95;
+    const RANGED_CAM_YAW_LIMIT = 1.15;
     const SNIPER_MOVE_MULT = 0.55;
-    const SNIPER_CAM_SPEED = 1.1;
-    const SNIPER_CAM_PITCH_LIMIT = 0.95;
-    const SNIPER_CAM_YAW_LIMIT = 1.15;
     const NORMAL_FOV = 75;
     const SNIPER_COOLDOWN = 0.38;
     const SNIPER_SPEED = 95;
@@ -1487,14 +1505,18 @@
     const ROCKET_DAMAGE = 3;
 
     let currentWeapon = WEAPON.STANDARD;
-    let sniperScoped = false;
-    let sniperFov = SNIPER_FOV_DEFAULT;
-    let sniperCamPitch = 0;
-    let sniperCamYaw = 0;
+    let rangedMode = false;
+    let rangedFov = RANGED_FOV_DEFAULT;
+    let rangedCamPitch = 0;
+    let rangedCamYaw = 0;
     let areaTarget = null;
     let areaMarker = null;
     let lastAreaStrike = 0;
     let targetFov = NORMAL_FOV;
+    let flamethrowerFiring = false;
+    let flameTickAcc = 0;
+    let flameBurstCounted = false;
+    let flameStream = null;
 
     const stats = { shots: 0, hits: 0, destroyed: 0 };
     const spawnPoint = { x: 0, z: 0 };
@@ -1751,14 +1773,48 @@
         return terrain ? [terrain, ...covers, ...maze] : [...covers, ...maze];
     }
 
+    const BULLET_PATH_STEP = 0.22;
+    const BULLET_TERRAIN_CLEARANCE = 0.14;
+
     function isBulletPathBlocked(prev, next) {
-        tmpVec.set(next.x - prev.x, next.y - prev.y, next.z - prev.z);
-        const dist = tmpVec.length();
+        const dx = next.x - prev.x;
+        const dy = next.y - prev.y;
+        const dz = next.z - prev.z;
+        const dist = Math.hypot(dx, dy, dz);
         if (dist < 1e-4) return false;
-        tmpVec.multiplyScalar(1 / dist);
-        raycaster.set(prev, tmpVec);
-        const hits = raycaster.intersectObjects(getBulletBlockers(), true);
-        return hits.length > 0 && hits[0].distance < dist - 0.06;
+
+        const blockers = getBulletBlockers();
+        const segments = Math.max(1, Math.ceil(dist / BULLET_PATH_STEP));
+
+        for (let i = 1; i <= segments; i++) {
+            const t0 = (i - 1) / segments;
+            const t1 = i / segments;
+            const ax = prev.x + dx * t0;
+            const ay = prev.y + dy * t0;
+            const az = prev.z + dz * t0;
+            const bx = prev.x + dx * t1;
+            const by = prev.y + dy * t1;
+            const bz = prev.z + dz * t1;
+
+            tmpVec.set(bx - ax, by - ay, bz - az);
+            const segLen = tmpVec.length();
+            if (segLen >= 1e-5) {
+                tmpVec.multiplyScalar(1 / segLen);
+                tmpVec2.set(ax, ay, az);
+                raycaster.set(tmpVec2, tmpVec);
+                const hits = raycaster.intersectObjects(blockers, true);
+                if (hits.length > 0 && hits[0].distance < segLen - 0.05) return true;
+            }
+
+            for (let k = 0; k <= 1; k++) {
+                const t = k;
+                const sx = ax + (bx - ax) * t;
+                const sy = ay + (by - ay) * t;
+                const sz = az + (bz - az) * t;
+                if (sy <= getTerrainHeight(sx, sz) + BULLET_TERRAIN_CLEARANCE) return true;
+            }
+        }
+        return false;
     }
 
     function isEnemyBulletHittingPlayer(bx, by, bz) {
@@ -2106,33 +2162,33 @@
         setMouseNDCFromClient(event.clientX, event.clientY);
     }
 
-    function updateSniperCamera(delta) {
-        const speed = SNIPER_CAM_SPEED * delta;
-        if (keys.w) sniperCamPitch = Math.min(SNIPER_CAM_PITCH_LIMIT, sniperCamPitch + speed);
-        if (keys.s) sniperCamPitch = Math.max(-SNIPER_CAM_PITCH_LIMIT, sniperCamPitch - speed);
-        if (keys.a) sniperCamYaw = Math.min(SNIPER_CAM_YAW_LIMIT, sniperCamYaw + speed);
-        if (keys.d) sniperCamYaw = Math.max(-SNIPER_CAM_YAW_LIMIT, sniperCamYaw - speed);
+    function updateRangedAimCamera(delta) {
+        const speed = RANGED_CAM_SPEED * delta;
+        if (keys.w) rangedCamPitch = Math.min(RANGED_CAM_PITCH_LIMIT, rangedCamPitch + speed);
+        if (keys.s) rangedCamPitch = Math.max(-RANGED_CAM_PITCH_LIMIT, rangedCamPitch - speed);
+        if (keys.a) rangedCamYaw = Math.min(RANGED_CAM_YAW_LIMIT, rangedCamYaw + speed);
+        if (keys.d) rangedCamYaw = Math.max(-RANGED_CAM_YAW_LIMIT, rangedCamYaw - speed);
     }
 
-    function getSniperLookTarget(out) {
-        const yaw = rotate + sniperCamYaw;
-        const cosP = Math.cos(sniperCamPitch);
+    function getRangedLookTarget(out) {
+        const yaw = rotate + rangedCamYaw;
+        const cosP = Math.cos(rangedCamPitch);
         return out.set(
             position.x + Math.sin(yaw) * cosP,
-            playerY + Math.sin(sniperCamPitch) - 0.3,
+            playerY + Math.sin(rangedCamPitch) - 0.3,
             position.z + Math.cos(yaw) * cosP
         );
     }
 
-    function getSniperRaycastTargets() {
+    function getRangedRaycastTargets() {
         return [terrain, ...covers, ...getMazeLosMeshes(), ...shootables];
     }
 
-    function getSniperAimDirection() {
+    function getRangedAimDirection() {
         applyCameraLook();
         const origin = tmpVec.set(position.x, playerY, position.z);
         raycaster.setFromCamera(aimMouse, camera);
-        const hits = raycaster.intersectObjects(getSniperRaycastTargets(), true);
+        const hits = raycaster.intersectObjects(getRangedRaycastTargets(), true);
         if (hits.length > 0) {
             const dir = hits[0].point.clone().sub(origin);
             if (dir.lengthSq() >= 0.04) return dir.normalize();
@@ -2142,13 +2198,10 @@
 
     function applyCameraLook() {
         camera.position.set(position.x, playerY, position.z);
-        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
-            camera.fov = targetFov;
-            camera.updateProjectionMatrix();
-            camera.rotation.set(0, 0, 0, 'YXZ');
-            camera.lookAt(getSniperLookTarget(tmpVec));
+        camera.rotation.set(0, 0, 0, 'YXZ');
+        if (rangedMode) {
+            camera.lookAt(getRangedLookTarget(tmpVec));
         } else {
-            camera.rotation.set(0, 0, 0, 'YXZ');
             camera.lookAt(position.x + Math.sin(rotate), playerY - 0.3, position.z + Math.cos(rotate));
         }
         camera.updateMatrixWorld();
@@ -2161,8 +2214,8 @@
     function getShootDirectionFromMouse(event) {
         setMouseNDC(event);
         applyCameraLook();
-        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
-            return getSniperAimDirection();
+        if (rangedMode) {
+            return getRangedAimDirection();
         }
         raycaster.setFromCamera(mouse, camera);
         return raycaster.ray.direction.clone();
@@ -2211,14 +2264,15 @@
     }
 
     function setWeapon(id) {
+        stopFlamethrower();
         currentWeapon = id;
-        sniperScoped = false;
-        sniperFov = SNIPER_FOV_DEFAULT;
-        sniperCamPitch = 0;
-        sniperCamYaw = 0;
+        rangedMode = false;
+        rangedFov = RANGED_FOV_DEFAULT;
+        rangedCamPitch = 0;
+        rangedCamYaw = 0;
         targetFov = NORMAL_FOV;
         if (id !== WEAPON.AREA) clearAreaTarget();
-        updateScopeVisual();
+        updateRangedVisual();
         updateWeaponUI();
     }
 
@@ -2226,6 +2280,7 @@
         const next = currentWeapon === WEAPON.STANDARD ? WEAPON.SNIPER
             : currentWeapon === WEAPON.SNIPER ? WEAPON.AREA
             : currentWeapon === WEAPON.AREA ? WEAPON.MINE
+            : currentWeapon === WEAPON.MINE ? WEAPON.FLAMETHROWER
             : WEAPON.STANDARD;
         setWeapon(next);
     }
@@ -2244,23 +2299,44 @@
         });
     }
 
-    function updateScopeVisual() {
-        const scoped = currentWeapon === WEAPON.SNIPER && sniperScoped;
-        scopeOverlayEl.classList.toggle('active', scoped);
-        scopeReticleEl.classList.toggle('active', scoped);
-        targetFov = scoped ? sniperFov : NORMAL_FOV;
-        crosshairEl.classList.add('visible');
-    }
+    let lastMouseClientX = window.innerWidth / 2;
+    let lastMouseClientY = window.innerHeight / 2;
 
-    function updateScopeAtMouse(clientX, clientY) {
-        if (!(currentWeapon === WEAPON.SNIPER && sniperScoped)) return;
-        updateCrosshair(clientX, clientY);
+    function updateRangedScopeAtMouse(clientX, clientY) {
+        if (!rangedMode) return;
+        lastMouseClientX = clientX;
+        lastMouseClientY = clientY;
         scopeReticleEl.style.left = `${clientX}px`;
         scopeReticleEl.style.top = `${clientY}px`;
         const xPct = (clientX / window.innerWidth) * 100;
         const yPct = (clientY / window.innerHeight) * 100;
         scopeOverlayEl.style.background =
             `radial-gradient(circle at ${xPct}% ${yPct}%, transparent 42%, rgba(0,0,0,0.28) 62%, rgba(0,0,0,0.65) 100%)`;
+    }
+
+    function updateRangedVisual() {
+        scopeOverlayEl.classList.toggle('active', rangedMode);
+        scopeReticleEl.classList.toggle('active', rangedMode);
+        targetFov = rangedMode ? rangedFov : NORMAL_FOV;
+        if (rangedMode) {
+            updateRangedScopeAtMouse(lastMouseClientX, lastMouseClientY);
+        }
+        crosshairEl.classList.toggle('visible', !rangedMode);
+    }
+
+    function toggleRangedMode() {
+        rangedMode = !rangedMode;
+        if (rangedMode) {
+            keys.w = false;
+            keys.a = false;
+            keys.s = false;
+            keys.d = false;
+            rangedFov = RANGED_FOV_DEFAULT;
+            rangedCamPitch = 0;
+            rangedCamYaw = 0;
+            setMouseNDCFromClient(lastMouseClientX, lastMouseClientY);
+        }
+        updateRangedVisual();
     }
 
     function raycastGround(event) {
@@ -2335,9 +2411,7 @@
         stats.shots++;
         updateStatsUI();
         setMouseNDC(event);
-        const direction = sniperScoped
-            ? getSniperAimDirection()
-            : getShootDirectionFromMouse(event);
+        const direction = getShootDirectionFromMouse(event);
         const bullet = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0xffeedd })
@@ -2421,28 +2495,138 @@
     }
 
     function handlePrimaryClick(event) {
+        if (currentWeapon === WEAPON.FLAMETHROWER) return;
         if (currentWeapon === WEAPON.STANDARD) shootStandard(event);
         else if (currentWeapon === WEAPON.SNIPER) shootSniper(event);
         else if (currentWeapon === WEAPON.AREA) fireAreaStrike();
         else if (currentWeapon === WEAPON.MINE) detonateMineClick(event);
     }
 
+    function startFlamethrower() {
+        if (!gameActive || currentWeapon !== WEAPON.FLAMETHROWER) return;
+        flamethrowerFiring = true;
+        flameTickAcc = FLAME_TICK;
+        flameBurstCounted = false;
+    }
+
+    function stopFlamethrower() {
+        flamethrowerFiring = false;
+        flameTickAcc = 0;
+        if (flameStream) flameStream.visible = false;
+    }
+
+    function getFlameAimDirection() {
+        if (rangedMode) return getRangedAimDirection();
+        syncCameraForRaycast();
+        raycaster.setFromCamera(aimMouse, camera);
+        return raycaster.ray.direction.clone().normalize();
+    }
+
+    function ensureFlameVisual() {
+        if (flameStream) return;
+        flameStream = new THREE.Group();
+        const layers = [
+            { color: 0xff2200, opacity: 0.5, scale: 1.1 },
+            { color: 0xff6600, opacity: 0.38, scale: 0.85 },
+            { color: 0xffcc44, opacity: 0.28, scale: 0.55 }
+        ];
+        for (const layer of layers) {
+            const mesh = new THREE.Mesh(
+                new THREE.ConeGeometry(0.55, 1, 10, 1, true),
+                new THREE.MeshBasicMaterial({
+                    color: layer.color,
+                    transparent: true,
+                    opacity: layer.opacity,
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                })
+            );
+            mesh.rotation.x = Math.PI / 2;
+            mesh.position.z = 0.45;
+            mesh.userData.flameScale = layer.scale;
+            mesh.userData.flameBaseOpacity = layer.opacity;
+            flameStream.add(mesh);
+        }
+        flameStream.visible = false;
+        scene.add(flameStream);
+    }
+
+    function updateFlameVisual(time) {
+        if (!flamethrowerFiring) return;
+        ensureFlameVisual();
+        const dir = getFlameAimDirection();
+        const origin = tmpVec.set(position.x, playerY - 0.12, position.z);
+        flameStream.visible = true;
+        flameStream.position.copy(origin);
+        flameStream.quaternion.setFromUnitVectors(flameForward, dir);
+        const flicker = 0.88 + Math.sin(time * 28) * 0.12;
+        const len = FLAME_RANGE * 0.92 * flicker;
+        flameStream.children.forEach((mesh, i) => {
+            const s = mesh.userData.flameScale * (0.9 + i * 0.08);
+            mesh.scale.set(s * 1.35 * flicker, s * 1.35 * flicker, len);
+            mesh.material.opacity = mesh.userData.flameBaseOpacity
+                * (0.75 + Math.sin(time * 22 + i) * 0.25);
+        });
+    }
+
+    function applyFlameDamage() {
+        const dir = getFlameAimDirection();
+        const origin = tmpVec.set(position.x, playerY - 0.1, position.z);
+        let hitAny = false;
+
+        const tryBurn = (target, hitY) => {
+            if (!target.userData.shootable || target.userData.health <= 0) return;
+            const tx = target.position.x;
+            const tz = target.position.z;
+            const toX = tx - origin.x;
+            const toZ = tz - origin.z;
+            const toY = hitY - origin.y;
+            const distH = Math.hypot(toX, toZ);
+            const dist = Math.hypot(toX, toY, toZ);
+            if (dist > FLAME_RANGE || dist < 0.35) return;
+            tmpVec2.set(toX / dist, toY / dist, toZ / dist);
+            if (dir.dot(tmpVec2) < FLAME_MIN_DOT) return;
+            tmpVec3.set(tx, hitY, tz);
+            if (!lineOfSight(origin, tmpVec3, 0.25)) return;
+            if (!canDamageEnemyAt(target, tmpVec3)) return;
+            onTargetHit(target, FLAME_DAMAGE, tmpVec3);
+            hitAny = true;
+        };
+
+        for (const enemy of enemies) {
+            tryBurn(enemy, getEnemyCenterY(enemy));
+        }
+        for (const target of shootables) {
+            if (enemies.includes(target)) continue;
+            tryBurn(target, target.position.y + 0.4);
+        }
+
+        if (hitAny && !flameBurstCounted) {
+            stats.shots++;
+            flameBurstCounted = true;
+            updateStatsUI();
+        }
+    }
+
+    function updateFlamethrower(delta, time) {
+        if (!flamethrowerFiring) return;
+        if (!gameActive || currentWeapon !== WEAPON.FLAMETHROWER) {
+            stopFlamethrower();
+            return;
+        }
+        updateFlameVisual(time);
+        flameTickAcc += delta;
+        while (flameTickAcc >= FLAME_TICK) {
+            flameTickAcc -= FLAME_TICK;
+            applyFlameDamage();
+        }
+    }
+
     function handleSecondaryDown(event) {
         event.preventDefault();
         if (currentWeapon === WEAPON.STANDARD) fireImpulse();
-        else if (currentWeapon === WEAPON.SNIPER) toggleSniperScope();
         else if (currentWeapon === WEAPON.AREA) markArea(event);
         else if (currentWeapon === WEAPON.MINE) placeMine(event);
-    }
-
-    function toggleSniperScope() {
-        sniperScoped = !sniperScoped;
-        if (sniperScoped) {
-            sniperFov = SNIPER_FOV_DEFAULT;
-            sniperCamPitch = 0;
-            sniperCamYaw = 0;
-        }
-        updateScopeVisual();
     }
 
     function spawnImpulseWave() {
@@ -2652,7 +2836,9 @@
     function enemyShoot(enemy) {
         const from = new THREE.Vector3(enemy.position.x, enemy.position.y + 0.55, enemy.position.z);
         if (playerBehindCover(from)) return;
-        const dir = getPlayerPos().clone().sub(from).normalize();
+        const toPlayer = getPlayerPos();
+        if (!lineOfSight(from, toPlayer, 0.35)) return;
+        const dir = toPlayer.clone().sub(from).normalize();
         const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), enemyBulletMat);
         bullet.position.copy(from);
         bullet.userData.velocity = dir.multiplyScalar(ENEMY_BULLET_SPEED);
@@ -2708,6 +2894,11 @@
                     }
                 }
             } else if (!playerBehindCover(bullet.position)
+                && lineOfSight(
+                    tmpVec.set(bullet.position.x, bullet.position.y, bullet.position.z),
+                    getPlayerPos(),
+                    0.28
+                )
                 && isEnemyBulletHittingPlayer(
                     bullet.position.x, bullet.position.y, bullet.position.z
                 )) {
@@ -2962,6 +3153,7 @@
 
     function endGame() {
         gameActive = false;
+        stopFlamethrower();
         resetMovementKeys();
         gameOverEl.classList.add('visible');
     }
@@ -3203,14 +3395,18 @@
         for (const ex of areaExplosions) scene.remove(ex.mesh);
         areaExplosions.length = 0;
         clearMines();
+        stopFlamethrower();
     }
 
     function openSetupPanel() {
         gameActive = false;
+        stopFlamethrower();
         resetMovementKeys();
         bossesToSpawn = 0;
-        sniperScoped = false;
-        updateScopeVisual();
+        rangedMode = false;
+        rangedCamPitch = 0;
+        rangedCamYaw = 0;
+        updateRangedVisual();
         clearCombatState();
         setWeapon(WEAPON.STANDARD);
         victoryShown = false;
@@ -3300,25 +3496,34 @@
 
     document.addEventListener('mousemove', (e) => {
         setMouseNDCFromClient(e.clientX, e.clientY);
-        updateCrosshair(e.clientX, e.clientY);
-        crosshairEl.classList.add('visible');
-        if (currentWeapon === WEAPON.SNIPER && sniperScoped) {
-            updateScopeAtMouse(e.clientX, e.clientY);
+        lastMouseClientX = e.clientX;
+        lastMouseClientY = e.clientY;
+        if (rangedMode) {
+            updateRangedScopeAtMouse(e.clientX, e.clientY);
+            crosshairEl.classList.remove('visible');
+        } else {
+            updateCrosshair(e.clientX, e.clientY);
+            crosshairEl.classList.add('visible');
         }
     });
     document.addEventListener('mouseleave', () => crosshairEl.classList.remove('visible'));
     updateCrosshair(window.innerWidth / 2, window.innerHeight / 2);
 
     renderer.domElement.addEventListener('mousedown', (e) => {
-        if (e.button === 0) handlePrimaryClick(e);
-        else if (e.button === 2) handleSecondaryDown(e);
+        if (e.button === 0) {
+            if (gameActive && currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
+            else handlePrimaryClick(e);
+        } else if (e.button === 2) handleSecondaryDown(e);
+    });
+    window.addEventListener('mouseup', (e) => {
+        if (e.button === 0) stopFlamethrower();
     });
     renderer.domElement.addEventListener('wheel', (e) => {
-        if (currentWeapon !== WEAPON.SNIPER || !sniperScoped) return;
+        if (!rangedMode) return;
         e.preventDefault();
-        sniperFov += e.deltaY * 0.04;
-        sniperFov = Math.max(SNIPER_FOV_MIN, Math.min(SNIPER_FOV_MAX, sniperFov));
-        targetFov = sniperFov;
+        rangedFov += e.deltaY * 0.04;
+        rangedFov = Math.max(RANGED_FOV_MIN, Math.min(RANGED_FOV_MAX, rangedFov));
+        targetFov = rangedFov;
     }, { passive: false });
 
     function isWeaponKey(event) {
@@ -3334,16 +3539,20 @@
             Digit2: WEAPON.SNIPER,
             Digit3: WEAPON.AREA,
             Digit4: WEAPON.MINE,
+            Digit5: WEAPON.FLAMETHROWER,
             Numpad1: WEAPON.STANDARD,
             Numpad2: WEAPON.SNIPER,
             Numpad3: WEAPON.AREA,
-            Numpad4: WEAPON.MINE
+            Numpad4: WEAPON.MINE,
+            Numpad5: WEAPON.FLAMETHROWER
         };
         let weaponId = byCode[event.code];
         if (weaponId == null) {
             const byKey = {
                 '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA, '4': WEAPON.MINE,
-                '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA, '$': WEAPON.MINE
+                '5': WEAPON.FLAMETHROWER,
+                '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA, '$': WEAPON.MINE,
+                '%': WEAPON.FLAMETHROWER
             };
             weaponId = byKey[event.key];
         }
@@ -3395,6 +3604,12 @@
                 }
                 event.preventDefault();
                 break;
+            case 'KeyG':
+                if (!event.repeat) {
+                    toggleRangedMode();
+                    event.preventDefault();
+                }
+                break;
         }
     }
 
@@ -3417,7 +3632,10 @@
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') resetMovementKeys();
     });
-    renderer.domElement.addEventListener('blur', resetMovementKeys);
+    renderer.domElement.addEventListener('blur', () => {
+        resetMovementKeys();
+        stopFlamethrower();
+    });
     renderer.domElement.focus();
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -3442,13 +3660,13 @@
             const rotSpeed = 2.0 * delta;
             const isSniper = currentWeapon === WEAPON.SNIPER;
 
-            if (isSniper && sniperScoped) {
-                updateSniperCamera(delta);
+            if (rangedMode) {
+                updateRangedAimCamera(delta);
             } else {
                 if (keys.a && !keys.d) rotate += rotSpeed;
                 if (!keys.a && keys.d) rotate -= rotSpeed;
 
-                const walkSpeed = isSniper ? moveSpeed * SNIPER_MOVE_MULT : moveSpeed;
+                let walkSpeed = isSniper ? moveSpeed * SNIPER_MOVE_MULT : moveSpeed;
                 let moveX = 0, moveZ = 0;
                 if (keys.w && !keys.s) { moveX += Math.sin(rotate); moveZ += Math.cos(rotate); }
                 if (!keys.w && keys.s) { moveX -= Math.sin(rotate); moveZ -= Math.cos(rotate); }
@@ -3525,6 +3743,7 @@
         updateBullets(bullets, delta, true);
         updateBullets(enemyBullets, delta, false);
         updateImpulseWaves(delta);
+        updateFlamethrower(delta, time);
         updateRockets(delta);
         updateAreaExplosions(delta);
         if (areaMarker) areaMarker.material.opacity = 0.55 + Math.sin(time * 4) * 0.2;
