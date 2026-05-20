@@ -74,7 +74,7 @@
     <div style="font-size:12px; opacity:0.8;">Нажми на сцену для активации управления</div>
 </div>
 <div id="controls">
-    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо
+    🎮 УПРАВЛЕНИЕ: [W] Вперёд | [S] Назад | [A] Поворот влево | [D] Поворот вправо | [Пробел] Прыжок
 </div>
 
 <!-- Подключаем Three.js из CDN (вместо локального файла) -->
@@ -221,10 +221,17 @@
     let position = { x: 0, z: 0 };
     let rotate = 0; // угол в радианах
 
+    const GROUND_Y = 0.5;
+    const GRAVITY = 14;
+    const JUMP_VELOCITY = 3.2;
+    let playerY = GROUND_Y;
+    let velocityY = 0;
+    let onGround = true;
+
     // Устанавливаем начальное положение камеры
     camera.position.x = position.x;
     camera.position.z = position.z;
-    camera.position.y = 0.4; // Уровень глаз
+    camera.position.y = playerY;
 
     // Обработчики событий клавиатуры
     function keyDown(event) {
@@ -233,6 +240,13 @@
             case 'KeyA': keys.a = true; break;
             case 'KeyS': keys.s = true; break;
             case 'KeyD': keys.d = true; break;
+            case 'Space':
+                if (!event.repeat && onGround) {
+                    velocityY = JUMP_VELOCITY;
+                    onGround = false;
+                }
+                event.preventDefault();
+                break;
             default: break;
         }
     }
@@ -312,15 +326,23 @@
         position.x = newX;
         position.z = newZ;
 
+        velocityY -= GRAVITY * delta;
+        playerY += velocityY * delta;
+        if (playerY <= GROUND_Y) {
+            playerY = GROUND_Y;
+            velocityY = 0;
+            onGround = true;
+        }
+
         // Обновление позиции камеры
         camera.position.x = position.x;
         camera.position.z = position.z;
-        camera.position.y = 0.5; // Небольшой рост для вида от первого лица
+        camera.position.y = playerY;
 
-        // Направление взгляда камеры: вперёд на 5 единиц от текущей позиции
+        // Направление взгляда камеры: вперёд от текущей позиции
         const lookAtX = position.x + Math.sin(rotate);
         const lookAtZ = position.z + Math.cos(rotate);
-        camera.lookAt(lookAtX, 0.2, lookAtZ);
+        camera.lookAt(lookAtX, playerY - 0.3, lookAtZ);
 
         // Небольшая анимация: вращаем декоративные кубы
         const time = Date.now() * 0.002;
@@ -342,7 +364,7 @@
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
     // Вывод сообщения в консоль об успешной загрузке
-    console.log('Игра запущена! Управление: WASD');
+    console.log('Игра запущена! Управление: WASD, Пробел — прыжок');
 </script>
 </body>
 </html>
