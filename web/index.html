@@ -129,6 +129,7 @@
         .weapon-slot.slot-3.active { color: #ff9955; }
         .weapon-slot.slot-4.active { color: #aaff66; }
         .weapon-slot.slot-5.active { color: #ff8844; }
+        .weapon-slot.locked { opacity: 0.3; filter: grayscale(0.6); cursor: default; }
         #weapon-slots { flex-wrap: wrap; }
         #scope-overlay {
             display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none;
@@ -365,6 +366,11 @@
                     <label class="setup-label">Радиус поражения врагов <span class="val" id="val-enemy-radius">1.2</span></label>
                     <input type="range" id="inp-enemy-radius" min="0.4" max="3" step="0.1" value="1.2">
                 </div>
+                <h3>Оружие</h3>
+                <div class="setup-row">
+                    <input type="checkbox" id="inp-weapons-on-field">
+                    <label for="inp-weapons-on-field">Оружие на поле (остальное подбирать)</label>
+                </div>
                 <h3>Старт</h3>
                 <div class="setup-row">
                     <input type="radio" name="spawn-place" id="inp-spawn-outside" value="outside" checked>
@@ -503,7 +509,8 @@
         bossColor: '#aa22ff',
         bossGlow: 1.2,
         bossPulse: 2,
-        spawnInMaze: false
+        spawnInMaze: false,
+        weaponsOnField: false
     };
 
     const DIFFICULTY_PRESETS = {
@@ -1557,12 +1564,26 @@
     const SNIPER_MOVE_MULT = 0.55;
     const NORMAL_FOV = 75;
     const SNIPER_COOLDOWN = 0.38;
-    const SNIPER_SPEED = 95;
+    const SNIPER_SPEED = 130;
+    const SNIPER_LIFE = 22;
     const SNIPER_DAMAGE = 2;
-    const SNIPER_HIT_DIST = 0.62;
+    const SNIPER_HIT_RADIUS_MUL = 1.55;
+    const SNIPER_SEGMENT_PAD = 1.05;
     const AREA_RADIUS = 6;
     const AREA_COOLDOWN = 1.8;
     const ROCKET_DAMAGE = 3;
+    const WEAPON_PICKUP_RADIUS = 1.75;
+    const ALL_WEAPON_IDS = [
+        WEAPON.STANDARD, WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER
+    ];
+    const WEAPON_PICKUP_COLORS = {
+        2: 0x66aaff,
+        3: 0xff6622,
+        4: 0x77dd55,
+        5: 0xff5522
+    };
+    const weaponUnlocks = new Set([WEAPON.STANDARD]);
+    const weaponPickups = [];
 
     let currentWeapon = WEAPON.STANDARD;
     let rangedMode = false;
@@ -1908,14 +1929,42 @@
         return lineOfSight(from, to, 0.3);
     }
 
-    function canDamageEnemyAt(enemy, hitPoint) {
+    function canDamageEnemyAt(enemy, hitPoint, radiusMul = 1) {
         if (!enemy.userData.dangerous && !enemy.userData.isBoss) return true;
         const cy = getEnemyCenterY(enemy);
         return tmpVec.set(
             hitPoint.x - enemy.position.x,
             hitPoint.y - cy,
             hitPoint.z - enemy.position.z
-        ).length() <= arenaSettings.enemyDamageRadius;
+        ).length() <= arenaSettings.enemyDamageRadius * radiusMul;
+    }
+
+    /** Проверка попадания по отрезку prevPos→position (важно для быстрой винтовки). */
+    function resolvePlayerBulletHit(bullet, prevPos) {
+        const end = bullet.position;
+        const seg = tmpVec3.subVectors(end, prevPos);
+        const segLen = seg.length();
+        if (segLen < 1e-5) return null;
+        const isSniper = !!bullet.userData.sniper;
+        seg.normalize();
+        raycaster.set(prevPos, seg);
+        raycaster.near = 0;
+        raycaster.far = segLen + (isSniper ? SNIPER_SEGMENT_PAD : 0.45);
+        const hits = raycaster.intersectObjects(
+            [...getBulletBlockers(), ...shootables], true
+        );
+        if (!hits.length) return null;
+        const hit = hits[0];
+        if (isCoverObject(hit.object) || isMazeBulletBlocker(hit.object)) {
+            return 'block';
+        }
+        const root = getShootableRoot(hit.object);
+        if (!root) return null;
+        const radiusMul = isSniper ? SNIPER_HIT_RADIUS_MUL : 1;
+        if (canDamageEnemyAt(root, hit.point, radiusMul)) {
+            onTargetHit(root, bullet.userData.damage || 1, hit.point);
+        }
+        return 'enemy';
     }
 
     function getPlayerPos() {
@@ -2343,7 +2392,146 @@
         updateStatsUI();
     }
 
+    function isWeaponUnlocked(id) {
+        if (!arenaSettings.weaponsOnField) return true;
+        return weaponUnlocks.has(id);
+    }
+
+    function getUnlockedWeaponIds() {
+        return ALL_WEAPON_IDS.filter((id) => isWeaponUnlocked(id));
+    }
+
+    function resetWeaponProgress() {
+        weaponUnlocks.clear();
+        for (const id of ALL_WEAPON_IDS) {
+            if (!arenaSettings.weaponsOnField || id === WEAPON.STANDARD) {
+                weaponUnlocks.add(id);
+            }
+        }
+    }
+
+    function clearWeaponPickups() {
+        for (const p of weaponPickups) {
+            if (p.mesh) scene.remove(p.mesh);
+        }
+        weaponPickups.length = 0;
+    }
+
+    function createWeaponPickupMesh(weaponId) {
+        const color = WEAPON_PICKUP_COLORS[weaponId] || 0xcccccc;
+        const group = new THREE.Group();
+        const pad = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.6, 0.75, 0.14, 18),
+            new THREE.MeshStandardMaterial({
+                color, emissive: color, emissiveIntensity: 0.45, metalness: 0.35, roughness: 0.5
+            })
+        );
+        pad.position.y = 0.07;
+        const icon = new THREE.Mesh(
+            new THREE.OctahedronGeometry(0.45, 0),
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff, emissive: color, emissiveIntensity: 0.75,
+                metalness: 0.4, roughness: 0.25
+            })
+        );
+        icon.position.y = 0.62;
+        group.add(pad, icon);
+        group.userData.pickupIcon = icon;
+        return group;
+    }
+
+    function pickWeaponPickupSpots(count) {
+        const picks = [];
+        const margin = 10;
+        const hw = Math.max(20, WORLD.halfW - margin);
+        const hd = Math.max(20, WORLD.halfD - margin);
+        mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed * 12347) % 2147483646);
+
+        for (let t = 0; t < 140 && picks.length < count; t++) {
+            const x = (mazeRand() - 0.5) * hw * 1.85;
+            const z = (mazeRand() - 0.5) * hd * 1.85;
+            if (!isSafeSpawnAt(x, z)) continue;
+            if (mazeFootprint.active && isInsideMazeBuilding(x, z, 1.5)) continue;
+            if (Math.hypot(x - spawnPoint.x, z - spawnPoint.z) < 16) continue;
+            let ok = true;
+            for (const p of picks) {
+                if (Math.hypot(x - p.x, z - p.z) < 12) { ok = false; break; }
+            }
+            if (ok) picks.push({ x, z });
+        }
+
+        const fallback = [
+            { x: -hw, z: -hd * 0.7 }, { x: hw * 0.85, z: -hd * 0.55 },
+            { x: -hw * 0.75, z: hd * 0.8 }, { x: hw * 0.65, z: hd * 0.65 }
+        ];
+        for (const spot of fallback) {
+            if (picks.length >= count) break;
+            const c = clampSpawnXZ(spot.x, spot.z);
+            if (!isSafeSpawnAt(c.x, c.z)) continue;
+            let ok = true;
+            for (const p of picks) {
+                if (Math.hypot(c.x - p.x, c.z - p.z) < 10) { ok = false; break; }
+            }
+            if (ok) picks.push(c);
+        }
+        return picks.slice(0, count);
+    }
+
+    function spawnWeaponPickups() {
+        clearWeaponPickups();
+        if (!arenaSettings.weaponsOnField) return;
+        const toSpawn = [WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER];
+        const spots = pickWeaponPickupSpots(toSpawn.length);
+        toSpawn.forEach((weaponId, i) => {
+            const spot = spots[i] || { x: 20 + i * 6, z: 12 + i * 5 };
+            const groundRef = getTerrainHeight(spot.x, spot.z) + 0.5;
+            const gy = getSupportYAt(spot.x, spot.z, groundRef);
+            const mesh = createWeaponPickupMesh(weaponId);
+            const baseY = gy + 0.08;
+            mesh.position.set(spot.x, baseY, spot.z);
+            scene.add(mesh);
+            weaponPickups.push({ weaponId, mesh, phase: Math.random() * Math.PI * 2, baseY });
+        });
+    }
+
+    function collectWeaponPickup(pickup) {
+        weaponUnlocks.add(pickup.weaponId);
+        scene.remove(pickup.mesh);
+        const idx = weaponPickups.indexOf(pickup);
+        if (idx >= 0) weaponPickups.splice(idx, 1);
+        const info = WEAPON_INFO[pickup.weaponId];
+        const left = weaponPickups.length;
+        infoEl.innerHTML =
+            `📦 Подобрано: <b>${info.title}</b>`
+            + `<div style="font-size:12px;opacity:0.85">`
+            + (left > 0 ? `На поле ещё ${left} вид(ов) оружия` : 'Всё оружие собрано')
+            + ` · [B] смена</div>`;
+        updateWeaponUI();
+    }
+
+    function updateWeaponPickups(time) {
+        if (!gameActive || !arenaSettings.weaponsOnField) return;
+        const px = position.x;
+        const pz = position.z;
+        for (let i = weaponPickups.length - 1; i >= 0; i--) {
+            const p = weaponPickups[i];
+            const mesh = p.mesh;
+            const bob = Math.sin(time * 2.8 + p.phase) * 0.12;
+            mesh.position.y = p.baseY + bob;
+            mesh.rotation.y += 0.018;
+            if (mesh.userData.pickupIcon) {
+                mesh.userData.pickupIcon.rotation.y += 0.03;
+            }
+            const dx = mesh.position.x - px;
+            const dz = mesh.position.z - pz;
+            if (Math.hypot(dx, dz) < WEAPON_PICKUP_RADIUS) {
+                collectWeaponPickup(p);
+            }
+        }
+    }
+
     function setWeapon(id) {
+        if (!isWeaponUnlocked(id)) return;
         stopFlamethrower();
         currentWeapon = id;
         rangedMode = false;
@@ -2357,25 +2545,36 @@
     }
 
     function cycleWeapon() {
-        const next = currentWeapon === WEAPON.STANDARD ? WEAPON.SNIPER
-            : currentWeapon === WEAPON.SNIPER ? WEAPON.AREA
-            : currentWeapon === WEAPON.AREA ? WEAPON.MINE
-            : currentWeapon === WEAPON.MINE ? WEAPON.FLAMETHROWER
-            : WEAPON.STANDARD;
+        const unlocked = getUnlockedWeaponIds();
+        if (unlocked.length <= 1) return;
+        const idx = unlocked.indexOf(currentWeapon);
+        const next = unlocked[(idx < 0 ? 0 : idx + 1) % unlocked.length];
         setWeapon(next);
     }
 
     function updateWeaponUI() {
+        if (!isWeaponUnlocked(currentWeapon)) {
+            setWeapon(WEAPON.STANDARD);
+            return;
+        }
         const info = WEAPON_INFO[currentWeapon];
         weaponPanelEl.className = `weapon-${currentWeapon}`;
         weaponPanelEl.id = 'weapon-panel';
         weaponIconEl.textContent = info.icon;
         weaponTitleEl.textContent = info.title;
-        weaponDescEl.textContent = info.desc;
+        let desc = info.desc;
+        if (arenaSettings.weaponsOnField && weaponPickups.length > 0) {
+            desc += ` · на поле ещё ${weaponPickups.length}`;
+        }
+        weaponDescEl.textContent = desc;
         weaponSlotEls.forEach((slot) => {
             const id = Number(slot.dataset.slot);
-            slot.classList.toggle('active', id === currentWeapon);
-            slot.textContent = WEAPON_INFO[id].slotLabel;
+            const unlocked = isWeaponUnlocked(id);
+            slot.classList.toggle('active', unlocked && id === currentWeapon);
+            slot.classList.toggle('locked', !unlocked);
+            slot.textContent = unlocked
+                ? WEAPON_INFO[id].slotLabel
+                : `${WEAPON_INFO[id].slotLabel} 🔒`;
         });
     }
 
@@ -2503,7 +2702,7 @@
             position.z + direction.z * muzzle
         );
         bullet.userData.velocity = direction.clone().multiplyScalar(SNIPER_SPEED);
-        bullet.userData.life = 12;
+        bullet.userData.life = SNIPER_LIFE;
         bullet.userData.damage = SNIPER_DAMAGE;
         bullet.userData.fromPlayer = true;
         bullet.userData.sniper = true;
@@ -2957,28 +3156,11 @@
             }
 
             if (isPlayer) {
-                const norm = vel.clone().normalize();
-                raycaster.set(bullet.position, norm);
-                const hitDist = bullet.userData.sniper ? SNIPER_HIT_DIST : 0.4;
-                const hits = raycaster.intersectObjects(
-                    [...getBulletBlockers(), ...shootables], true
-                );
-                if (hits.length > 0 && hits[0].distance < hitDist) {
-                    if (isCoverObject(hits[0].object) || isMazeBulletBlocker(hits[0].object)) {
-                        scene.remove(bullet);
-                        list.splice(i, 1);
-                        continue;
-                    }
-                    const root = getShootableRoot(hits[0].object);
-                    if (root) {
-                        const hp = hits[0].point;
-                        if (canDamageEnemyAt(root, hp)) {
-                            onTargetHit(root, bullet.userData.damage || 1, hp);
-                        }
-                        scene.remove(bullet);
-                        list.splice(i, 1);
-                        continue;
-                    }
+                const hitResult = resolvePlayerBulletHit(bullet, prevPos);
+                if (hitResult) {
+                    scene.remove(bullet);
+                    list.splice(i, 1);
+                    continue;
                 }
             } else if (!playerBehindCover(bullet.position)
                 && lineOfSight(
@@ -3395,6 +3577,7 @@
         document.getElementById('inp-boss-pulse').value = s.bossPulse;
         document.getElementById('inp-spawn-outside').checked = !s.spawnInMaze;
         document.getElementById('inp-spawn-maze').checked = s.spawnInMaze;
+        document.getElementById('inp-weapons-on-field').checked = !!s.weaponsOnField;
     }
 
     function updateSetupLabelsFromSettings() {
@@ -3473,6 +3656,7 @@
         arenaSettings.bossGlow = Number(document.getElementById('inp-boss-glow').value);
         arenaSettings.bossPulse = Number(document.getElementById('inp-boss-pulse').value);
         arenaSettings.spawnInMaze = document.getElementById('inp-spawn-maze').checked;
+        arenaSettings.weaponsOnField = document.getElementById('inp-weapons-on-field').checked;
         updateSetupLabelsFromSettings();
     }
 
@@ -3493,6 +3677,7 @@
         areaExplosions.length = 0;
         clearMines();
         stopFlamethrower();
+        clearWeaponPickups();
     }
 
     function openSetupPanel() {
@@ -3505,6 +3690,7 @@
         rangedCamYaw = 0;
         updateRangedVisual();
         clearCombatState();
+        resetWeaponProgress();
         setWeapon(WEAPON.STANDARD);
         victoryShown = false;
         gameOverEl.classList.remove('visible');
@@ -3533,6 +3719,7 @@
         lastShotTime = 0;
         lastImpulseTime = 0;
         lastAreaStrike = 0;
+        resetWeaponProgress();
         setWeapon(WEAPON.STANDARD);
         victoryShown = false;
         rotate = 0;
@@ -3541,11 +3728,16 @@
         victoryEl.classList.remove('visible');
         setupPanelEl.classList.remove('visible');
         spawnWorldEntities();
+        spawnWeaponPickups();
         const total = getEnemiesFieldTotal();
         const danger = countDangerousEnemies();
+        const weaponHint = arenaSettings.weaponsOnField
+            ? ` · 🔫 только стандарт — ищите <b>${weaponPickups.length}</b> дропа на поле`
+            : '';
         infoEl.innerHTML =
             `🎮 3D Арена<div style="font-size:12px; opacity:0.85;">`
             + `На поле <b>${total}</b> врагов · опасных <b>${danger}</b>`
+            + weaponHint
             + ` · радар справа внизу</div>`;
         updateStatsUI();
         gameActive = true;
@@ -3834,6 +4026,7 @@
 
             updateEnemies(time, delta);
             updateMines(time, delta);
+            updateWeaponPickups(time);
             checkEnemyContact();
         }
 
