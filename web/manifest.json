@@ -1,7 +1,7 @@
 {
-  "name": "3D Room Explorer",
-  "short_name": "3D Room",
-  "description": "Исследуйте 3D комнату с управлением WASD. Простая браузерная игра на Three.js",
+  "name": "3D Арена",
+  "short_name": "3D Арена",
+  "description": "3D арена на Three.js: рельеф, лабиринт, враги и пять видов оружия",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
