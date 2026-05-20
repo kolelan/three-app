@@ -54,6 +54,35 @@
             border-radius: 8px; font-family: inherit;
         }
         #restart-btn:hover { background: rgba(120,30,30,0.95); }
+        #enemy-radar {
+            position: absolute; bottom: 72px; right: 16px; z-index: 11;
+            width: 152px; padding: 8px 10px 10px;
+            background: rgba(0, 0, 0, 0.72); border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            pointer-events: none; user-select: none;
+            backdrop-filter: blur(6px);
+            display: none;
+        }
+        #enemy-radar.visible { display: block; }
+        #enemy-radar .radar-header {
+            display: flex; justify-content: space-between; align-items: baseline;
+            font-size: 11px; margin-bottom: 6px; letter-spacing: 0.04em;
+        }
+        #enemy-radar .radar-title { color: #aad8ff; font-weight: 600; text-transform: uppercase; }
+        #enemy-radar .radar-count { font-family: monospace; color: #ffeebb; font-size: 12px; }
+        #radar-canvas {
+            display: block; width: 132px; height: 132px; margin: 0 auto;
+            border-radius: 50%; background: rgba(6, 10, 22, 0.95);
+            border: 1px solid rgba(100, 140, 200, 0.35);
+        }
+        #enemy-radar .radar-legend {
+            margin-top: 6px; font-size: 9px; line-height: 1.35; opacity: 0.8; text-align: center;
+        }
+        #enemy-radar .radar-behind {
+            margin-top: 4px; font-size: 9px; text-align: center; color: #ffaa66;
+            opacity: 0.95;
+        }
+        #stat-enemies-line { color: #ffcc88; margin: 4px 0 6px; }
         #game-over {
             display: none; position: fixed; inset: 0; z-index: 15;
             background: rgba(0,0,0,0.75); color: #fff;
@@ -77,12 +106,14 @@
         #weapon-panel.weapon-1 { border-color: rgba(255, 220, 80, 0.85); box-shadow: 0 0 12px rgba(255, 200, 50, 0.25); }
         #weapon-panel.weapon-2 { border-color: rgba(100, 200, 255, 0.85); box-shadow: 0 0 12px rgba(80, 160, 255, 0.3); }
         #weapon-panel.weapon-3 { border-color: rgba(255, 120, 60, 0.9); box-shadow: 0 0 12px rgba(255, 80, 30, 0.35); }
+        #weapon-panel.weapon-4 { border-color: rgba(180, 255, 100, 0.9); box-shadow: 0 0 12px rgba(120, 255, 60, 0.3); }
         #weapon-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
         #weapon-panel-main { display: flex; align-items: center; gap: 10px; }
         #weapon-icon { font-size: 28px; line-height: 1; width: 36px; text-align: center; }
         #weapon-title { font-size: 15px; font-weight: bold; color: #ffeebb; }
         #weapon-panel.weapon-2 #weapon-title { color: #aad8ff; }
         #weapon-panel.weapon-3 #weapon-title { color: #ffbb88; }
+        #weapon-panel.weapon-4 #weapon-title { color: #bbff99; }
         #weapon-desc { font-size: 11px; opacity: 0.85; margin-top: 2px; line-height: 1.3; }
         #weapon-slots { display: flex; gap: 6px; margin-top: 8px; }
         .weapon-slot {
@@ -94,6 +125,8 @@
         .weapon-slot.slot-1.active { color: #ffe066; }
         .weapon-slot.slot-2.active { color: #88ccff; }
         .weapon-slot.slot-3.active { color: #ff9955; }
+        .weapon-slot.slot-4.active { color: #aaff66; }
+        #weapon-slots { flex-wrap: wrap; }
         #scope-overlay {
             display: none; position: fixed; inset: 0; z-index: 9; pointer-events: none;
             background: radial-gradient(circle at 50% 50%, transparent 42%, rgba(0,0,0,0.28) 62%, rgba(0,0,0,0.65) 100%);
@@ -120,39 +153,104 @@
         }
         #setup-panel.visible { display: flex; }
         #setup-panel .setup-card {
-            width: min(420px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+            width: min(960px, 96vw); max-height: calc(100vh - 32px); overflow-y: auto;
             background: rgba(30, 32, 55, 0.95); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px; padding: 22px 24px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            border-radius: 12px; padding: 20px 22px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+        #setup-panel .setup-header { margin-bottom: 16px; }
+        #setup-panel .setup-difficulty {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+        }
+        #setup-panel .diff-btn {
+            flex: 1; min-width: 100px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.3); color: #ccc; font-family: inherit; transition: background 0.15s, border-color 0.15s;
+        }
+        #setup-panel .diff-btn:hover { background: rgba(50,60,90,0.6); color: #fff; }
+        #setup-panel .diff-btn.active {
+            font-weight: bold; color: #fff; border-color: rgba(255,255,255,0.55);
+        }
+        #setup-panel .diff-btn[data-diff="easy"].active {
+            background: rgba(40, 100, 55, 0.85); border-color: #6fcf97;
+        }
+        #setup-panel .diff-btn[data-diff="normal"].active {
+            background: rgba(50, 70, 120, 0.85); border-color: #88aaff;
+        }
+        #setup-panel .diff-btn[data-diff="hard"].active {
+            background: rgba(120, 40, 40, 0.85); border-color: #ff7777;
         }
         #setup-panel h2 { margin: 0 0 6px; font-size: 20px; color: #aad8ff; }
-        #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin-bottom: 18px; }
-        #setup-panel label {
+        #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin: 0; }
+        #setup-panel .setup-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 18px;
+            align-items: start;
+        }
+        #setup-panel .setup-col {
+            min-width: 0; padding: 12px 14px; border-radius: 8px;
+            background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255,255,255,0.08);
+        }
+        #setup-panel .setup-col h3 {
+            margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+            text-transform: uppercase; color: #88aacc;
+            border-bottom: 1px solid rgba(255,255,255,0.12); padding-bottom: 6px;
+        }
+        #setup-panel .setup-col h3:not(:first-child) { margin-top: 14px; }
+        #setup-panel .setup-field { margin-bottom: 10px; }
+        #setup-panel .setup-field:last-child { margin-bottom: 0; }
+        #setup-panel label.setup-label {
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 13px; margin: 12px 0 4px; gap: 12px;
+            font-size: 12px; margin: 0 0 4px; gap: 8px;
         }
-        #setup-panel label span.val { font-family: monospace; color: #ffeebb; min-width: 3.5em; text-align: right; }
-        #setup-panel input[type="range"] { width: 100%; margin: 0 0 4px; accent-color: #6688ff; }
-        #setup-panel input[type="number"] {
-            width: 72px; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(0,0,0,0.35); color: #fff; font-family: monospace;
+        #setup-panel label.setup-label span.val {
+            font-family: monospace; color: #ffeebb; font-size: 11px;
+            min-width: 2.8em; text-align: right;
         }
-        #setup-panel .setup-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        #setup-panel input[type="range"] { width: 100%; margin: 0; accent-color: #6688ff; }
+        #setup-panel input[type="number"],
+        #setup-panel input[type="color"] {
+            padding: 4px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.35); color: #fff; font-family: monospace; font-size: 12px;
+        }
+        #setup-panel input[type="number"] { width: 64px; }
+        #setup-panel input[type="color"] { width: 40px; height: 26px; padding: 2px; cursor: pointer; }
+        #setup-panel select {
+            width: 100%; padding: 6px 8px; border-radius: 6px; font-size: 12px;
+            background: rgba(0,0,0,0.35); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+        }
+        #setup-panel .setup-row {
+            display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px;
+        }
+        #setup-panel .setup-row label { margin: 0; font-size: 12px; cursor: pointer; }
+        #setup-panel input[type="checkbox"],
+        #setup-panel input[type="radio"] { width: 16px; height: 16px; accent-color: #6688ff; flex-shrink: 0; }
+        #setup-panel .setup-actions {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px;
+            padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.12);
+        }
         #setup-panel button {
-            padding: 10px 16px; font-size: 14px; cursor: pointer; border-radius: 8px;
+            padding: 10px 18px; font-size: 14px; cursor: pointer; border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.3); font-family: inherit; color: #fff;
         }
         #setup-panel #btn-regen-terrain {
-            flex: 1; min-width: 140px; background: rgba(40, 60, 100, 0.9);
+            flex: 1; min-width: 160px; background: rgba(40, 60, 100, 0.9);
         }
         #setup-panel #btn-regen-terrain:hover { background: rgba(55, 80, 130, 0.95); }
+        #setup-panel #btn-relocate-player {
+            flex: 1; min-width: 160px; background: rgba(55, 50, 90, 0.9);
+        }
+        #setup-panel #btn-relocate-player:hover { background: rgba(70, 65, 115, 0.95); }
         #setup-panel #btn-start-game {
-            flex: 1; min-width: 140px; background: rgba(30, 100, 50, 0.95);
+            flex: 1; min-width: 160px; background: rgba(30, 100, 50, 0.95);
             border-color: #6fcf97; font-weight: bold;
         }
         #setup-panel #btn-start-game:hover { background: rgba(40, 130, 65, 1); }
+        @media (max-width: 900px) {
+            #setup-panel .setup-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 767px) {
             #controls { max-width: calc(100vw - 32px); }
             #stats { max-width: calc(100vw - 32px); }
+            #setup-panel .setup-card { padding: 16px; }
         }
     </style>
 </head>
@@ -164,6 +262,8 @@
 </div>
 <div id="stats">
     <div id="lives">❤️ Жизни: 5</div>
+    <div id="stat-enemies-line">👾 Враги: <span id="stat-enemies-alive">0</span> / <span id="stat-enemies-total">0</span>
+        <span id="stat-enemies-danger" style="opacity:0.85;font-size:11px"></span></div>
     <div>🔫 Выстрелов: <span id="stat-shots">0</span></div>
     <div>🎯 Попаданий: <span id="stat-hits">0</span></div>
     <div>💥 Уничтожено: <span id="stat-destroyed">0</span></div>
@@ -180,14 +280,24 @@
             <div class="weapon-slot slot-1 active" data-slot="1">① Стандарт</div>
             <div class="weapon-slot slot-2" data-slot="2">② Винтовка</div>
             <div class="weapon-slot slot-3" data-slot="3">③ Ракета</div>
+            <div class="weapon-slot slot-4" data-slot="4">④ Мины</div>
         </div>
     </div>
 </div>
 <div id="scope-overlay"></div>
 <div id="scope-reticle"></div>
 <div id="controls">
-    [B] Смена оружия · [1][2][3] · [W][S][A][D][Q][E] · [Пробел] · [R]<br>
-    <span style="opacity:0.75">Серые блоки — укрытия · 🔴 красные — атакуют</span>
+    [B] Смена оружия · [1][2][3][4] · [W][S][A][D][Q][E] · [Пробел] · [R]<br>
+    <span style="opacity:0.75">Серые — укрытия · 🔴 атакуют · <span style="color:#ff6644">оранжевые</span> — ямы · радар справа — враги сзади</span>
+</div>
+<div id="enemy-radar" aria-label="Радар врагов">
+    <div class="radar-header">
+        <span class="radar-title">Радар</span>
+        <span class="radar-count"><span id="radar-count-alive">0</span> / <span id="radar-count-total">0</span></span>
+    </div>
+    <canvas id="radar-canvas" width="132" height="132"></canvas>
+    <div class="radar-legend">▲ вы · 🔴 опасные · 🟢 патруль · 🟣 босс</div>
+    <div class="radar-behind" id="radar-behind-hint"></div>
 </div>
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
 <div id="game-over">
@@ -201,25 +311,121 @@
 </div>
 <div id="setup-panel">
     <div class="setup-card">
-        <h2>⚙️ Настройка арены</h2>
-        <p class="setup-sub">Измените параметры, перегенерируйте рельеф или начните игру</p>
-        <label>Ширина карты <span class="val" id="val-width">108</span></label>
-        <input type="range" id="inp-width" min="64" max="160" step="4" value="108">
-        <label>Глубина карты <span class="val" id="val-depth">144</span></label>
-        <input type="range" id="inp-depth" min="80" max="200" step="4" value="144">
-        <label>Сид рельефа
-            <input type="number" id="inp-terrain-seed" min="0.3" max="3" step="0.1" value="1">
-        </label>
-        <label>Жизни <span class="val" id="val-lives">5</span></label>
-        <input type="range" id="inp-lives" min="1" max="10" step="1" value="5">
-        <label>Ямы <span class="val" id="val-pits">13</span></label>
-        <input type="range" id="inp-pits" min="0" max="13" step="1" value="13">
-        <label>Укрытия <span class="val" id="val-covers">17</span></label>
-        <input type="range" id="inp-covers" min="0" max="17" step="1" value="17">
-        <label>Врагов <span class="val" id="val-enemies">18</span></label>
-        <input type="range" id="inp-enemies" min="0" max="18" step="1" value="18">
+        <div class="setup-header">
+            <h2>⚙️ Настройка игры</h2>
+            <p class="setup-sub">Настройте арену · «Перегенерировать» — новый рельеф и лабиринт · «Переместить» — к точке спавна</p>
+            <div class="setup-difficulty" role="group" aria-label="Сложность">
+                <button type="button" class="diff-btn" data-diff="easy" id="btn-diff-easy">🟢 Легко</button>
+                <button type="button" class="diff-btn active" data-diff="normal" id="btn-diff-normal">🔵 Нормально</button>
+                <button type="button" class="diff-btn" data-diff="hard" id="btn-diff-hard">🔴 Трудно</button>
+            </div>
+        </div>
+        <div class="setup-grid">
+            <section class="setup-col" aria-labelledby="setup-col-arena">
+                <h3 id="setup-col-arena">Арена и рельеф</h3>
+                <div class="setup-field">
+                    <label class="setup-label">Ширина карты <span class="val" id="val-width">108</span></label>
+                    <input type="range" id="inp-width" min="64" max="160" step="4" value="108">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Глубина карты <span class="val" id="val-depth">144</span></label>
+                    <input type="range" id="inp-depth" min="80" max="200" step="4" value="144">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Сид рельефа <input type="number" id="inp-terrain-seed" min="0.3" max="3" step="0.1" value="1"></label>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Ямы <span class="val" id="val-pits">13</span></label>
+                    <input type="range" id="inp-pits" min="0" max="13" step="1" value="13">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Укрытия <span class="val" id="val-covers">17</span></label>
+                    <input type="range" id="inp-covers" min="0" max="17" step="1" value="17">
+                </div>
+            </section>
+            <section class="setup-col" aria-labelledby="setup-col-player">
+                <h3 id="setup-col-player">Игрок</h3>
+                <div class="setup-field">
+                    <label class="setup-label">Жизни <span class="val" id="val-lives">5</span></label>
+                    <input type="range" id="inp-lives" min="1" max="30" step="1" value="5">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Высота прыжка <span class="val" id="val-jump">1.5</span> м</label>
+                    <input type="range" id="inp-jump" min="0.6" max="3.5" step="0.1" value="1.5">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Радиус уязвимости <span class="val" id="val-player-radius">1.0</span></label>
+                    <input type="range" id="inp-player-radius" min="0.35" max="2.5" step="0.05" value="1">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Радиус поражения врагов <span class="val" id="val-enemy-radius">1.2</span></label>
+                    <input type="range" id="inp-enemy-radius" min="0.4" max="3" step="0.1" value="1.2">
+                </div>
+                <h3>Старт</h3>
+                <div class="setup-row">
+                    <input type="radio" name="spawn-place" id="inp-spawn-outside" value="outside" checked>
+                    <label for="inp-spawn-outside">Снаружи лабиринта</label>
+                </div>
+                <div class="setup-row">
+                    <input type="radio" name="spawn-place" id="inp-spawn-maze" value="maze">
+                    <label for="inp-spawn-maze">Внутри лабиринта</label>
+                </div>
+            </section>
+            <section class="setup-col" aria-labelledby="setup-col-enemies">
+                <h3 id="setup-col-enemies">Противники</h3>
+                <div class="setup-field">
+                    <label class="setup-label">Врагов на арене <span class="val" id="val-enemies">18</span></label>
+                    <input type="range" id="inp-enemies" min="0" max="18" step="1" value="18">
+                </div>
+                <h3>Лабиринт</h3>
+                <div class="setup-row">
+                    <input type="checkbox" id="inp-maze-enabled" checked>
+                    <label for="inp-maze-enabled">Строить в центре</label>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Этажей (макс.) <span class="val" id="val-maze-floors">2</span></label>
+                    <input type="range" id="inp-maze-floors" min="1" max="3" step="1" value="2">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Врагов внутри <span class="val" id="val-maze-enemies">4</span></label>
+                    <input type="range" id="inp-maze-enemies" min="0" max="12" step="1" value="4">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Сид <input type="number" id="inp-maze-seed" min="1" max="99999" step="1" value="42"></label>
+                </div>
+                <h3>Боссы</h3>
+                <div class="setup-field">
+                    <label class="setup-label">Количество <span class="val" id="val-boss-count">1</span></label>
+                    <input type="range" id="inp-boss-count" min="0" max="5" step="1" value="1">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">HP <span class="val" id="val-boss-hp">25</span></label>
+                    <input type="range" id="inp-boss-hp" min="10" max="80" step="5" value="25">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Форма</label>
+                    <select id="inp-boss-shape">
+                        <option value="octahedron">Октаэдр</option>
+                        <option value="box">Куб</option>
+                        <option value="sphere">Сфера</option>
+                    </select>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Цвет <input type="color" id="inp-boss-color" value="#aa22ff"></label>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Свечение <span class="val" id="val-boss-glow">1.2</span></label>
+                    <input type="range" id="inp-boss-glow" min="0" max="3" step="0.1" value="1.2">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Пульсация <span class="val" id="val-boss-pulse">2</span></label>
+                    <input type="range" id="inp-boss-pulse" min="0.5" max="6" step="0.5" value="2">
+                </div>
+            </section>
+        </div>
         <div class="setup-actions">
-            <button type="button" id="btn-regen-terrain">🔄 Перегенерировать рельеф</button>
+            <button type="button" id="btn-regen-terrain">🔄 Перегенерировать арену</button>
+            <button type="button" id="btn-relocate-player">📍 Переместить игрока</button>
             <button type="button" id="btn-start-game">▶ Начать игру</button>
         </div>
     </div>
@@ -262,7 +468,9 @@
         ceilingY: 8,
         wallHeight: 8,
         eyeOffset: 0.55,
-        pitKillY: -3.5
+        pitKillY: -3.5,
+        spawnFootMinY: -2.2,
+        pitSpawnKeepOut: 1.25
     };
 
     let MAP_SX = WORLD.width / 48;
@@ -277,11 +485,73 @@
         lives: 5,
         pitCount: 13,
         coverCount: 17,
-        enemyCount: 18
+        enemyCount: 18,
+        jumpHeight: 1.5,
+        playerDamageRadius: 1.0,
+        enemyDamageRadius: 1.2,
+        mazeEnabled: true,
+        mazeFloors: 2,
+        mazeEnemyCount: 4,
+        mazeSeed: 42,
+        bossCount: 1,
+        bossHealth: 25,
+        bossShape: 'octahedron',
+        bossColor: '#aa22ff',
+        bossGlow: 1.2,
+        bossPulse: 2,
+        spawnInMaze: false
     };
+
+    const DIFFICULTY_PRESETS = {
+        easy: {
+            mapWidth: 96, mapDepth: 120, terrainSeed: 0.85,
+            lives: 8, pitCount: 5, coverCount: 17, enemyCount: 8,
+            jumpHeight: 2.2, playerDamageRadius: 0.6, enemyDamageRadius: 1.8,
+            mazeEnabled: true, mazeFloors: 1, mazeEnemyCount: 1, mazeSeed: 42,
+            bossCount: 0, bossHealth: 15, bossShape: 'sphere', bossColor: '#44cc88',
+            bossGlow: 0.8, bossPulse: 1.2, spawnInMaze: false
+        },
+        normal: {
+            mapWidth: 108, mapDepth: 144, terrainSeed: 1,
+            lives: 5, pitCount: 13, coverCount: 17, enemyCount: 18,
+            jumpHeight: 1.5, playerDamageRadius: 1.0, enemyDamageRadius: 1.2,
+            mazeEnabled: true, mazeFloors: 2, mazeEnemyCount: 4, mazeSeed: 42,
+            bossCount: 1, bossHealth: 25, bossShape: 'octahedron', bossColor: '#aa22ff',
+            bossGlow: 1.2, bossPulse: 2, spawnInMaze: false
+        },
+        hard: {
+            mapWidth: 120, mapDepth: 160, terrainSeed: 1.35,
+            lives: 3, pitCount: 13, coverCount: 8, enemyCount: 18,
+            jumpHeight: 1.0, playerDamageRadius: 1.5, enemyDamageRadius: 0.7,
+            mazeEnabled: true, mazeFloors: 3, mazeEnemyCount: 10, mazeSeed: 42,
+            bossCount: 2, bossHealth: 50, bossShape: 'box', bossColor: '#ff2244',
+            bossGlow: 2.2, bossPulse: 4, spawnInMaze: true
+        }
+    };
+
+    let activeDifficulty = 'normal';
 
     const shellMeshes = [];
     const pitMeshes = [];
+    const mazePieces = [];
+    const mazeMeshes = [];
+    let mazeRngState = 1;
+    let bossesToSpawn = 0;
+    let JUMP_VELOCITY = 5.2;
+    const GRAVITY = 16;
+
+    function applyJumpFromSettings() {
+        JUMP_VELOCITY = Math.sqrt(2 * GRAVITY * arenaSettings.jumpHeight);
+    }
+
+    function mazeRand() {
+        mazeRngState = (mazeRngState * 16807) % 2147483647;
+        return mazeRngState / 2147483647;
+    }
+
+    function inMazeHoriz(x, z, p) {
+        return x >= p.x - p.hw && x <= p.x + p.hw && z >= p.z - p.hd && z <= p.z + p.hd;
+    }
 
     function scaleLayout(items, scaleSpan = false) {
         return items.map((it) => {
@@ -454,6 +724,7 @@
         covers.length = 0;
         for (const m of shellMeshes) disposeMesh(m);
         shellMeshes.length = 0;
+        clearMaze();
     }
 
     function buildTerrain() {
@@ -473,12 +744,98 @@
         terrain.receiveShadow = true;
         scene.add(terrain);
 
+        buildPitHazardVisuals();
+    }
+
+    function getPitRimY(pit) {
+        let sum = 0;
+        const samples = 10;
+        for (let i = 0; i < samples; i++) {
+            const a = (i / samples) * Math.PI * 2;
+            const px = pit.x + Math.cos(a) * pit.r * 0.9;
+            const pz = pit.z + Math.sin(a) * pit.r * 0.9;
+            sum += getTerrainHeight(px, pz);
+        }
+        return sum / samples + 0.16;
+    }
+
+    function buildPitHazardVisuals() {
+        const zoneRadiusMul = WORLD.pitSpawnKeepOut;
+        const zoneFillMat = new THREE.MeshBasicMaterial({
+            color: 0xff4422,
+            transparent: true,
+            opacity: 0.38,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const zoneRingMat = new THREE.MeshBasicMaterial({
+            color: 0xff7744,
+            transparent: true,
+            opacity: 0.82,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const lipMat = new THREE.MeshStandardMaterial({
+            color: 0xff5500,
+            emissive: 0xff3300,
+            emissiveIntensity: 0.85,
+            roughness: 0.45,
+            transparent: true,
+            opacity: 0.9,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x661100,
+            emissive: 0xff2200,
+            emissiveIntensity: 0.55,
+            roughness: 0.85
+        });
+
         for (const pit of PITS) {
-            const floor = new THREE.Mesh(
-                new THREE.CylinderGeometry(pit.r * 0.95, pit.r, 0.15, 24),
-                new THREE.MeshStandardMaterial({ color: 0x150800, roughness: 1 })
+            const rimY = getPitRimY(pit);
+            const zoneR = pit.r * zoneRadiusMul;
+            const bottomY = getTerrainHeight(pit.x, pit.z) - pit.depth + 0.05;
+
+            const zone = new THREE.Mesh(
+                new THREE.CircleGeometry(zoneR, 36),
+                zoneFillMat.clone()
             );
-            floor.position.set(pit.x, getTerrainHeight(pit.x, pit.z) - pit.depth + 0.05, pit.z);
+            zone.rotation.x = -Math.PI / 2;
+            zone.position.set(pit.x, rimY, pit.z);
+            zone.renderOrder = 2;
+            zone.userData.pitHazard = true;
+            scene.add(zone);
+            pitMeshes.push(zone);
+
+            const outerRing = new THREE.Mesh(
+                new THREE.RingGeometry(zoneR * 0.92, zoneR, 36),
+                zoneRingMat.clone()
+            );
+            outerRing.rotation.x = -Math.PI / 2;
+            outerRing.position.set(pit.x, rimY + 0.03, pit.z);
+            outerRing.renderOrder = 3;
+            outerRing.userData.pitHazard = true;
+            scene.add(outerRing);
+            pitMeshes.push(outerRing);
+
+            const lip = new THREE.Mesh(
+                new THREE.RingGeometry(pit.r * 0.5, pit.r * 0.98, 28),
+                lipMat.clone()
+            );
+            lip.rotation.x = -Math.PI / 2;
+            lip.position.set(pit.x, rimY + 0.05, pit.z);
+            lip.renderOrder = 4;
+            lip.userData.pitHazard = true;
+            scene.add(lip);
+            pitMeshes.push(lip);
+
+            const floor = new THREE.Mesh(
+                new THREE.CylinderGeometry(pit.r * 0.95, pit.r, 0.15, 28),
+                floorMat.clone()
+            );
+            floor.position.set(pit.x, bottomY, pit.z);
+            floor.userData.pitHazard = true;
             scene.add(floor);
             pitMeshes.push(floor);
         }
@@ -526,6 +883,345 @@
         }
     }
 
+    function registerMazePiece(def) {
+        const piece = {
+            x: def.x, z: def.z, w: def.w, d: def.d, h: def.h,
+            yBase: def.yBase, hw: def.w / 2, hd: def.d / 2,
+            jumpable: !!def.jumpable,
+            blocksBullets: def.blocksBullets !== false,
+            blocksMovement: def.blocksMovement !== false,
+            isWindow: !!def.isWindow,
+            hasRoof: !!def.hasRoof,
+            roofY: def.roofY || 0
+        };
+        mazePieces.push(piece);
+        return piece;
+    }
+
+    function addMazeMesh(mesh, piece) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.userData.mazePiece = piece;
+        scene.add(mesh);
+        mazeMeshes.push(mesh);
+    }
+
+    function createMazeWall(x, z, w, d, h, yBase, opts = {}) {
+        const piece = registerMazePiece({
+            x, z, w, d, h, yBase,
+            jumpable: opts.jumpable,
+            blocksBullets: !opts.isWindow,
+            blocksMovement: !opts.isWindow,
+            isWindow: opts.isWindow,
+            hasRoof: opts.hasRoof,
+            roofY: opts.roofY
+        });
+        if (opts.isWindow) {
+            const frame = new THREE.MeshStandardMaterial({
+                color: 0x3a4a5a, roughness: 0.6, transparent: true, opacity: 0.85
+            });
+            const thick = 0.18;
+            const side = new THREE.Mesh(new THREE.BoxGeometry(w, h, thick), frame);
+            side.position.set(x, yBase + h / 2, z);
+            addMazeMesh(side, piece);
+            return;
+        }
+        const mat = new THREE.MeshStandardMaterial({
+            color: opts.color || 0x4a5568, roughness: 0.75, metalness: 0.1
+        });
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+        mesh.position.set(x, yBase + h / 2, z);
+        addMazeMesh(mesh, piece);
+        if (opts.hasRoof) {
+            const roofPiece = registerMazePiece({
+                x, z, w, d, h: 0.25, yBase: opts.roofY - 0.25,
+                jumpable: false, blocksBullets: true, blocksMovement: false,
+                hasRoof: true, roofY: opts.roofY
+            });
+            const roof = new THREE.Mesh(
+                new THREE.BoxGeometry(w, 0.25, d),
+                new THREE.MeshStandardMaterial({ color: 0x2a3040, roughness: 0.9 })
+            );
+            roof.position.set(x, opts.roofY - 0.12, z);
+            addMazeMesh(roof, roofPiece);
+        }
+    }
+
+    function clearMaze() {
+        for (const m of mazeMeshes) disposeMesh(m);
+        mazeMeshes.length = 0;
+        mazePieces.length = 0;
+    }
+
+    function generateMazeGrid(cols, rows, maxFloors) {
+        const cx = (cols - 1) / 2;
+        const rz = (rows - 1) / 2;
+        const seedAng = arenaSettings.mazeSeed * 0.17;
+        const grid = [];
+        let hasMax = false;
+
+        for (let r = 0; r < rows; r++) {
+            grid[r] = [];
+            for (let c = 0; c < cols; c++) {
+                const px = c - cx;
+                const pz = r - rz;
+                const nx = px / (cols * 0.44);
+                const nz = pz / (rows * 0.44);
+                const ang = Math.atan2(pz, px + 0.001);
+                const blob = nx * nx + nz * nz;
+                const wobble = 0.14 * Math.sin(ang * 4 + seedAng) + 0.09 * Math.cos(ang * 6 - seedAng * 2);
+                const noise = (mazeRand() - 0.5) * 0.28;
+                const inside = blob < 0.9 + wobble + noise;
+                grid[r][c] = { inside, floors: 0, c, r, gate: false };
+            }
+        }
+
+        const cr = Math.round(rz);
+        const cc = Math.round(cx);
+        grid[cr][cc].inside = true;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (!grid[r][c].inside) continue;
+                const dist = Math.hypot((c - cx) / (cols * 0.45), (r - rz) / (rows * 0.45));
+                let fl = 1;
+                if (dist < 0.28) fl = maxFloors;
+                else if (dist < 0.55) fl = 1 + Math.floor(mazeRand() * maxFloors);
+                else fl = 1 + Math.floor(mazeRand() * Math.min(2, maxFloors));
+                fl = Math.max(1, Math.min(maxFloors, fl));
+                grid[r][c].floors = fl;
+                if (fl === maxFloors) hasMax = true;
+            }
+        }
+        if (!hasMax) grid[cr][cc].floors = maxFloors;
+
+        const openings = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (!grid[r][c].inside) continue;
+                const onEdge = !grid[r - 1]?.[c]?.inside || !grid[r + 1]?.[c]?.inside
+                    || !grid[r][c - 1]?.inside || !grid[r][c + 1]?.inside;
+                if (onEdge) openings.push(grid[r][c]);
+            }
+        }
+        openings.sort(() => mazeRand() - 0.5);
+        for (let i = 0; i < Math.min(3, openings.length); i++) openings[i].gate = true;
+
+        return { grid, cols, rows, cx, rz };
+    }
+
+    function cellNeedsFloorAt(grid, r, c, floorIdx) {
+        const data = grid[r]?.[c];
+        if (!data?.inside) return false;
+        if (data.floors > floorIdx) return true;
+        const neighbors = [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]];
+        for (const [nr, nc] of neighbors) {
+            const n = grid[nr]?.[nc];
+            if (n?.inside && n.floors > floorIdx) return true;
+        }
+        return false;
+    }
+
+    function createMazeFloorTile(x, z, size, yBase) {
+        const piece = registerMazePiece({
+            x, z, w: size, d: size, h: 0.28, yBase,
+            jumpable: true, blocksBullets: false, blocksMovement: false
+        });
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(size, 0.28, size),
+            new THREE.MeshStandardMaterial({ color: 0x5a5048, roughness: 0.85 })
+        );
+        mesh.position.set(x, yBase + 0.14, z);
+        addMazeMesh(mesh, piece);
+    }
+
+    function buildMazeCellWalls(px, pz, cell, yBase, r, c, grid, floorIdx, jumpReach, floorStep) {
+        const rows = grid.length;
+        const cols = grid[0].length;
+        const cellData = grid[r][c];
+        const wallH = 2.15;
+        const edges = [
+            { nr: r - 1, nc: c, wx: px, wz: pz - cell / 2, w: cell * 0.92, d: 0.32 },
+            { nr: r + 1, nc: c, wx: px, wz: pz + cell / 2, w: cell * 0.92, d: 0.32 },
+            { nr: r, nc: c - 1, wx: px - cell / 2, wz: pz, w: 0.32, d: cell * 0.92 },
+            { nr: r, nc: c + 1, wx: px + cell / 2, wz: pz, w: 0.32, d: cell * 0.92 }
+        ];
+        for (const e of edges) {
+            const inBounds = e.nr >= 0 && e.nr < rows && e.nc >= 0 && e.nc < cols;
+            const neigh = inBounds ? grid[e.nr][e.nc] : null;
+            const neighIn = neigh?.inside;
+            const neighFloors = neighIn ? neigh.floors : 0;
+            const exterior = !neighIn;
+            const heightGap = neighIn && neighFloors < floorIdx + 1;
+            if (!exterior && !heightGap) {
+                if (floorIdx === 0 && neighIn && mazeRand() > 0.78) {
+                    createMazeWall(e.wx, e.wz, e.w, e.d, 2.05, yBase, { isWindow: mazeRand() > 0.55 });
+                }
+                continue;
+            }
+            if (floorIdx >= cellData.floors) continue;
+            const isGate = exterior && floorIdx === 0 && cellData.gate;
+            const tall = exterior && floorIdx > 0 && mazeRand() > 0.4;
+            const h = tall ? 3.4 : wallH;
+            createMazeWall(e.wx, e.wz, e.w, e.d, h, yBase, {
+                isWindow: isGate,
+                jumpable: h <= jumpReach + floorIdx * floorStep,
+                hasRoof: floorIdx === cellData.floors - 1 && mazeRand() > 0.4,
+                roofY: yBase + h + 0.35
+            });
+        }
+    }
+
+    function buildMaze() {
+        clearMaze();
+        if (!arenaSettings.mazeEnabled) return;
+        mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed) % 2147483646);
+        const maxFloors = arenaSettings.mazeFloors;
+        const cell = 3.2;
+        const { grid, cols, rows } = generateMazeGrid(11, 11, maxFloors);
+        const halfW = (cols * cell) / 2;
+        const halfD = (rows * cell) / 2;
+        const baseY = getTerrainHeight(0, 0) + 0.15;
+        const floorStep = Math.min(2.65, Math.max(0.55, arenaSettings.jumpHeight * 0.88));
+        const jumpReach = arenaSettings.jumpHeight + 0.2;
+        const tile = cell;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const data = grid[r][c];
+                if (!data.inside) continue;
+                const px = -halfW + cell / 2 + c * cell;
+                const pz = -halfD + cell / 2 + r * cell;
+
+                for (let f = 0; f < maxFloors; f++) {
+                    if (!cellNeedsFloorAt(grid, r, c, f)) continue;
+                    const y0 = baseY + f * floorStep;
+                    createMazeFloorTile(px, pz, tile, y0);
+                    if (f < data.floors) {
+                        buildMazeCellWalls(px, pz, cell, y0, r, c, grid, f, jumpReach, floorStep);
+                    }
+                }
+
+                if (data.floors >= 2 && mazeRand() > 0.55) {
+                    const y0 = baseY + (data.floors - 1) * floorStep;
+                    const platH = 1.1 + mazeRand() * 0.35;
+                    if (platH + y0 - baseY <= jumpReach + (data.floors - 1) * floorStep) {
+                        createMazeWall(px, pz, tile, tile, platH, y0, {
+                            jumpable: true,
+                            hasRoof: mazeRand() > 0.45,
+                            roofY: y0 + platH + 0.35,
+                            color: 0x6a7078
+                        });
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < 2 + maxFloors; i++) {
+            const r = 1 + Math.floor(mazeRand() * (rows - 2));
+            const c = 1 + Math.floor(mazeRand() * (cols - 2));
+            if (!grid[r][c].inside) continue;
+            const px = -halfW + cell / 2 + c * cell;
+            const pz = -halfD + cell / 2 + r * cell;
+            const topFloor = grid[r][c].floors - 1;
+            const y0 = baseY + topFloor * floorStep;
+            const tallH = jumpReach + 1.1 + mazeRand() * 1.2;
+            createMazeWall(px, pz, 0.85, 0.85, tallH, y0, {
+                jumpable: false,
+                color: 0x353a44,
+                hasRoof: topFloor === maxFloors - 1 && mazeRand() > 0.35,
+                roofY: y0 + tallH + 0.35
+            });
+        }
+    }
+
+    function getMazeWalkHeight(x, z, footY) {
+        let best = -Infinity;
+        const snap = 1.75;
+        for (const p of mazePieces) {
+            if (!p.jumpable) continue;
+            if (Math.abs(x - p.x) > p.hw + snap || Math.abs(z - p.z) > p.hd + snap) continue;
+            const top = p.yBase + p.h;
+            if (top <= footY + 0.5) best = Math.max(best, top);
+        }
+        return best;
+    }
+
+    function isUnderMazeRoof(x, y, z) {
+        for (const p of mazePieces) {
+            if (!p.hasRoof || !inMazeHoriz(x, z, p)) continue;
+            if (y < p.roofY - 0.25) return true;
+        }
+        return false;
+    }
+
+    function getMazeMarkTargets() {
+        const list = [...covers, ...mazeMeshes];
+        if (terrain) list.unshift(terrain);
+        return list;
+    }
+
+    function raycastMarkPoint(event) {
+        setMouseNDC(event);
+        syncCameraForRaycast();
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObjects(getMazeMarkTargets(), true);
+        return hits.length > 0 ? hits[0].point : null;
+    }
+
+    function isExplosionBlockedToTarget(ex, ey, ez, tx, ty, tz) {
+        tmpVec.set(ex, ey, ez);
+        tmpVec2.set(tx, ty, tz);
+        const dx = tmpVec2.x - tmpVec.x;
+        const dy = tmpVec2.y - tmpVec.y;
+        const dz = tmpVec2.z - tmpVec.z;
+        const dist = Math.hypot(dx, dy, dz);
+        if (dist < 0.3) return false;
+        const inv = 1 / dist;
+        raycaster.set(tmpVec, new THREE.Vector3(dx * inv, dy * inv, dz * inv));
+        const hits = raycaster.intersectObjects(getMazeLosMeshes(), true);
+        return hits.length > 0 && hits[0].distance < dist - 0.4;
+    }
+
+    function getPlayerHeadY() {
+        return playerY + 0.88;
+    }
+
+    function playerHitsMazePieceXZ(p, x, z, r, footY, headY) {
+        if (Math.abs(x - p.x) >= p.hw + r || Math.abs(z - p.z) >= p.hd + r) return false;
+        const top = p.yBase + p.h;
+        return headY > p.yBase + 0.15 && footY < top - 0.1;
+    }
+
+    function resolveMazeCollision(x, z, footY, headY) {
+        const r = 0.36;
+        footY = footY ?? getFootY();
+        headY = headY ?? getPlayerHeadY();
+        for (const p of mazePieces) {
+            if (!p.blocksMovement) continue;
+            if (!playerHitsMazePieceXZ(p, x, z, r, footY, headY)) continue;
+            const dx = x - p.x;
+            const dz = z - p.z;
+            const ox = p.hw + r - Math.abs(dx);
+            const oz = p.hd + r - Math.abs(dz);
+            if (ox < oz) x += Math.sign(dx) * ox;
+            else z += Math.sign(dz) * oz;
+        }
+        return { x, z };
+    }
+
+    function canPlayerJump() {
+        if (currentWeapon === WEAPON.SNIPER && sniperScoped) return false;
+        if (velocityY > 0.8) return false;
+        const footY = getFootY();
+        const support = getSupportYAt(position.x, position.z, footY + 0.4);
+        return footY <= support + 0.4;
+    }
+
+    function getMazeLosMeshes() {
+        return mazeMeshes.filter((m) => m.userData.mazePiece?.blocksBullets);
+    }
+
     function rebuildArenaGeometry() {
         applyArenaDimensions();
         rebuildLayoutData();
@@ -533,10 +1229,9 @@
         buildTerrain();
         buildArenaShell();
         buildCovers();
-        position.x = Math.max(-WORLD.halfW + 1, Math.min(WORLD.halfW - 1, position.x));
-        position.z = Math.max(-WORLD.halfD + 1, Math.min(WORLD.halfD - 1, position.z));
-        playerY = getGroundY(position.x, position.z);
-        applyCameraLook();
+        buildMaze();
+        resolveSpawnPoint();
+        applySpawnPosition();
     }
 
 
@@ -589,7 +1284,9 @@
         const dangerous = !!cfg.dangerous;
         const type = cfg.type || 'patrol';
         const group = createEnemyVisual(dangerous, type);
-        const gy = getTerrainHeight(cfg.x, cfg.z);
+        const gy = cfg.inMaze
+            ? getSupportYAt(cfg.x, cfg.z, 1e5)
+            : getTerrainHeight(cfg.x, cfg.z);
         group.position.set(cfg.x, gy, cfg.z);
         group.castShadow = true;
 
@@ -600,6 +1297,7 @@
         group.userData.health = cfg.health || (dangerous ? 4 : 3);
         group.userData.maxHealth = group.userData.health;
         group.userData.basePos = { x: cfg.x, z: cfg.z };
+        group.userData.homePos = { x: cfg.x, z: cfg.z };
         group.userData.phase = Math.random() * Math.PI * 2;
         group.userData.lastShot = 0;
         group.userData.chaseRange = dangerous ? 38 : 0;
@@ -607,6 +1305,7 @@
         group.userData.chaseSpeed = dangerous ? 3.8 : 0;
         group.userData.fireRate = dangerous ? (type === 'shooter' ? 0.9 : 1.4) : 0;
         group.userData.contactDamage = dangerous ? 1 : 0;
+        group.userData.inMaze = !!cfg.inMaze;
 
         if (type === 'patrol') {
             group.userData.patrol = {
@@ -643,9 +1342,33 @@
         }
     }
 
+    function getMazeEnemySpawns() {
+        const list = [];
+        const n = arenaSettings.mazeEnemyCount;
+        if (!arenaSettings.mazeEnabled || n <= 0) return list;
+        mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed * 7919) % 2147483646);
+        const types = ['chaser', 'shooter', 'chaser', 'shooter'];
+        for (let i = 0; i < n; i++) {
+            const ang = mazeRand() * Math.PI * 2;
+            const rad = 2 + mazeRand() * 8;
+            list.push({
+                x: Math.cos(ang) * rad,
+                z: Math.sin(ang) * rad,
+                type: types[i % types.length],
+                dangerous: true,
+                health: 3 + Math.floor(mazeRand() * 3),
+                inMaze: true
+            });
+        }
+        return list;
+    }
+
     function spawnWorldEntities() {
         for (const cfg of getEnemySpawnList()) spawnEnemy(cfg);
+        for (const cfg of getMazeEnemySpawns()) spawnEnemy(cfg);
         spawnStaticTargets();
+        bossesToSpawn = arenaSettings.bossCount;
+        enemiesFieldTotal = enemies.length + bossesToSpawn;
     }
 
     function buildWorld() {
@@ -654,6 +1377,28 @@
         buildTerrain();
         buildArenaShell();
         buildCovers();
+        buildMaze();
+        relocatePlayerToSpawn();
+    }
+
+    function randomizeArenaSeeds() {
+        arenaSettings.terrainSeed = Math.round((0.3 + Math.random() * 2.7) * 10) / 10;
+        arenaSettings.mazeSeed = 1 + Math.floor(Math.random() * 99999);
+        document.getElementById('inp-terrain-seed').value = arenaSettings.terrainSeed;
+        document.getElementById('inp-maze-seed').value = arenaSettings.mazeSeed;
+    }
+
+    function relocatePlayerToSpawn() {
+        resolveSpawnPoint();
+        applySpawnPosition();
+    }
+
+    function regenerateArenaPreview() {
+        readArenaSettingsFromUI();
+        randomizeArenaSeeds();
+        applyJumpFromSettings();
+        rebuildArenaGeometry();
+        relocatePlayerToSpawn();
     }
 
     const raycaster = new THREE.Raycaster();
@@ -666,43 +1411,65 @@
     const enemyBulletMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
     const BULLET_SPEED = 24;
     const ENEMY_BULLET_SPEED = 16;
+    const ENEMY_BULLET_HIT_Y = 1.05;
+    const ENEMY_BULLET_HIT_H_MAX = 0.62;
     const FIRE_COOLDOWN = 0.14;
     const IMPULSE_RADIUS = 8;
     const IMPULSE_VERTICAL = 9;
     const IMPULSE_FORCE = 16;
+    const IMPULSE_MELEE_PUSH = 22;
     const IMPULSE_COOLDOWN = 1.25;
+    const PLAYER_SEPARATE_RADIUS = 1.15;
+    const MAX_ENEMY_KNOCKBACK = 14;
+    const ENEMY_MAX_Y_STEP = 5;
+    const IMPULSE_MELEE_RANGE = 1.25;
     const impulseWaves = [];
     let lastImpulseTime = 0;
     const rockets = [];
     const areaExplosions = [];
+    const mines = [];
+    let lastMinePlace = 0;
 
-    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3 };
+    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4 };
     const WEAPON_INFO = {
         1: {
             name: '1 — Стандарт',
             title: 'Стандарт',
             icon: '🔫',
-            desc: 'ЛКМ — выстрел · ПКМ — импульс',
-            help: '1: ЛКМ выстрел · ПКМ импульс',
+            desc: 'ЛКМ — выстрел · ПКМ — импульс (отброс + урон)',
+            help: '1: ЛКМ выстрел · ПКМ импульс и урон',
             slotLabel: '① Стандарт'
         },
         2: {
             name: '2 — Винтовка',
             title: 'Винтовка',
             icon: '🎯',
-            desc: 'ПКМ — зум · в зуме WASD — камера · ходьба медленнее · ЛКМ по прицелу',
-            help: '2: ПКМ зум · WASD в зуме · ходьба медл. · ЛКМ',
+            desc: 'ПКМ — зум · WASD — камера · быстрый точный ЛКМ',
+            help: '2: ПКМ зум · WASD · быстрый точный выстрел',
             slotLabel: '② Винтовка'
         },
         3: {
             name: '3 — Ракетница',
             title: 'Ракетница',
             icon: '🚀',
-            desc: 'ПКМ — метка · ЛКМ — удар сверху',
-            help: '3: ПКМ метка · ЛКМ удар ракетой',
+            desc: 'ПКМ — метка по поверхности · ЛКМ — удар (не сквозь крышу)',
+            help: '3: ПКМ метка · ЛКМ ракета · укрытые под крышей в безопасности',
             slotLabel: '③ Ракета'
+        },
+        4: {
+            name: '4 — Мины',
+            title: 'Мины',
+            icon: '💣',
+            desc: 'ПКМ — установить · ЛКМ — взорвать · срабатывание у врага',
+            help: '4: ПКМ мина · ЛКМ взрыв',
+            slotLabel: '④ Мины'
         }
     };
+    const MINE_TRIGGER_RADIUS = 3.2;
+    const MINE_BLAST_RADIUS = 6.5;
+    const MINE_MAX_DAMAGE = 3;
+    const MINE_PLACE_COOLDOWN = 0.4;
+    const MINE_MAX_COUNT = 24;
     const SNIPER_FOV_MIN = 8;
     const SNIPER_FOV_MAX = 45;
     const SNIPER_FOV_DEFAULT = 28;
@@ -711,9 +1478,10 @@
     const SNIPER_CAM_PITCH_LIMIT = 0.95;
     const SNIPER_CAM_YAW_LIMIT = 1.15;
     const NORMAL_FOV = 75;
-    const SNIPER_COOLDOWN = 0.85;
-    const SNIPER_SPEED = 70;
+    const SNIPER_COOLDOWN = 0.38;
+    const SNIPER_SPEED = 95;
     const SNIPER_DAMAGE = 2;
+    const SNIPER_HIT_DIST = 0.62;
     const AREA_RADIUS = 6;
     const AREA_COOLDOWN = 1.8;
     const ROCKET_DAMAGE = 3;
@@ -732,23 +1500,43 @@
     const spawnPoint = { x: 0, z: 0 };
     let lives = 5;
     let invincibleUntil = 0;
+    let spawnSafeUntil = 0;
+    let lastContactDamageAt = 0;
     let lastShotTime = 0;
     let gameActive = false;
     let victoryShown = false;
 
     const keys = { w: false, a: false, s: false, d: false, strafeLeft: false, strafeRight: false };
+
+    function resetMovementKeys() {
+        keys.w = false;
+        keys.a = false;
+        keys.s = false;
+        keys.d = false;
+        keys.strafeLeft = false;
+        keys.strafeRight = false;
+    }
     let position = { x: 0, z: 0 };
     let rotate = 0;
-    const GRAVITY = 16;
-    const JUMP_VELOCITY = 5.2;
     let playerY = getTerrainHeight(0, 0) + WORLD.eyeOffset;
     let velocityY = 0;
     let onGround = true;
 
+    const livesEl = document.getElementById('lives');
     const statShotsEl = document.getElementById('stat-shots');
     const statHitsEl = document.getElementById('stat-hits');
     const statDestroyedEl = document.getElementById('stat-destroyed');
-    const livesEl = document.getElementById('lives');
+    const statEnemiesAliveEl = document.getElementById('stat-enemies-alive');
+    const statEnemiesTotalEl = document.getElementById('stat-enemies-total');
+    const statEnemiesDangerEl = document.getElementById('stat-enemies-danger');
+    const enemyRadarEl = document.getElementById('enemy-radar');
+    const radarCanvasEl = document.getElementById('radar-canvas');
+    const radarCountAliveEl = document.getElementById('radar-count-alive');
+    const radarCountTotalEl = document.getElementById('radar-count-total');
+    const radarBehindHintEl = document.getElementById('radar-behind-hint');
+    const radarCtx = radarCanvasEl.getContext('2d');
+    const RADAR_RANGE = 48;
+    let enemiesFieldTotal = 0;
     const gameOverEl = document.getElementById('game-over');
     const victoryEl = document.getElementById('victory');
     const infoEl = document.getElementById('info');
@@ -762,12 +1550,359 @@
     const crosshairEl = document.getElementById('crosshair');
     const setupPanelEl = document.getElementById('setup-panel');
 
+    function getFootY() {
+        return playerY - WORLD.eyeOffset;
+    }
+
+    function getSupportYAt(x, z, refFootY) {
+        let y = getTerrainHeight(x, z);
+        const mazeTop = getMazeWalkHeight(x, z, refFootY);
+        if (mazeTop > -Infinity) y = Math.max(y, mazeTop);
+        return y;
+    }
+
+    function getLandingRefFoot(footY, velocityY) {
+        if (velocityY <= 0) {
+            return footY + arenaSettings.jumpHeight + 1.2;
+        }
+        return footY + 0.35;
+    }
+
+    function sweepMazeLanding(footY, nextFootY) {
+        const snap = 1.75;
+        for (const p of mazePieces) {
+            if (!p.jumpable) continue;
+            if (Math.abs(position.x - p.x) > p.hw + snap || Math.abs(position.z - p.z) > p.hd + snap) {
+                continue;
+            }
+            const top = p.yBase + p.h;
+            if (footY >= top - 0.35 && nextFootY <= top + 0.35) {
+                return top + WORLD.eyeOffset;
+            }
+        }
+        return null;
+    }
+
+    function getPlayerSupportFootY() {
+        const footY = getFootY();
+        return getSupportYAt(position.x, position.z, getLandingRefFoot(footY, velocityY));
+    }
+
+    function isPlayerInVoid() {
+        const footY = getFootY();
+        const supportFoot = getPlayerSupportFootY();
+        if (footY < supportFoot - 1.4) return true;
+        return footY < WORLD.pitKillY && supportFoot < WORLD.spawnFootMinY;
+    }
+
+    function recoverPlayerFromVoid() {
+        const footY = getFootY();
+        const mazeTop = getMazeWalkHeight(position.x, position.z, footY + 4);
+        if (mazeTop > -Infinity) {
+            playerY = mazeTop + WORLD.eyeOffset;
+            position.x = Math.max(-WORLD.halfW + 1, Math.min(WORLD.halfW - 1, position.x));
+            position.z = Math.max(-WORLD.halfD + 1, Math.min(WORLD.halfD - 1, position.z));
+        } else {
+            resolveSpawnPoint();
+            position.x = spawnPoint.x;
+            position.z = spawnPoint.z;
+            playerY = getGroundY(spawnPoint.x, spawnPoint.z);
+        }
+        velocityY = 0;
+        onGround = true;
+        markSpawnSafe();
+        applyCameraLook();
+    }
+
     function getGroundY(x, z) {
-        return getTerrainHeight(x, z) + WORLD.eyeOffset;
+        return getSupportYAt(x, z, 1e5) + WORLD.eyeOffset;
+    }
+
+    function clampSpawnXZ(x, z) {
+        const margin = 1.2;
+        return {
+            x: Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, x)),
+            z: Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, z))
+        };
+    }
+
+    function isInsidePitZone(x, z) {
+        for (const pit of PITS) {
+            if (Math.hypot(x - pit.x, z - pit.z) < pit.r * WORLD.pitSpawnKeepOut) return true;
+        }
+        return false;
+    }
+
+    function isSafeSpawnAt(x, z) {
+        if (isInsidePitZone(x, z)) return false;
+        const footY = getSupportYAt(x, z, 1e5);
+        if (footY < WORLD.spawnFootMinY) return false;
+        if (arenaSettings.spawnInMaze && arenaSettings.mazeEnabled) {
+            if (getMazeWalkHeight(x, z, 1e5) <= -Infinity) return false;
+        }
+        return true;
+    }
+
+    function collectSpawnCandidates() {
+        const list = [];
+        if (arenaSettings.spawnInMaze && arenaSettings.mazeEnabled) {
+            for (const p of mazePieces) {
+                if (!p.jumpable || p.h > 0.4) continue;
+                list.push({ x: p.x, z: p.z });
+            }
+            mazeRngState = Math.max(1, Math.floor(arenaSettings.mazeSeed * 997) % 2147483646);
+            for (let i = 0; i < 24; i++) {
+                list.push({
+                    x: (mazeRand() - 0.5) * 7,
+                    z: (mazeRand() - 0.5) * 7
+                });
+            }
+        } else if (arenaSettings.mazeEnabled) {
+            const zOut = (arenaSettings.mapDepth > 100) ? 12 : 8;
+            list.push(
+                { x: 20, z: zOut },
+                { x: 22, z: zOut + 4 },
+                { x: 18, z: zOut - 3 },
+                { x: 24, z: zOut - 2 }
+            );
+        } else {
+            list.push({ x: 0, z: 0 });
+        }
+        for (let i = 0; i < 36; i++) {
+            const ang = (i / 36) * Math.PI * 2;
+            const rad = 10 + (i % 12) * 4;
+            list.push({ x: Math.cos(ang) * rad, z: Math.sin(ang) * rad * 0.85 });
+        }
+        return list;
+    }
+
+    function resolveSpawnPoint() {
+        const candidates = collectSpawnCandidates();
+        for (let i = candidates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const tmp = candidates[i];
+            candidates[i] = candidates[j];
+            candidates[j] = tmp;
+        }
+        for (const raw of candidates) {
+            const c = clampSpawnXZ(raw.x, raw.z);
+            if (isSafeSpawnAt(c.x, c.z)) {
+                spawnPoint.x = c.x;
+                spawnPoint.z = c.z;
+                return;
+            }
+        }
+        let bestX = 0;
+        let bestZ = 0;
+        let bestFoot = -Infinity;
+        const step = 6;
+        for (let x = -WORLD.halfW + 4; x <= WORLD.halfW - 4; x += step) {
+            for (let z = -WORLD.halfD + 4; z <= WORLD.halfD - 4; z += step) {
+                if (!isSafeSpawnAt(x, z)) continue;
+                const foot = getSupportYAt(x, z, 1e5);
+                if (foot > bestFoot) {
+                    bestFoot = foot;
+                    bestX = x;
+                    bestZ = z;
+                }
+            }
+        }
+        if (bestFoot > -Infinity) {
+            spawnPoint.x = bestX;
+            spawnPoint.z = bestZ;
+            return;
+        }
+        const c = clampSpawnXZ(0, 0);
+        spawnPoint.x = c.x;
+        spawnPoint.z = c.z;
+    }
+
+    function markSpawnSafe() {
+        const now = performance.now();
+        spawnSafeUntil = now + 4000;
+        invincibleUntil = Math.max(invincibleUntil, spawnSafeUntil);
+    }
+
+    function applySpawnPosition() {
+        const gy = getGroundY(spawnPoint.x, spawnPoint.z);
+        position.x = spawnPoint.x;
+        position.z = spawnPoint.z;
+        playerY = gy;
+        velocityY = 0;
+        onGround = true;
+        markSpawnSafe();
+        applyCameraLook();
+    }
+
+    function canReachMazeTop(topY, fromFootY) {
+        return topY - fromFootY <= arenaSettings.jumpHeight + 0.15;
+    }
+
+    function isPlayerHitBySource(srcX, srcY, srcZ) {
+        return getPlayerPos().distanceTo(tmpVec.set(srcX, srcY, srcZ)) <= arenaSettings.playerDamageRadius;
+    }
+
+    function getPlayerBodyCenterY() {
+        return playerY - 0.12;
+    }
+
+    function getBulletBlockers() {
+        const maze = getMazeLosMeshes();
+        return terrain ? [terrain, ...covers, ...maze] : [...covers, ...maze];
+    }
+
+    function isBulletPathBlocked(prev, next) {
+        tmpVec.set(next.x - prev.x, next.y - prev.y, next.z - prev.z);
+        const dist = tmpVec.length();
+        if (dist < 1e-4) return false;
+        tmpVec.multiplyScalar(1 / dist);
+        raycaster.set(prev, tmpVec);
+        const hits = raycaster.intersectObjects(getBulletBlockers(), true);
+        return hits.length > 0 && hits[0].distance < dist - 0.06;
+    }
+
+    function isEnemyBulletHittingPlayer(bx, by, bz) {
+        const px = position.x;
+        const pz = position.z;
+        const py = getPlayerBodyCenterY();
+        const distH = Math.hypot(bx - px, bz - pz);
+        const maxH = Math.min(arenaSettings.playerDamageRadius, ENEMY_BULLET_HIT_H_MAX);
+        if (distH > maxH) return false;
+        if (Math.abs(by - py) > ENEMY_BULLET_HIT_Y) return false;
+        const from = tmpVec.set(bx, by, bz);
+        const to = tmpVec2.set(px, py, pz);
+        return lineOfSight(from, to, 0.3);
+    }
+
+    function canDamageEnemyAt(enemy, hitPoint) {
+        if (!enemy.userData.dangerous && !enemy.userData.isBoss) return true;
+        const cy = getEnemyCenterY(enemy);
+        return tmpVec.set(
+            hitPoint.x - enemy.position.x,
+            hitPoint.y - cy,
+            hitPoint.z - enemy.position.z
+        ).length() <= arenaSettings.enemyDamageRadius;
     }
 
     function getPlayerPos() {
         return tmpVec.set(position.x, playerY - 0.15, position.z);
+    }
+
+    function getEnemiesFieldTotal() {
+        return enemiesFieldTotal + bossesToSpawn;
+    }
+
+    function countEnemiesBehind() {
+        let n = 0;
+        const sinR = Math.sin(rotate);
+        const cosR = Math.cos(rotate);
+        for (const enemy of enemies) {
+            const dx = enemy.position.x - position.x;
+            const dz = enemy.position.z - position.z;
+            if (dx * sinR + dz * cosR < -0.8) n++;
+        }
+        return n;
+    }
+
+    function updateEnemyRadar() {
+        const alive = enemies.length;
+        const total = getEnemiesFieldTotal();
+        radarCountAliveEl.textContent = alive;
+        radarCountTotalEl.textContent = total;
+        statEnemiesAliveEl.textContent = alive;
+        statEnemiesTotalEl.textContent = total;
+
+        const dangerous = countDangerousEnemies();
+        const bosses = countBossesAlive();
+        let extra = '';
+        if (dangerous > 0) extra += ` · 🔴${dangerous}`;
+        if (bosses > 0) extra += ` · 🟣${bosses}`;
+        if (bossesToSpawn > 0) extra += ` · ⏳${bossesToSpawn}`;
+        statEnemiesDangerEl.textContent = extra;
+
+        const behind = countEnemiesBehind();
+        radarBehindHintEl.textContent = behind > 0
+            ? `⚠ Сзади: ${behind}`
+            : '';
+
+        const w = radarCanvasEl.width;
+        const h = radarCanvasEl.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = w / 2 - 4;
+        const scale = (radius - 10) / RADAR_RANGE;
+        const sinR = Math.sin(rotate);
+        const cosR = Math.cos(rotate);
+        const ctx = radarCtx;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = 'rgba(6, 10, 22, 0.98)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'rgba(80, 120, 180, 0.35)';
+        ctx.lineWidth = 1;
+        for (const t of [0.35, 0.7, 1]) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * t, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        ctx.strokeStyle = 'rgba(255, 180, 100, 0.22)';
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx - radius, cy);
+        ctx.lineTo(cx + radius, cy);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('вперёд', cx, cy - radius + 10);
+
+        ctx.fillStyle = '#66bbff';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 7);
+        ctx.lineTo(cx - 5, cy + 5);
+        ctx.lineTo(cx + 5, cy + 5);
+        ctx.closePath();
+        ctx.fill();
+
+        for (const enemy of enemies) {
+            const dx = enemy.position.x - position.x;
+            const dz = enemy.position.z - position.z;
+            const dist = Math.hypot(dx, dz);
+            if (dist > RADAR_RANGE) continue;
+
+            const localF = dx * sinR + dz * cosR;
+            const localR = dx * cosR - dz * sinR;
+            const sx = cx + localR * scale;
+            const sy = cy - localF * scale;
+
+            let color = '#55cc88';
+            let dotR = 3;
+            if (enemy.userData.isBoss) {
+                color = '#cc66ff';
+                dotR = 5;
+            } else if (enemy.userData.dangerous) {
+                color = '#ff3355';
+                dotR = 4;
+            }
+
+            if (localF < -1) {
+                ctx.strokeStyle = 'rgba(255, 200, 80, 0.95)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(sx, sy, dotR + 2.5, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(sx, sy, dotR, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     function updateStatsUI() {
@@ -775,6 +1910,7 @@
         statHitsEl.textContent = stats.hits;
         statDestroyedEl.textContent = stats.destroyed;
         livesEl.textContent = `❤️ Жизни: ${lives}`;
+        if (gameActive) updateEnemyRadar();
     }
 
     function getShootableRoot(obj) {
@@ -795,18 +1931,104 @@
         return false;
     }
 
+    function isMazeBulletBlocker(obj) {
+        let o = obj;
+        while (o) {
+            const p = o.userData?.mazePiece;
+            if (p && p.blocksBullets) return true;
+            o = o.parent;
+        }
+        return false;
+    }
+
     function countDangerousEnemies() {
-        return enemies.filter((e) => e.userData.dangerous).length;
+        return enemies.filter((e) => e.userData.dangerous && !e.userData.isBoss).length;
+    }
+
+    function countBossesAlive() {
+        return enemies.filter((e) => e.userData.isBoss).length;
     }
 
     function checkVictory() {
-        if (victoryShown || !gameActive || countDangerousEnemies() > 0) return;
+        if (victoryShown || !gameActive) return;
+        if (countDangerousEnemies() > 0) return;
+        if (bossesToSpawn > 0) {
+            spawnBossWave();
+            return;
+        }
+        if (countBossesAlive() > 0) return;
         victoryShown = true;
+        resetMovementKeys();
         victoryEl.classList.add('visible');
-        infoEl.innerHTML = '🏆 Победа!<div style="font-size:12px; opacity:0.8;">Все опасные враги уничтожены</div>';
+        infoEl.innerHTML = '🏆 Победа!<div style="font-size:12px; opacity:0.8;">Арена и боссы уничтожены</div>';
     }
 
-    const losBlockers = () => [...covers, terrain];
+    function parseBossColor() {
+        const hex = arenaSettings.bossColor.replace('#', '');
+        return parseInt(hex.length === 6 ? hex : 'aa22ff', 16);
+    }
+
+    function createBossMesh() {
+        const shape = arenaSettings.bossShape;
+        let geo;
+        if (shape === 'box') geo = new THREE.BoxGeometry(1.4, 2, 1.4);
+        else if (shape === 'sphere') geo = new THREE.SphereGeometry(1.1, 20, 20);
+        else geo = new THREE.OctahedronGeometry(1.15, 0);
+        const col = parseBossColor();
+        const mat = new THREE.MeshStandardMaterial({
+            color: col, emissive: col, emissiveIntensity: 0.35,
+            metalness: 0.65, roughness: 0.25
+        });
+        const group = new THREE.Group();
+        const body = new THREE.Mesh(geo, mat);
+        body.position.y = 0.9;
+        group.add(body);
+        const light = new THREE.PointLight(col, arenaSettings.bossGlow, 14);
+        light.position.y = 1.2;
+        group.add(light);
+        group.userData.bossBody = body;
+        group.userData.bossLight = light;
+        group.userData.pulseBase = 1;
+        return group;
+    }
+
+    function spawnBossWave() {
+        const n = bossesToSpawn;
+        bossesToSpawn = 0;
+        infoEl.innerHTML = '⚠️ Боссы!<div style="font-size:12px; opacity:0.85;">Уничтожьте боссов для победы</div>';
+        const ring = 5;
+        for (let i = 0; i < n; i++) {
+            const ang = (i / n) * Math.PI * 2;
+            const bx = Math.cos(ang) * ring;
+            const bz = Math.sin(ang) * ring;
+            const group = createBossMesh();
+            const gy = getSupportYAt(bx, bz, 1e5);
+            group.position.set(bx, gy, bz);
+            group.userData.shootable = true;
+            group.userData.enemy = true;
+            group.userData.isBoss = true;
+            group.userData.dangerous = true;
+            group.userData.type = 'chaser';
+            group.userData.health = arenaSettings.bossHealth;
+            group.userData.maxHealth = arenaSettings.bossHealth;
+            group.userData.basePos = { x: bx, z: bz };
+            group.userData.homePos = { x: bx, z: bz };
+            group.userData.chaseRange = 55;
+            group.userData.shootRange = 42;
+            group.userData.chaseSpeed = 2.8;
+            group.userData.fireRate = 0.65;
+            group.userData.contactDamage = 2;
+            group.userData.phase = Math.random() * Math.PI * 2;
+            group.userData.lastShot = 0;
+            scene.add(group);
+            shootables.push(group);
+            enemies.push(group);
+        }
+        enemiesFieldTotal = enemies.length;
+        updateStatsUI();
+    }
+
+    const losBlockers = () => [...covers, terrain, ...getMazeLosMeshes()];
 
     function lineOfSight(from, to, margin = 0.4) {
         const dir = tmpVec2.copy(to).sub(from);
@@ -827,6 +2049,32 @@
         raycaster.set(fromEnemy, dir);
         const hits = raycaster.intersectObjects(covers, false);
         return hits.length > 0 && hits[0].distance < dist - 0.5;
+    }
+
+    function separatePlayerFromEnemies(strength = 1) {
+        let moved = false;
+        for (const enemy of enemies) {
+            const dx = position.x - enemy.position.x;
+            const dz = position.z - enemy.position.z;
+            const dist = Math.hypot(dx, dz);
+            if (dist >= PLAYER_SEPARATE_RADIUS) continue;
+            moved = true;
+            if (dist < 0.08) {
+                position.x += Math.sin(rotate) * PLAYER_SEPARATE_RADIUS * strength;
+                position.z += Math.cos(rotate) * PLAYER_SEPARATE_RADIUS * strength;
+            } else {
+                const push = (PLAYER_SEPARATE_RADIUS - dist) * strength;
+                position.x += (dx / dist) * push;
+                position.z += (dz / dist) * push;
+            }
+        }
+        if (!moved) return;
+        const footY = getFootY();
+        const headY = getPlayerHeadY();
+        let resolved = resolveCoverCollision(position.x, position.z);
+        resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+        position.x = resolved.x;
+        position.z = resolved.z;
     }
 
     function resolveCoverCollision(x, z) {
@@ -876,9 +2124,19 @@
         );
     }
 
+    function getSniperRaycastTargets() {
+        return [terrain, ...covers, ...getMazeLosMeshes(), ...shootables];
+    }
+
     function getSniperAimDirection() {
         applyCameraLook();
-        raycaster.setFromCamera(mouse, camera);
+        const origin = tmpVec.set(position.x, playerY, position.z);
+        raycaster.setFromCamera(aimMouse, camera);
+        const hits = raycaster.intersectObjects(getSniperRaycastTargets(), true);
+        if (hits.length > 0) {
+            const dir = hits[0].point.clone().sub(origin);
+            if (dir.lengthSq() >= 0.04) return dir.normalize();
+        }
         return raycaster.ray.direction.clone().normalize();
     }
 
@@ -920,8 +2178,9 @@
         if (si !== -1) shootables.splice(si, 1);
     }
 
-    function onTargetHit(target, damage = 1) {
+    function onTargetHit(target, damage = 1, hitPoint = null) {
         if (!target.userData.shootable) return;
+        if (hitPoint && !canDamageEnemyAt(target, hitPoint)) return;
         for (let d = 0; d < damage; d++) {
             if (target.userData.health <= 0) break;
             stats.hits++;
@@ -933,12 +2192,18 @@
                 }
             });
             const ratio = target.userData.health / target.userData.maxHealth;
-            target.scale.setScalar(0.55 + ratio * 0.45);
+            const hpScale = Math.max(0.5, 0.55 + ratio * 0.45);
+            if (target.userData.isBoss && target.userData.bossBody) {
+                target.userData.hpScale = hpScale;
+            } else {
+                target.scale.setScalar(hpScale);
+            }
             if (target.userData.health <= 0) {
                 stats.destroyed++;
                 const wasDangerous = target.userData.dangerous;
+                const wasBoss = target.userData.isBoss;
                 removeShootable(target);
-                if (wasDangerous) checkVictory();
+                if (wasDangerous || wasBoss) checkVictory();
                 return;
             }
         }
@@ -960,6 +2225,7 @@
     function cycleWeapon() {
         const next = currentWeapon === WEAPON.STANDARD ? WEAPON.SNIPER
             : currentWeapon === WEAPON.SNIPER ? WEAPON.AREA
+            : currentWeapon === WEAPON.AREA ? WEAPON.MINE
             : WEAPON.STANDARD;
         setWeapon(next);
     }
@@ -998,11 +2264,7 @@
     }
 
     function raycastGround(event) {
-        setMouseNDC(event);
-        syncCameraForRaycast();
-        raycaster.setFromCamera(mouse, camera);
-        const hits = raycaster.intersectObject(terrain, false);
-        return hits.length > 0 ? hits[0].point : null;
+        return raycastMarkPoint(event);
     }
 
     function clearAreaMarker() {
@@ -1020,7 +2282,7 @@
     function updateAreaMarker() {
         clearAreaMarker();
         if (!areaTarget) return;
-        const gy = getTerrainHeight(areaTarget.x, areaTarget.z) + 0.08;
+        const gy = (areaTarget.y ?? getSupportYAt(areaTarget.x, areaTarget.z, 1e5)) + 0.08;
         areaMarker = new THREE.Mesh(
             new THREE.RingGeometry(AREA_RADIUS * 0.85, AREA_RADIUS, 40),
             new THREE.MeshBasicMaterial({
@@ -1036,7 +2298,7 @@
         if (!gameActive) return;
         const point = raycastGround(event);
         if (!point) return;
-        areaTarget = { x: point.x, z: point.z };
+        areaTarget = { x: point.x, y: point.y, z: point.z };
         updateAreaMarker();
     }
 
@@ -1059,28 +2321,40 @@
         bullet.userData.life = 4;
         bullet.userData.damage = 1;
         bullet.userData.fromPlayer = true;
+        bullet.userData.prevPos = bullet.position.clone();
+        bullet.userData.blockIgnoreUntil = performance.now() + 80;
         scene.add(bullet);
         bullets.push(bullet);
     }
 
     function shootSniper(event) {
-        if (!gameActive || !sniperScoped) return;
+        if (!gameActive) return;
         const now = performance.now() / 1000;
         if (now - lastShotTime < SNIPER_COOLDOWN) return;
         lastShotTime = now;
         stats.shots++;
         updateStatsUI();
         setMouseNDC(event);
-        const direction = getSniperAimDirection();
+        const direction = sniperScoped
+            ? getSniperAimDirection()
+            : getShootDirectionFromMouse(event);
         const bullet = new THREE.Mesh(
             new THREE.SphereGeometry(0.04, 8, 8),
             new THREE.MeshBasicMaterial({ color: 0xffeedd })
         );
-        bullet.position.set(position.x, playerY, position.z);
-        bullet.userData.velocity = direction.multiplyScalar(SNIPER_SPEED);
-        bullet.userData.life = 10;
+        const muzzle = 0.55;
+        bullet.position.set(
+            position.x + direction.x * muzzle,
+            playerY + direction.y * muzzle,
+            position.z + direction.z * muzzle
+        );
+        bullet.userData.velocity = direction.clone().multiplyScalar(SNIPER_SPEED);
+        bullet.userData.life = 12;
         bullet.userData.damage = SNIPER_DAMAGE;
         bullet.userData.fromPlayer = true;
+        bullet.userData.sniper = true;
+        bullet.userData.prevPos = bullet.position.clone();
+        bullet.userData.blockIgnoreUntil = performance.now() + 120;
         scene.add(bullet);
         bullets.push(bullet);
     }
@@ -1095,15 +2369,16 @@
 
         const x = areaTarget.x;
         const z = areaTarget.z;
-        const groundY = getTerrainHeight(x, z);
+        const strikeY = areaTarget.y ?? getSupportYAt(x, z, 1e5) + 0.1;
         const rocket = new THREE.Mesh(
             new THREE.ConeGeometry(0.25, 1.2, 8),
             new THREE.MeshBasicMaterial({ color: 0xff4400 })
         );
         rocket.rotation.x = Math.PI;
-        rocket.position.set(x, groundY + 40, z);
+        rocket.position.set(x, strikeY + 40, z);
         rocket.userData.type = 'rocket';
-        rocket.userData.targetY = groundY + 0.3;
+        rocket.userData.targetY = strikeY + 0.3;
+        rocket.userData.strikeY = strikeY;
         rocket.userData.speed = 32;
         rocket.userData.x = x;
         rocket.userData.z = z;
@@ -1112,47 +2387,10 @@
         clearAreaTarget();
     }
 
-    function spawnAreaExplosion(x, z) {
-        const gy = getTerrainHeight(x, z) + 0.2;
-        const ring = new THREE.Mesh(
-            new THREE.RingGeometry(0.5, AREA_RADIUS, 36),
-            new THREE.MeshBasicMaterial({
-                color: 0xffaa00, transparent: true, opacity: 0.9, side: THREE.DoubleSide
-            })
-        );
-        ring.rotation.x = -Math.PI / 2;
-        ring.position.set(x, gy, z);
-        scene.add(ring);
-        areaExplosions.push({ mesh: ring, life: 0.6, maxLife: 0.6, maxScale: 1.2 });
-
-        const px = position.x;
-        const pz = position.z;
-        for (const target of [...shootables]) {
-            const tx = target.position.x;
-            const tz = target.position.z;
-            if (Math.hypot(tx - x, tz - z) < AREA_RADIUS) {
-                onTargetHit(target, ROCKET_DAMAGE);
-            }
-        }
-        for (const enemy of enemies) {
-            if (Math.hypot(enemy.position.x - x, enemy.position.z - z) < AREA_RADIUS) {
-                const push = 10;
-                const dx = enemy.position.x - x;
-                const dz = enemy.position.z - z;
-                const len = Math.hypot(dx, dz) || 1;
-                enemy.userData.knockbackX = (dx / len) * push;
-                enemy.userData.knockbackZ = (dz / len) * push;
-                enemy.userData.knockbackUntil = performance.now() / 1000 + 0.5;
-                enemy.userData.stunnedUntil = performance.now() / 1000 + 0.8;
-            }
-        }
-        for (let i = enemyBullets.length - 1; i >= 0; i--) {
-            const b = enemyBullets[i];
-            if (Math.hypot(b.position.x - x, b.position.z - z) < AREA_RADIUS) {
-                scene.remove(b);
-                enemyBullets.splice(i, 1);
-            }
-        }
+    function spawnAreaExplosion(x, z, strikeY) {
+        applyExplosionAt(x, z, AREA_RADIUS, ROCKET_DAMAGE, {
+            color: 0xff6600, chainMines: true, explosionY: strikeY
+        });
     }
 
     function updateRockets(delta) {
@@ -1161,7 +2399,7 @@
             rocket.position.y -= rocket.userData.speed * delta;
             rocket.rotation.y += delta * 8;
             if (rocket.position.y <= rocket.userData.targetY) {
-                spawnAreaExplosion(rocket.userData.x, rocket.userData.z);
+                spawnAreaExplosion(rocket.userData.x, rocket.userData.z, rocket.userData.strikeY);
                 scene.remove(rocket);
                 rockets.splice(i, 1);
             }
@@ -1186,6 +2424,7 @@
         if (currentWeapon === WEAPON.STANDARD) shootStandard(event);
         else if (currentWeapon === WEAPON.SNIPER) shootSniper(event);
         else if (currentWeapon === WEAPON.AREA) fireAreaStrike();
+        else if (currentWeapon === WEAPON.MINE) detonateMineClick(event);
     }
 
     function handleSecondaryDown(event) {
@@ -1193,6 +2432,7 @@
         if (currentWeapon === WEAPON.STANDARD) fireImpulse();
         else if (currentWeapon === WEAPON.SNIPER) toggleSniperScope();
         else if (currentWeapon === WEAPON.AREA) markArea(event);
+        else if (currentWeapon === WEAPON.MINE) placeMine(event);
     }
 
     function toggleSniperScope() {
@@ -1253,7 +2493,44 @@
     }
 
     function getEnemyCenterY(enemy) {
+        if (enemy.userData.isBoss) return enemy.position.y + 1.0;
         return enemy.position.y + (enemy.userData.dangerous ? 0.55 : 0.35);
+    }
+
+    function capEnemyKnockback(enemy) {
+        const vx = enemy.userData.knockbackX || 0;
+        const vz = enemy.userData.knockbackZ || 0;
+        const vy = enemy.userData.knockbackY || 0;
+        const h = Math.hypot(vx, vz);
+        if (h > MAX_ENEMY_KNOCKBACK) {
+            const k = MAX_ENEMY_KNOCKBACK / h;
+            enemy.userData.knockbackX = vx * k;
+            enemy.userData.knockbackZ = vz * k;
+        }
+        enemy.userData.knockbackY = Math.max(-MAX_ENEMY_KNOCKBACK, Math.min(MAX_ENEMY_KNOCKBACK, vy));
+    }
+
+    function getEnemyGroundY(enemy, x, z) {
+        const footProbe = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
+        return getSupportYAt(x, z, footProbe + 0.45);
+    }
+
+    function placeEnemyAt(enemy, x, z, delta) {
+        const targetY = getEnemyGroundY(enemy, x, z);
+        let y = enemy.position.y;
+        if (enemy.userData.groundY == null) {
+            enemy.userData.groundY = targetY;
+            y = targetY;
+        }
+        const maxStep = ENEMY_MAX_Y_STEP * delta;
+        const dy = targetY - y;
+        if (Math.abs(dy) > 2.5) {
+            y = targetY;
+        } else if (Math.abs(dy) > 0.02) {
+            y += Math.sign(dy) * Math.min(Math.abs(dy), maxStep);
+        }
+        enemy.userData.groundY = targetY;
+        enemy.position.set(x, y, z);
     }
 
     function isInImpulseRange(px, py, pz, enemy) {
@@ -1269,6 +2546,17 @@
         return { hit: inCylinder || abovePlayer, dx, dz, dy, distH, ey };
     }
 
+    function getImpulseDamage(enemy, distH, falloff) {
+        if (distH < IMPULSE_MELEE_RANGE) {
+            if (enemy.userData.isBoss) return 1;
+            return enemy.userData.dangerous ? 2 : 1;
+        }
+        if (falloff < 0.18) return 0;
+        let dmg = falloff >= 0.55 ? 2 : 1;
+        if (enemy.userData.isBoss) dmg = 1;
+        return dmg;
+    }
+
     function fireImpulse() {
         if (!gameActive) return;
         const now = performance.now() / 1000;
@@ -1282,32 +2570,44 @@
 
         for (const enemy of enemies) {
             const hit = isInImpulseRange(px, py, pz, enemy);
-            if (!hit.hit || (hit.distH < 0.05 && hit.dy < 0.3)) continue;
+            if (!hit.hit) continue;
 
             const falloffH = 1 - hit.distH / IMPULSE_RADIUS;
             const falloffV = 1 - Math.abs(hit.dy) / IMPULSE_VERTICAL;
             const falloff = Math.max(0, Math.min(falloffH, falloffV));
-            const push = IMPULSE_FORCE * falloff * falloff;
-            const lenH = hit.distH || 0.001;
+            const hitPoint = tmpVec.set(enemy.position.x, hit.ey, enemy.position.z);
+            const impulseDamage = getImpulseDamage(enemy, hit.distH, falloff);
+            if (impulseDamage > 0) onTargetHit(enemy, impulseDamage, hitPoint);
+            if (!enemies.includes(enemy)) continue;
 
-            enemy.userData.knockbackX = (hit.dx / lenH) * push;
-            enemy.userData.knockbackZ = (hit.dz / lenH) * push;
-            enemy.userData.knockbackY = 0;
+            const melee = hit.distH < IMPULSE_MELEE_RANGE;
+            const push = melee
+                ? IMPULSE_MELEE_PUSH
+                : IMPULSE_FORCE * falloff * falloff;
+            let dirX = hit.dx;
+            let dirZ = hit.dz;
+            let lenH = Math.hypot(dirX, dirZ);
+            if (lenH < 0.35) {
+                dirX = Math.sin(rotate);
+                dirZ = Math.cos(rotate);
+                lenH = 1;
+            }
+            enemy.userData.knockbackX = (dirX / lenH) * push;
+            enemy.userData.knockbackZ = (dirZ / lenH) * push;
+            enemy.userData.knockbackY = melee ? push * 0.35 : 0;
 
             if (hit.dy > 0.35) {
-                const vertMul = enemy.userData.dangerous ? 0.75 : 0.5;
-                enemy.userData.knockbackY = push * vertMul;
-                if (hit.distH < 0.5) {
-                    enemy.userData.knockbackX *= 1.35;
-                    enemy.userData.knockbackZ *= 1.35;
-                }
+                enemy.userData.knockbackY = push * (enemy.userData.dangerous ? 0.75 : 0.5);
             } else if (hit.dy < -0.5) {
                 enemy.userData.knockbackY = push * 0.2;
             }
 
-            enemy.userData.knockbackUntil = now + 0.6;
-            enemy.userData.stunnedUntil = now + 0.75;
+            enemy.userData.knockbackUntil = now + (melee ? 0.85 : 0.6);
+            enemy.userData.stunnedUntil = now + (melee ? 1.15 : 0.75);
+            capEnemyKnockback(enemy);
         }
+
+        separatePlayerFromEnemies(1.35);
 
         for (let i = enemyBullets.length - 1; i >= 0; i--) {
             const b = enemyBullets[i];
@@ -1323,7 +2623,8 @@
     function applyEnemyKnockback(enemy, delta) {
         const now = performance.now() / 1000;
         if (!enemy.userData.knockbackUntil || now >= enemy.userData.knockbackUntil) {
-            if (enemy.userData.knockbackUntil && now >= enemy.userData.knockbackUntil) {
+            if (enemy.userData.knockbackUntil && now >= enemy.userData.knockbackUntil
+                && enemy.userData.type === 'chaser') {
                 enemy.userData.basePos.x = enemy.position.x;
                 enemy.userData.basePos.z = enemy.position.z;
             }
@@ -1335,19 +2636,16 @@
 
         let x = enemy.position.x + (enemy.userData.knockbackX || 0) * delta;
         let z = enemy.position.z + (enemy.userData.knockbackZ || 0) * delta;
-        let y = enemy.position.y + (enemy.userData.knockbackY || 0) * delta;
-        const damping = Math.max(0, 1 - delta * 5);
+        const damping = Math.max(0, 1 - delta * 6);
         enemy.userData.knockbackX *= damping;
         enemy.userData.knockbackZ *= damping;
-        enemy.userData.knockbackY *= damping;
+        enemy.userData.knockbackY = 0;
 
-        const resolved = resolveCoverCollision(x, z);
-        const gy = getTerrainHeight(resolved.x, resolved.z);
-        if (y < gy) {
-            y = gy;
-            enemy.userData.knockbackY = 0;
-        }
-        enemy.position.set(resolved.x, y, resolved.z);
+        const footY = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
+        const headY = footY + (enemy.userData.isBoss ? 1.9 : 1.5);
+        let resolved = resolveCoverCollision(x, z);
+        resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+        placeEnemyAt(enemy, resolved.x, resolved.z, delta);
         return true;
     }
 
@@ -1360,61 +2658,77 @@
         bullet.userData.velocity = dir.multiplyScalar(ENEMY_BULLET_SPEED);
         bullet.userData.life = 3;
         bullet.userData.fromPlayer = false;
+        bullet.userData.prevPos = from.clone();
         scene.add(bullet);
         enemyBullets.push(bullet);
         enemy.userData.lastShot = performance.now() / 1000;
     }
 
     function updateBullets(list, delta, isPlayer) {
-        const blockers = [...covers, terrain];
         for (let i = list.length - 1; i >= 0; i--) {
             const bullet = list[i];
             const vel = bullet.userData.velocity;
+            if (!bullet.userData.prevPos) {
+                bullet.userData.prevPos = bullet.position.clone();
+            }
+            const prevPos = bullet.userData.prevPos;
+
             bullet.position.addScaledVector(vel, delta);
             bullet.userData.life -= delta;
-            const norm = vel.clone().normalize();
-            raycaster.set(bullet.position, norm);
+
+            const blockOk = performance.now() >= (bullet.userData.blockIgnoreUntil || 0);
+            if (blockOk && isBulletPathBlocked(prevPos, bullet.position)) {
+                scene.remove(bullet);
+                list.splice(i, 1);
+                continue;
+            }
 
             if (isPlayer) {
-                const hits = raycaster.intersectObjects([...covers, ...shootables], true);
-                if (hits.length > 0 && hits[0].distance < 0.4) {
-                    if (isCoverObject(hits[0].object)) {
+                const norm = vel.clone().normalize();
+                raycaster.set(bullet.position, norm);
+                const hitDist = bullet.userData.sniper ? SNIPER_HIT_DIST : 0.4;
+                const hits = raycaster.intersectObjects(
+                    [...getBulletBlockers(), ...shootables], true
+                );
+                if (hits.length > 0 && hits[0].distance < hitDist) {
+                    if (isCoverObject(hits[0].object) || isMazeBulletBlocker(hits[0].object)) {
                         scene.remove(bullet);
                         list.splice(i, 1);
                         continue;
                     }
                     const root = getShootableRoot(hits[0].object);
                     if (root) {
-                        onTargetHit(root, bullet.userData.damage || 1);
+                        const hp = hits[0].point;
+                        if (canDamageEnemyAt(root, hp)) {
+                            onTargetHit(root, bullet.userData.damage || 1, hp);
+                        }
                         scene.remove(bullet);
                         list.splice(i, 1);
                         continue;
                     }
                 }
-            } else {
-                const coverHits = raycaster.intersectObjects(covers, false);
-                if (coverHits.length > 0 && coverHits[0].distance < 0.35) {
-                    scene.remove(bullet);
-                    list.splice(i, 1);
-                    continue;
-                }
-                if (!playerBehindCover(bullet.position)) {
-                    const playerPos = getPlayerPos();
-                    if (bullet.position.distanceTo(playerPos) < 0.55) {
-                        damagePlayer();
-                        scene.remove(bullet);
-                        list.splice(i, 1);
-                        continue;
-                    }
-                }
-            }
-
-            const blockHits = raycaster.intersectObjects(blockers, false);
-            if (blockHits.length > 0 && blockHits[0].distance < 0.35) {
+            } else if (!playerBehindCover(bullet.position)
+                && isEnemyBulletHittingPlayer(
+                    bullet.position.x, bullet.position.y, bullet.position.z
+                )) {
+                damagePlayer('пуля_врага', {
+                    bullet: {
+                        x: +bullet.position.x.toFixed(2),
+                        y: +bullet.position.y.toFixed(2),
+                        z: +bullet.position.z.toFixed(2)
+                    },
+                    distH: +Math.hypot(
+                        bullet.position.x - position.x,
+                        bullet.position.z - position.z
+                    ).toFixed(2),
+                    distY: +Math.abs(bullet.position.y - getPlayerBodyCenterY()).toFixed(2)
+                });
                 scene.remove(bullet);
                 list.splice(i, 1);
                 continue;
             }
+
+            bullet.userData.prevPos.copy(bullet.position);
 
             if (bullet.userData.life <= 0) {
                 scene.remove(bullet);
@@ -1423,40 +2737,264 @@
         }
     }
 
-    function damagePlayer() {
+    function damagePlayer(reason, details = {}) {
         const now = performance.now();
-        if (now < invincibleUntil || !gameActive) return;
+        const logBase = {
+            reason,
+            livesBefore: lives,
+            pos: {
+                x: +position.x.toFixed(2),
+                z: +position.z.toFixed(2),
+                playerY: +playerY.toFixed(2),
+                footY: +getFootY().toFixed(2)
+            },
+            supportFoot: +getPlayerSupportFootY().toFixed(2),
+            enemiesAlive: enemies.length,
+            weapon: currentWeapon,
+            ...details
+        };
+        if (!gameActive) {
+            console.debug('[HP] урон отменён (игра не активна)', logBase);
+            return;
+        }
+        if (now < invincibleUntil) {
+            console.debug('[HP] урон отменён (неуязвимость)', {
+                ...logBase,
+                invincibleMsLeft: Math.round(invincibleUntil - now)
+            });
+            return;
+        }
         lives--;
         invincibleUntil = now + 1200;
+        const entry = {
+            ...logBase,
+            livesAfter: lives,
+            time: new Date().toISOString()
+        };
+        console.warn(`[HP] −1 жизнь: ${reason}`, entry);
+        window.lastPlayerDamageLog = entry;
         updateStatsUI();
         if (lives <= 0) endGame();
     }
 
+    function explosionFalloff(dist, blastRadius) {
+        if (dist >= blastRadius) return 0;
+        const t = 1 - dist / blastRadius;
+        return t * t;
+    }
+
+    function tryExplosionDamagePlayer(ex, ez, blastRadius) {
+        const pp = getPlayerPos();
+        const dist = Math.hypot(pp.x - ex, pp.z - ez);
+        const power = explosionFalloff(dist, blastRadius);
+        if (power < 0.5) return;
+        damagePlayer('взрыв', {
+            blast: { x: +ex.toFixed(2), z: +ez.toFixed(2), radius: blastRadius },
+            dist: +dist.toFixed(2),
+            power: +power.toFixed(3)
+        });
+    }
+
+    function spawnExplosionVisual(x, z, blastRadius, color = 0xffaa00, surfaceY) {
+        const gy = surfaceY ?? getSupportYAt(x, z, 1e5) + 0.2;
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.4, blastRadius * 0.85, 40),
+            new THREE.MeshBasicMaterial({
+                color, transparent: true, opacity: 0.9, side: THREE.DoubleSide
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(x, gy, z);
+        scene.add(ring);
+        areaExplosions.push({
+            mesh: ring, life: 0.55, maxLife: 0.55, maxScale: 0.35, blastRadius
+        });
+    }
+
+    function applyExplosionAt(x, z, blastRadius, maxDamage, opts = {}) {
+        const skipRoof = opts.skipRoof !== false;
+        const ey = opts.explosionY ?? getSupportYAt(x, z, 1e5) + 0.2;
+        spawnExplosionVisual(x, z, blastRadius, opts.color ?? 0xffaa00, ey);
+        tryExplosionDamagePlayer(x, z, blastRadius);
+
+        for (const target of [...shootables]) {
+            const tx = target.position.x;
+            const tz = target.position.z;
+            const ty = getEnemyCenterY(target);
+            const dist = Math.hypot(tx - x, tz - z);
+            if (dist >= blastRadius) continue;
+            if (skipRoof && isUnderMazeRoof(tx, ty, tz)) continue;
+            if (isExplosionBlockedToTarget(x, ey, z, tx, ty, tz)) continue;
+            const power = explosionFalloff(dist, blastRadius);
+            const dmg = Math.max(1, Math.round(maxDamage * power));
+            if (power > 0.1) onTargetHit(target, dmg, tmpVec.set(tx, ty, tz));
+        }
+        for (const enemy of enemies) {
+            const dist = Math.hypot(enemy.position.x - x, enemy.position.z - z);
+            if (dist < blastRadius) {
+                const push = 8 + maxDamage;
+                const dx = enemy.position.x - x;
+                const dz = enemy.position.z - z;
+                const len = Math.hypot(dx, dz) || 1;
+                enemy.userData.knockbackX = (dx / len) * push;
+                enemy.userData.knockbackZ = (dz / len) * push;
+                enemy.userData.knockbackUntil = performance.now() / 1000 + 0.5;
+                enemy.userData.stunnedUntil = performance.now() / 1000 + 0.8;
+                capEnemyKnockback(enemy);
+            }
+        }
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+            const b = enemyBullets[i];
+            if (Math.hypot(b.position.x - x, b.position.z - z) < blastRadius) {
+                scene.remove(b);
+                enemyBullets.splice(i, 1);
+            }
+        }
+        if (opts.chainMines !== false) {
+            const toDetonate = [];
+            for (let i = 0; i < mines.length; i++) {
+                const m = mines[i];
+                if (m.dead) continue;
+                if (Math.hypot(m.x - x, m.z - z) < blastRadius * 0.9) toDetonate.push(i);
+            }
+            for (const idx of toDetonate) detonateMineAt(idx, false);
+        }
+    }
+
+    function clearMines() {
+        for (const m of mines) {
+            if (m.mesh) scene.remove(m.mesh);
+        }
+        mines.length = 0;
+    }
+
+    function placeMine(event) {
+        if (!gameActive) return;
+        const now = performance.now() / 1000;
+        if (now - lastMinePlace < MINE_PLACE_COOLDOWN) return;
+        if (mines.filter((m) => !m.dead).length >= MINE_MAX_COUNT) return;
+        const point = raycastGround(event);
+        if (!point) return;
+        lastMinePlace = now;
+        const x = point.x;
+        const z = point.z;
+        const gy = getSupportYAt(x, z, 1e5) + 0.05;
+        const mesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.22, 0.32, 0.2, 10),
+            new THREE.MeshStandardMaterial({
+                color: 0x334422, emissive: 0x557733, emissiveIntensity: 0.6, metalness: 0.4
+            })
+        );
+        mesh.position.set(x, gy + 0.1, z);
+        mesh.castShadow = true;
+        scene.add(mesh);
+        mines.push({ mesh, x, z, y: gy, dead: false, phase: Math.random() * 6.28 });
+    }
+
+    function detonateMineAt(index, chain = true) {
+        const mine = mines[index];
+        if (!mine || mine.dead) return;
+        mine.dead = true;
+        if (mine.mesh) scene.remove(mine.mesh);
+        applyExplosionAt(mine.x, mine.z, MINE_BLAST_RADIUS, MINE_MAX_DAMAGE, {
+            color: 0x88ff44, chainMines: chain
+        });
+    }
+
+    function detonateMineClick(event) {
+        if (!gameActive) return;
+        setMouseNDC(event);
+        syncCameraForRaycast();
+        raycaster.setFromCamera(mouse, camera);
+        const liveMeshes = mines.filter((m) => !m.dead).map((m) => m.mesh);
+        if (liveMeshes.length) {
+            const hits = raycaster.intersectObjects(liveMeshes, false);
+            if (hits.length) {
+                const idx = mines.findIndex((m) => m.mesh === hits[0].object && !m.dead);
+                if (idx >= 0) {
+                    stats.shots++;
+                    updateStatsUI();
+                    detonateMineAt(idx);
+                    return;
+                }
+            }
+        }
+        const point = raycastGround(event);
+        if (!point) return;
+        let best = -1;
+        let bestD = 1.8;
+        mines.forEach((m, i) => {
+            if (m.dead) return;
+            const d = Math.hypot(m.x - point.x, m.z - point.z);
+            if (d < bestD) {
+                bestD = d;
+                best = i;
+            }
+        });
+        if (best >= 0) {
+            stats.shots++;
+            updateStatsUI();
+            detonateMineAt(best);
+        }
+    }
+
+    function updateMines(time, delta) {
+        for (let i = 0; i < mines.length; i++) {
+            const mine = mines[i];
+            if (mine.dead) continue;
+            if (mine.mesh) {
+                mine.mesh.rotation.y += delta * 2.5;
+                const pulse = 0.55 + Math.sin(time * 5 + mine.phase) * 0.25;
+                mine.mesh.material.emissiveIntensity = pulse;
+            }
+            for (const enemy of enemies) {
+                const dist = Math.hypot(enemy.position.x - mine.x, enemy.position.z - mine.z);
+                if (dist < MINE_TRIGGER_RADIUS) {
+                    detonateMineAt(i);
+                    break;
+                }
+            }
+        }
+        for (let i = mines.length - 1; i >= 0; i--) {
+            if (mines[i].dead) mines.splice(i, 1);
+        }
+    }
+
     function endGame() {
         gameActive = false;
+        resetMovementKeys();
         gameOverEl.classList.add('visible');
     }
 
     function respawnPlayer() {
-        position.x = spawnPoint.x;
-        position.z = spawnPoint.z;
-        playerY = getGroundY(spawnPoint.x, spawnPoint.z);
-        velocityY = 0;
-        onGround = true;
-        damagePlayer();
+        recoverPlayerFromVoid();
     }
 
     function checkEnemyContact() {
+        const now = performance.now();
+        if (now - lastContactDamageAt < 900) return;
         const playerPos = getPlayerPos();
+        const r = arenaSettings.playerDamageRadius;
         for (const enemy of enemies) {
+            if (enemy.userData.contactDamage <= 0) continue;
+            const ey = getEnemyCenterY(enemy);
             const dx = playerPos.x - enemy.position.x;
             const dz = playerPos.z - enemy.position.z;
-            const dist = Math.hypot(dx, dz);
-            const touchDist = enemy.userData.dangerous ? 1.0 : 0.85;
-            if (enemy.userData.contactDamage > 0 && dist < touchDist
-                && Math.abs(playerPos.y - enemy.position.y) < 1.3) {
-                damagePlayer();
-            }
+            if (Math.hypot(dx, dz) > r) continue;
+            if (Math.abs(playerPos.y - ey) > 0.95) continue;
+            damagePlayer('контакт_врага', {
+                enemyType: enemy.userData.type,
+                dangerous: enemy.userData.dangerous,
+                isBoss: !!enemy.userData.isBoss,
+                distH: +Math.hypot(dx, dz).toFixed(2),
+                distY: +Math.abs(playerPos.y - ey).toFixed(2),
+                enemyPos: {
+                    x: +enemy.position.x.toFixed(2),
+                    z: +enemy.position.z.toFixed(2)
+                }
+            });
+            lastContactDamageAt = now;
+            return;
         }
     }
 
@@ -1464,20 +3002,29 @@
         const playerPos = getPlayerPos();
         const nowSec = performance.now() / 1000;
         for (const enemy of enemies) {
-            if (enemy.userData.dangerous && enemy.userData.glow) {
+            if (enemy.userData.isBoss && enemy.userData.bossBody) {
+                const t = time * arenaSettings.bossPulse;
+                const pulse = 1 + Math.sin(t) * 0.14;
+                const hpScale = enemy.userData.hpScale ?? 1;
+                enemy.userData.bossBody.scale.setScalar(hpScale * pulse);
+                if (enemy.userData.bossLight) {
+                    enemy.userData.bossLight.intensity =
+                        arenaSettings.bossGlow * (0.65 + Math.sin(t * 1.35) * 0.35);
+                }
+            } else if (enemy.userData.dangerous && enemy.userData.glow) {
                 enemy.userData.glow.intensity = 0.35 + Math.sin(time * 6) * 0.25;
             }
-            enemy.rotation.y += delta * (enemy.userData.dangerous ? 2.5 : 1.2);
+            enemy.rotation.y += delta * (enemy.userData.isBoss ? 1.8 : enemy.userData.dangerous ? 2.5 : 1.2);
 
             if (applyEnemyKnockback(enemy, delta)) continue;
             if (enemy.userData.stunnedUntil && nowSec < enemy.userData.stunnedUntil) {
-                const gy = getTerrainHeight(enemy.position.x, enemy.position.z);
-                if (enemy.position.y < gy) enemy.position.y = gy;
+                placeEnemyAt(enemy, enemy.position.x, enemy.position.z, delta);
                 continue;
             }
 
-            let x = enemy.userData.basePos.x;
-            let z = enemy.userData.basePos.z;
+            const home = enemy.userData.homePos || enemy.userData.basePos;
+            let x = home.x;
+            let z = home.z;
             const type = enemy.userData.type;
             const dist = Math.hypot(playerPos.x - enemy.position.x, playerPos.z - enemy.position.z);
             const canSee = lineOfSight(
@@ -1496,14 +3043,16 @@
                 z = enemy.position.z + (dz / len) * enemy.userData.chaseSpeed * delta;
             } else if (type === 'patrol' && enemy.userData.patrol) {
                 const p = enemy.userData.patrol;
-                const off = Math.sin(time * p.speed + enemy.userData.phase) * p.span * 0.5;
-                x = p.axis === 'x' ? enemy.userData.basePos.x + off : enemy.userData.basePos.x;
-                z = p.axis === 'z' ? enemy.userData.basePos.z + off : enemy.userData.basePos.z;
+                const off = Math.sin(time * p.speed + enemy.userData.phase)
+                    * Math.min(p.span * 0.5, 5.5);
+                x = p.axis === 'x' ? home.x + off : home.x;
+                z = p.axis === 'z' ? home.z + off : home.z;
             } else if (type === 'shooter' && enemy.userData.patrol) {
                 const p = enemy.userData.patrol;
-                const off = Math.sin(time * p.speed + enemy.userData.phase) * p.span * 0.5;
-                x = p.axis === 'x' ? enemy.userData.basePos.x + off : enemy.userData.basePos.x;
-                z = p.axis === 'z' ? enemy.userData.basePos.z + off : enemy.userData.basePos.z;
+                const off = Math.sin(time * p.speed + enemy.userData.phase)
+                    * Math.min(p.span * 0.5, 5.5);
+                x = p.axis === 'x' ? home.x + off : home.x;
+                z = p.axis === 'z' ? home.z + off : home.z;
                 const now = performance.now() / 1000;
                 if (dist < enemy.userData.shootRange && canSee && !hidden
                     && now - enemy.userData.lastShot > enemy.userData.fireRate) {
@@ -1511,9 +3060,11 @@
                 }
             }
 
-            const resolved = resolveCoverCollision(x, z);
-            const gy = getTerrainHeight(resolved.x, resolved.z);
-            enemy.position.set(resolved.x, gy, resolved.z);
+            let resolved = resolveCoverCollision(x, z);
+            const footY = enemy.position.y - (enemy.userData.isBoss ? 0.95 : 0.4);
+            const headY = footY + (enemy.userData.isBoss ? 1.9 : 1.5);
+            resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
+            placeEnemyAt(enemy, resolved.x, resolved.z, delta);
         }
     }
 
@@ -1521,6 +3072,94 @@
         for (const s of [...shootables]) removeShootable(s);
         shootables.length = 0;
         enemies.length = 0;
+    }
+
+    function clampArenaSettingsToLimits() {
+        const maxEnemies = BASE_ENEMY_LAYOUT.length;
+        const maxPits = BASE_PITS.length;
+        const maxCovers = BASE_COVERS.length;
+        arenaSettings.enemyCount = Math.min(arenaSettings.enemyCount, maxEnemies);
+        arenaSettings.pitCount = Math.min(arenaSettings.pitCount, maxPits);
+        arenaSettings.coverCount = Math.min(arenaSettings.coverCount, maxCovers);
+    }
+
+    function applyArenaSettingsToUI(s) {
+        document.getElementById('inp-width').value = s.mapWidth;
+        document.getElementById('inp-depth').value = s.mapDepth;
+        document.getElementById('inp-terrain-seed').value = s.terrainSeed;
+        document.getElementById('inp-lives').value = s.lives;
+        document.getElementById('inp-pits').value = s.pitCount;
+        document.getElementById('inp-covers').value = s.coverCount;
+        document.getElementById('inp-enemies').value = s.enemyCount;
+        document.getElementById('inp-jump').value = s.jumpHeight;
+        document.getElementById('inp-player-radius').value = s.playerDamageRadius;
+        document.getElementById('inp-enemy-radius').value = s.enemyDamageRadius;
+        document.getElementById('inp-maze-enabled').checked = s.mazeEnabled;
+        document.getElementById('inp-maze-floors').value = s.mazeFloors;
+        document.getElementById('inp-maze-enemies').value = s.mazeEnemyCount;
+        document.getElementById('inp-maze-seed').value = s.mazeSeed;
+        document.getElementById('inp-boss-count').value = s.bossCount;
+        document.getElementById('inp-boss-hp').value = s.bossHealth;
+        document.getElementById('inp-boss-shape').value = s.bossShape;
+        document.getElementById('inp-boss-color').value = s.bossColor;
+        document.getElementById('inp-boss-glow').value = s.bossGlow;
+        document.getElementById('inp-boss-pulse').value = s.bossPulse;
+        document.getElementById('inp-spawn-outside').checked = !s.spawnInMaze;
+        document.getElementById('inp-spawn-maze').checked = s.spawnInMaze;
+    }
+
+    function updateSetupLabelsFromSettings() {
+        document.getElementById('val-width').textContent = arenaSettings.mapWidth;
+        document.getElementById('val-depth').textContent = arenaSettings.mapDepth;
+        document.getElementById('val-lives').textContent = arenaSettings.lives;
+        document.getElementById('val-pits').textContent = arenaSettings.pitCount;
+        document.getElementById('val-covers').textContent = arenaSettings.coverCount;
+        document.getElementById('val-enemies').textContent = arenaSettings.enemyCount;
+        document.getElementById('val-jump').textContent = arenaSettings.jumpHeight.toFixed(1);
+        document.getElementById('val-player-radius').textContent = arenaSettings.playerDamageRadius.toFixed(2);
+        document.getElementById('val-enemy-radius').textContent = arenaSettings.enemyDamageRadius.toFixed(1);
+        document.getElementById('val-maze-floors').textContent = arenaSettings.mazeFloors;
+        document.getElementById('val-maze-enemies').textContent = arenaSettings.mazeEnemyCount;
+        document.getElementById('val-boss-count').textContent = arenaSettings.bossCount;
+        document.getElementById('val-boss-hp').textContent = arenaSettings.bossHealth;
+        document.getElementById('val-boss-glow').textContent = arenaSettings.bossGlow.toFixed(1);
+        document.getElementById('val-boss-pulse').textContent = arenaSettings.bossPulse.toFixed(1);
+        const maxEnemies = BASE_ENEMY_LAYOUT.length;
+        const maxPits = BASE_PITS.length;
+        const maxCovers = BASE_COVERS.length;
+        document.getElementById('inp-enemies').max = maxEnemies;
+        document.getElementById('inp-pits').max = maxPits;
+        document.getElementById('inp-covers').max = maxCovers;
+        const spawnMazeInp = document.getElementById('inp-spawn-maze');
+        const spawnOutInp = document.getElementById('inp-spawn-outside');
+        spawnMazeInp.disabled = !arenaSettings.mazeEnabled;
+        if (!arenaSettings.mazeEnabled) {
+            spawnOutInp.checked = true;
+            arenaSettings.spawnInMaze = false;
+            spawnMazeInp.checked = false;
+        }
+    }
+
+    function setActiveDifficultyButton(key) {
+        activeDifficulty = key;
+        document.querySelectorAll('.diff-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.diff === key);
+        });
+    }
+
+    function clearDifficultyHighlight() {
+        activeDifficulty = null;
+        document.querySelectorAll('.diff-btn').forEach((btn) => btn.classList.remove('active'));
+    }
+
+    function applyDifficultyPreset(key) {
+        const preset = DIFFICULTY_PRESETS[key];
+        if (!preset) return;
+        Object.assign(arenaSettings, preset);
+        clampArenaSettingsToLimits();
+        applyArenaSettingsToUI(arenaSettings);
+        updateSetupLabelsFromSettings();
+        setActiveDifficultyButton(key);
     }
 
     function readArenaSettingsFromUI() {
@@ -1531,25 +3170,26 @@
         arenaSettings.pitCount = Number(document.getElementById('inp-pits').value);
         arenaSettings.coverCount = Number(document.getElementById('inp-covers').value);
         arenaSettings.enemyCount = Number(document.getElementById('inp-enemies').value);
-        document.getElementById('val-width').textContent = arenaSettings.mapWidth;
-        document.getElementById('val-depth').textContent = arenaSettings.mapDepth;
-        document.getElementById('val-lives').textContent = arenaSettings.lives;
-        document.getElementById('val-pits').textContent = arenaSettings.pitCount;
-        document.getElementById('val-covers').textContent = arenaSettings.coverCount;
-        document.getElementById('val-enemies').textContent = arenaSettings.enemyCount;
-        const maxEnemies = BASE_ENEMY_LAYOUT.length;
-        const maxPits = BASE_PITS.length;
-        const maxCovers = BASE_COVERS.length;
-        document.getElementById('inp-enemies').max = maxEnemies;
-        document.getElementById('inp-pits').max = maxPits;
-        document.getElementById('inp-covers').max = maxCovers;
-        if (arenaSettings.enemyCount > maxEnemies) arenaSettings.enemyCount = maxEnemies;
-        if (arenaSettings.pitCount > maxPits) arenaSettings.pitCount = maxPits;
-        if (arenaSettings.coverCount > maxCovers) arenaSettings.coverCount = maxCovers;
+        arenaSettings.jumpHeight = Number(document.getElementById('inp-jump').value);
+        arenaSettings.playerDamageRadius = Number(document.getElementById('inp-player-radius').value);
+        arenaSettings.enemyDamageRadius = Number(document.getElementById('inp-enemy-radius').value);
+        arenaSettings.mazeEnabled = document.getElementById('inp-maze-enabled').checked;
+        arenaSettings.mazeFloors = Number(document.getElementById('inp-maze-floors').value);
+        arenaSettings.mazeEnemyCount = Number(document.getElementById('inp-maze-enemies').value);
+        arenaSettings.mazeSeed = Number(document.getElementById('inp-maze-seed').value);
+        arenaSettings.bossCount = Number(document.getElementById('inp-boss-count').value);
+        arenaSettings.bossHealth = Number(document.getElementById('inp-boss-hp').value);
+        arenaSettings.bossShape = document.getElementById('inp-boss-shape').value;
+        arenaSettings.bossColor = document.getElementById('inp-boss-color').value;
+        arenaSettings.bossGlow = Number(document.getElementById('inp-boss-glow').value);
+        arenaSettings.bossPulse = Number(document.getElementById('inp-boss-pulse').value);
+        arenaSettings.spawnInMaze = document.getElementById('inp-spawn-maze').checked;
+        updateSetupLabelsFromSettings();
     }
 
     function syncSetupLabels() {
         readArenaSettingsFromUI();
+        clearDifficultyHighlight();
     }
 
     function clearCombatState() {
@@ -1562,10 +3202,13 @@
         rockets.length = 0;
         for (const ex of areaExplosions) scene.remove(ex.mesh);
         areaExplosions.length = 0;
+        clearMines();
     }
 
     function openSetupPanel() {
         gameActive = false;
+        resetMovementKeys();
+        bossesToSpawn = 0;
         sniperScoped = false;
         updateScopeVisual();
         clearCombatState();
@@ -1575,12 +3218,16 @@
         victoryEl.classList.remove('visible');
         infoEl.innerHTML = '🎮 3D Арена<div style="font-size:12px; opacity:0.8;">Настройте арену и нажмите «Начать игру»</div>';
         setupPanelEl.classList.add('visible');
-        syncSetupLabels();
+        enemyRadarEl.classList.remove('visible');
+        updateSetupLabelsFromSettings();
+        setActiveDifficultyButton(activeDifficulty || 'normal');
         applyCameraLook();
     }
 
     function startGame() {
+        resetMovementKeys();
         readArenaSettingsFromUI();
+        applyJumpFromSettings();
         rebuildArenaGeometry();
         clearCombatState();
         stats.shots = 0;
@@ -1588,24 +3235,28 @@
         stats.destroyed = 0;
         lives = arenaSettings.lives;
         invincibleUntil = 0;
+        spawnSafeUntil = 0;
+        lastContactDamageAt = 0;
         lastShotTime = 0;
         lastImpulseTime = 0;
         lastAreaStrike = 0;
         setWeapon(WEAPON.STANDARD);
         victoryShown = false;
-        position.x = spawnPoint.x;
-        position.z = spawnPoint.z;
         rotate = 0;
-        playerY = getGroundY(spawnPoint.x, spawnPoint.z);
-        velocityY = 0;
-        onGround = true;
+        relocatePlayerToSpawn();
         gameOverEl.classList.remove('visible');
         victoryEl.classList.remove('visible');
         setupPanelEl.classList.remove('visible');
-        infoEl.innerHTML = '🎮 3D Арена<div style="font-size:12px; opacity:0.8;">Укрывайся за блоками · красные враги опасны</div>';
         spawnWorldEntities();
+        const total = getEnemiesFieldTotal();
+        const danger = countDangerousEnemies();
+        infoEl.innerHTML =
+            `🎮 3D Арена<div style="font-size:12px; opacity:0.85;">`
+            + `На поле <b>${total}</b> врагов · опасных <b>${danger}</b>`
+            + ` · радар справа внизу</div>`;
         updateStatsUI();
         gameActive = true;
+        enemyRadarEl.classList.add('visible');
         renderer.domElement.focus();
     }
 
@@ -1613,18 +3264,33 @@
         openSetupPanel();
     }
 
+    applyDifficultyPreset('normal');
+    applyJumpFromSettings();
     buildWorld();
     openSetupPanel();
 
     document.getElementById('restart-btn').addEventListener('click', resetGame);
     document.getElementById('btn-start-game').addEventListener('click', startGame);
-    document.getElementById('btn-regen-terrain').addEventListener('click', () => {
+    document.getElementById('btn-diff-easy').addEventListener('click', () => applyDifficultyPreset('easy'));
+    document.getElementById('btn-diff-normal').addEventListener('click', () => applyDifficultyPreset('normal'));
+    document.getElementById('btn-diff-hard').addEventListener('click', () => applyDifficultyPreset('hard'));
+    document.getElementById('btn-regen-terrain').addEventListener('click', regenerateArenaPreview);
+    document.getElementById('btn-relocate-player').addEventListener('click', () => {
         readArenaSettingsFromUI();
-        rebuildArenaGeometry();
+        applyJumpFromSettings();
+        relocatePlayerToSpawn();
     });
-    for (const id of ['inp-width', 'inp-depth', 'inp-lives', 'inp-pits', 'inp-covers', 'inp-enemies']) {
+    for (const id of [
+        'inp-width', 'inp-depth', 'inp-lives', 'inp-pits', 'inp-covers', 'inp-enemies',
+        'inp-jump', 'inp-player-radius', 'inp-enemy-radius', 'inp-maze-floors',
+        'inp-maze-enemies', 'inp-boss-count', 'inp-boss-hp', 'inp-boss-glow', 'inp-boss-pulse'
+    ]) {
         document.getElementById(id).addEventListener('input', syncSetupLabels);
     }
+    document.getElementById('inp-maze-enabled').addEventListener('change', syncSetupLabels);
+    document.getElementById('inp-spawn-maze').addEventListener('change', syncSetupLabels);
+    document.getElementById('inp-spawn-outside').addEventListener('change', syncSetupLabels);
+    document.getElementById('inp-boss-shape').addEventListener('change', syncSetupLabels);
     document.getElementById('inp-terrain-seed').addEventListener('change', syncSetupLabels);
 
     function updateCrosshair(clientX, clientY) {
@@ -1667,15 +3333,17 @@
             Digit1: WEAPON.STANDARD,
             Digit2: WEAPON.SNIPER,
             Digit3: WEAPON.AREA,
+            Digit4: WEAPON.MINE,
             Numpad1: WEAPON.STANDARD,
             Numpad2: WEAPON.SNIPER,
-            Numpad3: WEAPON.AREA
+            Numpad3: WEAPON.AREA,
+            Numpad4: WEAPON.MINE
         };
         let weaponId = byCode[event.code];
         if (weaponId == null) {
             const byKey = {
-                '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA,
-                '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA
+                '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA, '4': WEAPON.MINE,
+                '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA, '$': WEAPON.MINE
             };
             weaponId = byKey[event.key];
         }
@@ -1698,6 +3366,7 @@
 
     function keyDown(event) {
         if (event.code === 'KeyR') {
+            resetMovementKeys();
             openSetupPanel();
             return;
         }
@@ -1720,7 +3389,7 @@
                 event.preventDefault();
                 break;
             case 'Space':
-                if (!(currentWeapon === WEAPON.SNIPER && sniperScoped) && !event.repeat && onGround) {
+                if (!event.repeat && canPlayerJump()) {
                     velocityY = JUMP_VELOCITY;
                     onGround = false;
                 }
@@ -1744,6 +3413,11 @@
 
     window.addEventListener('keydown', keyDown, true);
     window.addEventListener('keyup', keyUp, true);
+    window.addEventListener('blur', resetMovementKeys);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') resetMovementKeys();
+    });
+    renderer.domElement.addEventListener('blur', resetMovementKeys);
     renderer.domElement.focus();
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -1762,6 +3436,8 @@
         const time = now * 0.001;
 
         if (gameActive) {
+            if (!document.hasFocus()) resetMovementKeys();
+            updateEnemyRadar();
             const moveSpeed = 3.4 * delta;
             const rotSpeed = 2.0 * delta;
             const isSniper = currentWeapon === WEAPON.SNIPER;
@@ -1789,23 +3465,55 @@
                 const margin = 0.7;
                 newX = Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, newX));
                 newZ = Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, newZ));
-                const resolved = resolveCoverCollision(newX, newZ);
+                const moveFootY = getFootY();
+                const moveHeadY = getPlayerHeadY();
+                let resolved = resolveCoverCollision(newX, newZ);
+                resolved = resolveMazeCollision(resolved.x, resolved.z, moveFootY, moveHeadY);
                 position.x = resolved.x;
                 position.z = resolved.z;
+                separatePlayerFromEnemies(0.55);
             }
 
             velocityY -= GRAVITY * delta;
+            const prevFootY = getFootY();
             playerY += velocityY * delta;
-            const groundY = getGroundY(position.x, position.z);
-            if (playerY <= groundY && velocityY <= 0) {
-                playerY = groundY;
+            const footY = getFootY();
+            const nextFootY = footY;
+            const landedY = sweepMazeLanding(prevFootY, nextFootY);
+            if (landedY !== null) {
+                playerY = landedY;
                 velocityY = 0;
                 onGround = true;
-            } else onGround = false;
+            } else {
+                const supportY = getSupportYAt(
+                    position.x, position.z, getLandingRefFoot(footY, velocityY)
+                );
+                const groundY = supportY + WORLD.eyeOffset;
+                if (playerY <= groundY && velocityY <= 0) {
+                    playerY = groundY;
+                    velocityY = 0;
+                    onGround = true;
+                } else {
+                    onGround = false;
+                }
+            }
 
-            if (playerY < WORLD.pitKillY) respawnPlayer();
+            if (velocityY <= 0 && onGround) {
+                const snapFoot = getPlayerSupportFootY();
+                const snapGroundY = snapFoot + WORLD.eyeOffset;
+                if (getFootY() <= snapFoot + 0.2 && playerY <= snapGroundY + 0.1) {
+                    playerY = snapGroundY;
+                    velocityY = 0;
+                    onGround = true;
+                }
+            }
+
+            if (isPlayerInVoid()) {
+                recoverPlayerFromVoid();
+            }
 
             updateEnemies(time, delta);
+            updateMines(time, delta);
             checkEnemyContact();
         }
 
