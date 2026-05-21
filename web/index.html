@@ -83,6 +83,13 @@
             opacity: 0.95;
         }
         #stat-enemies-line { color: #ffcc88; margin: 4px 0 6px; }
+        #stat-points-line { color: #ffee88; font-weight: bold; margin-bottom: 4px; }
+        .setup-persist-stats {
+            margin-top: 10px; padding: 8px 10px; border-radius: 8px;
+            background: rgba(255, 220, 120, 0.08); border: 1px solid rgba(255, 220, 120, 0.25);
+            font-size: 12px; line-height: 1.55; color: #eeddcc;
+        }
+        .setup-persist-stats strong { color: #ffeebb; }
         #game-over {
             display: none; position: fixed; inset: 0; z-index: 15;
             background: rgba(0,0,0,0.75); color: #fff;
@@ -108,6 +115,7 @@
         #weapon-panel.weapon-3 { border-color: rgba(255, 120, 60, 0.9); box-shadow: 0 0 12px rgba(255, 80, 30, 0.35); }
         #weapon-panel.weapon-4 { border-color: rgba(180, 255, 100, 0.9); box-shadow: 0 0 12px rgba(120, 255, 60, 0.3); }
         #weapon-panel.weapon-5 { border-color: rgba(255, 90, 40, 0.95); box-shadow: 0 0 14px rgba(255, 60, 20, 0.4); }
+        #weapon-panel.weapon-6 { border-color: rgba(180, 100, 255, 0.95); box-shadow: 0 0 16px rgba(140, 60, 255, 0.45); }
         #weapon-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
         #weapon-panel-main { display: flex; align-items: center; gap: 10px; }
         #weapon-icon { font-size: 28px; line-height: 1; width: 36px; text-align: center; }
@@ -116,6 +124,7 @@
         #weapon-panel.weapon-3 #weapon-title { color: #ffbb88; }
         #weapon-panel.weapon-4 #weapon-title { color: #bbff99; }
         #weapon-panel.weapon-5 #weapon-title { color: #ffaa77; }
+        #weapon-panel.weapon-6 #weapon-title { color: #ddaaff; }
         #weapon-desc { font-size: 11px; opacity: 0.85; margin-top: 2px; line-height: 1.3; }
         #weapon-slots { display: flex; gap: 6px; margin-top: 8px; }
         .weapon-slot {
@@ -129,6 +138,7 @@
         .weapon-slot.slot-3.active { color: #ff9955; }
         .weapon-slot.slot-4.active { color: #aaff66; }
         .weapon-slot.slot-5.active { color: #ff8844; }
+        .weapon-slot.slot-6.active { color: #cc88ff; }
         .weapon-slot.locked { opacity: 0.3; filter: grayscale(0.6); cursor: default; }
         #weapon-slots { flex-wrap: wrap; }
         #scope-overlay {
@@ -157,7 +167,7 @@
         }
         #setup-panel.visible { display: flex; }
         #setup-panel .setup-card {
-            width: min(960px, 96vw); max-height: calc(100vh - 32px); overflow-y: auto;
+            width: min(1180px, 98vw); max-height: calc(100vh - 32px); overflow-y: auto;
             background: rgba(30, 32, 55, 0.95); border: 1px solid rgba(255,255,255,0.2);
             border-radius: 12px; padding: 20px 22px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
         }
@@ -186,8 +196,56 @@
         #setup-panel h2 { margin: 0 0 6px; font-size: 20px; color: #aad8ff; }
         #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin: 0; }
         #setup-panel .setup-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 18px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px;
             align-items: start;
+        }
+        #setup-panel .setup-col-boss h3 { color: #c9a0ff; }
+        #setup-panel .setup-col-enemies .setup-field { margin-bottom: 5px; }
+        #setup-panel .setup-col-enemies h3 {
+            margin-bottom: 6px; padding-bottom: 4px; font-size: 11px;
+        }
+        #setup-panel .setup-col-enemies .setup-subhead {
+            margin: 8px 0 5px; padding-bottom: 3px; font-size: 10px;
+            letter-spacing: 0.05em; color: #7a9ab8;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        #setup-panel .setup-col-enemies .setup-compact-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px;
+        }
+        #setup-panel .setup-col-enemies .setup-field-wide { grid-column: 1 / -1; }
+        #setup-panel .setup-col-enemies label.setup-label {
+            font-size: 10px; margin-bottom: 1px;
+        }
+        #setup-panel .setup-col-enemies label.setup-label span.val {
+            font-size: 10px; min-width: 2.2em;
+        }
+        #setup-panel .setup-col-enemies input[type="range"] { height: 12px; }
+        #setup-panel .setup-col-enemies .setup-row {
+            margin: 4px 0; font-size: 11px;
+        }
+        #setup-panel .setup-col-enemies input[type="number"] {
+            width: 52px; padding: 2px 4px; font-size: 11px;
+        }
+        #setup-panel .setup-col-enemies .setup-color-grid label.setup-label {
+            flex-wrap: wrap; gap: 4px;
+        }
+        #setup-panel .setup-col-enemies .setup-color-grid input[type="color"] {
+            width: 36px; height: 22px; padding: 1px;
+        }
+        #setup-panel .setup-col-player .setup-compact-grid--player {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px;
+        }
+        #setup-panel .setup-col-player .setup-compact-grid--player .setup-field-wide {
+            grid-column: 1 / -1;
+        }
+        #setup-panel .setup-col-player .setup-compact-grid--player label.setup-label {
+            font-size: 10px; margin-bottom: 1px;
+        }
+        #setup-panel .setup-col-player .setup-compact-grid--player input[type="range"] {
+            height: 12px;
+        }
+        #setup-panel .setup-col-player .setup-compact-grid--player input[type="number"] {
+            width: 52px; padding: 2px 4px; font-size: 11px;
         }
         #setup-panel .setup-col {
             min-width: 0; padding: 12px 14px; border-radius: 8px;
@@ -248,7 +306,10 @@
             border-color: #6fcf97; font-weight: bold;
         }
         #setup-panel #btn-start-game:hover { background: rgba(40, 130, 65, 1); }
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
+            #setup-panel .setup-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
             #setup-panel .setup-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 767px) {
@@ -268,6 +329,7 @@
     <div id="lives">❤️ Жизни: 5</div>
     <div id="stat-enemies-line">👾 Враги: <span id="stat-enemies-alive">0</span> / <span id="stat-enemies-total">0</span>
         <span id="stat-enemies-danger" style="opacity:0.85;font-size:11px"></span></div>
+    <div id="stat-points-line">⭐ Баллы: <span id="stat-points">0</span></div>
     <div>🔫 Выстрелов: <span id="stat-shots">0</span></div>
     <div>🎯 Попаданий: <span id="stat-hits">0</span></div>
     <div>💥 Уничтожено: <span id="stat-destroyed">0</span></div>
@@ -286,13 +348,14 @@
             <div class="weapon-slot slot-3" data-slot="3">③ Ракета</div>
             <div class="weapon-slot slot-4" data-slot="4">④ Мины</div>
             <div class="weapon-slot slot-5" data-slot="5">⑤ Огнемёт</div>
+            <div class="weapon-slot slot-6" data-slot="6">⑥ Лазер</div>
         </div>
     </div>
 </div>
 <div id="scope-overlay"></div>
 <div id="scope-reticle"></div>
 <div id="controls">
-    [B] Смена оружия · [1][2][3][4] · [W][S][A][D][Q][E] · [Пробел] · [R]<br>
+    [B] Смена оружия · [1]–[6] · [W][S][A][D][Q][E] · [Пробел] · [R] · [G] прицел<br>
     <span style="opacity:0.75">Серые — укрытия · 🔴 атакуют · <span style="color:#ff6644">оранжевые</span> — ямы · радар справа — враги сзади</span>
 </div>
 <div id="enemy-radar" aria-label="Радар врагов">
@@ -312,6 +375,7 @@
 <div id="victory">
     <div>🎉 Поздравляем!</div>
     <div class="sub">Все опасные враги уничтожены — арена зачищена!</div>
+    <div class="sub" id="victory-score-line">⭐ Забег: <span id="victory-points">0</span> баллов · 🏆 Побед: <span id="victory-wins">0</span></div>
     <div class="sub" style="margin-top:8px">Нажми R для настройки и новой игры</div>
 </div>
 <div id="setup-panel">
@@ -323,6 +387,12 @@
                 <button type="button" class="diff-btn" data-diff="easy" id="btn-diff-easy">🟢 Легко</button>
                 <button type="button" class="diff-btn active" data-diff="normal" id="btn-diff-normal">🔵 Нормально</button>
                 <button type="button" class="diff-btn" data-diff="hard" id="btn-diff-hard">🔴 Трудно</button>
+            </div>
+            <div class="setup-persist-stats" id="setup-persist-stats" aria-label="Статистика побед">
+                🏆 Побед: <strong id="persist-wins">0</strong>
+                · ⭐ Всего баллов: <strong id="persist-total-points">0</strong>
+                · 🔝 Лучший забег: <strong id="persist-best-run">0</strong>
+                · Последняя победа: <strong id="persist-last-win">0</strong> баллов
             </div>
         </div>
         <div class="setup-grid">
@@ -347,8 +417,35 @@
                     <label class="setup-label">Укрытия <span class="val" id="val-covers">17</span></label>
                     <input type="range" id="inp-covers" min="0" max="17" step="1" value="17">
                 </div>
+                <h3>Ёлки (слоистые конусы)</h3>
+                <div class="setup-field">
+                    <label class="setup-label">Количество <span class="val" id="val-tree-count">12</span></label>
+                    <input type="range" id="inp-tree-count" min="0" max="28" step="1" value="12">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Ярусов (конусов) <span class="val" id="val-tree-layers">4</span></label>
+                    <input type="range" id="inp-tree-layers" min="2" max="7" step="1" value="4">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Высота <span class="val" id="val-tree-height">5.5</span> м</label>
+                    <input type="range" id="inp-tree-height" min="2.5" max="11" step="0.5" value="5.5">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Радиус основания <span class="val" id="val-tree-radius">1.4</span> м</label>
+                    <input type="range" id="inp-tree-radius" min="0.6" max="2.8" step="0.1" value="1.4">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Сжатие яруса <span class="val" id="val-tree-scale">0.72</span></label>
+                    <input type="range" id="inp-tree-scale" min="0.55" max="0.88" step="0.01" value="0.72">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Сид <input type="number" id="inp-tree-seed" min="1" max="99999" step="1" value="77"></label>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Цвет хвои <input type="color" id="inp-tree-color" value="#1a6b2e"></label>
+                </div>
             </section>
-            <section class="setup-col" aria-labelledby="setup-col-player">
+            <section class="setup-col setup-col-player" aria-labelledby="setup-col-player">
                 <h3 id="setup-col-player">Игрок</h3>
                 <div class="setup-field">
                     <label class="setup-label">Жизни <span class="val" id="val-lives">5</span></label>
@@ -362,9 +459,23 @@
                     <label class="setup-label">Радиус уязвимости <span class="val" id="val-player-radius">1.0</span></label>
                     <input type="range" id="inp-player-radius" min="0.35" max="2.5" step="0.05" value="1">
                 </div>
-                <div class="setup-field">
-                    <label class="setup-label">Радиус поражения врагов <span class="val" id="val-enemy-radius">1.2</span></label>
-                    <input type="range" id="inp-enemy-radius" min="0.4" max="3" step="0.1" value="1.2">
+                <h3>Лабиринт</h3>
+                <div class="setup-row">
+                    <input type="checkbox" id="inp-maze-enabled" checked>
+                    <label for="inp-maze-enabled">Строить в центре</label>
+                </div>
+                <div class="setup-compact-grid setup-compact-grid--player">
+                    <div class="setup-field">
+                        <label class="setup-label">Этажей <span class="val" id="val-maze-floors">2</span></label>
+                        <input type="range" id="inp-maze-floors" min="1" max="3" step="1" value="2">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Врагов внутри <span class="val" id="val-maze-enemies">4</span></label>
+                        <input type="range" id="inp-maze-enemies" min="0" max="12" step="1" value="4">
+                    </div>
+                    <div class="setup-field setup-field-wide">
+                        <label class="setup-label">Сид <input type="number" id="inp-maze-seed" min="1" max="99999" step="1" value="42"></label>
+                    </div>
                 </div>
                 <h3>Оружие</h3>
                 <div class="setup-row">
@@ -381,29 +492,93 @@
                     <label for="inp-spawn-maze">Внутри лабиринта</label>
                 </div>
             </section>
-            <section class="setup-col" aria-labelledby="setup-col-enemies">
+            <section class="setup-col setup-col-enemies" aria-labelledby="setup-col-enemies">
                 <h3 id="setup-col-enemies">Противники</h3>
-                <div class="setup-field">
-                    <label class="setup-label">Врагов на арене <span class="val" id="val-enemies">18</span></label>
-                    <input type="range" id="inp-enemies" min="0" max="18" step="1" value="18">
+                <div class="setup-compact-grid">
+                    <div class="setup-field">
+                        <label class="setup-label">На арене <span class="val" id="val-enemies">18</span></label>
+                        <input type="range" id="inp-enemies" min="0" max="18" step="1" value="18">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">HP опасных <span class="val" id="val-enemy-hp">4</span></label>
+                        <input type="range" id="inp-enemy-hp" min="2" max="10" step="1" value="4">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Патруль <span class="val" id="val-enemy-patrol">1.8</span></label>
+                        <input type="range" id="inp-enemy-patrol" min="0.8" max="3.5" step="0.1" value="1.8">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Мишени HP <span class="val" id="val-static-hp">2</span></label>
+                        <input type="range" id="inp-static-hp" min="1" max="5" step="1" value="2">
+                    </div>
                 </div>
-                <h3>Лабиринт</h3>
+                <h4 class="setup-subhead">Опасные · бой</h4>
+                <div class="setup-compact-grid">
+                    <div class="setup-field">
+                        <label class="setup-label">Погоня <span class="val" id="val-enemy-chase">38</span> м</label>
+                        <input type="range" id="inp-enemy-chase" min="12" max="55" step="1" value="38">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Скорость <span class="val" id="val-enemy-chase-spd">3.8</span></label>
+                        <input type="range" id="inp-enemy-chase-spd" min="1.5" max="6" step="0.1" value="3.8">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Стрельба <span class="val" id="val-enemy-shoot">36</span> м</label>
+                        <input type="range" id="inp-enemy-shoot" min="14" max="50" step="1" value="36">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Радиус попад. <span class="val" id="val-enemy-radius">1.2</span></label>
+                        <input type="range" id="inp-enemy-radius" min="0.4" max="3" step="0.1" value="1.2">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">КД стрелок <span class="val" id="val-enemy-fr-sh">0.9</span> с</label>
+                        <input type="range" id="inp-enemy-fr-sh" min="0.4" max="2.5" step="0.1" value="0.9">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">КД бегунов <span class="val" id="val-enemy-fr-ch">1.4</span> с</label>
+                        <input type="range" id="inp-enemy-fr-ch" min="0.6" max="3" step="0.1" value="1.4">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Контакт <span class="val" id="val-enemy-contact">1</span> ж</label>
+                        <input type="range" id="inp-enemy-contact" min="0" max="3" step="1" value="1">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Пуля −жизни <span class="val" id="val-enemy-bullet">1</span></label>
+                        <input type="range" id="inp-enemy-bullet" min="1" max="3" step="1" value="1">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Заряд выстр. <span class="val" id="val-enemy-charge-t">0.5</span> с</label>
+                        <input type="range" id="inp-enemy-charge-t" min="0.2" max="1.2" step="0.05" value="0.5">
+                    </div>
+                </div>
+                <h4 class="setup-subhead">Цвета</h4>
+                <div class="setup-compact-grid setup-color-grid">
+                    <div class="setup-field">
+                        <label class="setup-label">Основной <input type="color" id="inp-enemy-color-main" value="#ff1133"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Доп. 1 (кольцо) <input type="color" id="inp-enemy-color-ex1" value="#ff0044"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Доп. 2 (шип) <input type="color" id="inp-enemy-color-ex2" value="#ffaa00"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Патруль <input type="color" id="inp-enemy-color-patrol" value="#55aa77"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Заряд <input type="color" id="inp-enemy-color-charge" value="#ffdd44"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Пуля <input type="color" id="inp-enemy-color-bullet" value="#ff3333"></label>
+                    </div>
+                </div>
+            </section>
+            <section class="setup-col setup-col-boss" aria-labelledby="setup-col-boss">
+                <h3 id="setup-col-boss">Боссы</h3>
                 <div class="setup-row">
-                    <input type="checkbox" id="inp-maze-enabled" checked>
-                    <label for="inp-maze-enabled">Строить в центре</label>
+                    <input type="checkbox" id="inp-boss-dangerous" checked>
+                    <label for="inp-boss-dangerous">Опасный босс (стреляет, преследует)</label>
                 </div>
-                <div class="setup-field">
-                    <label class="setup-label">Этажей (макс.) <span class="val" id="val-maze-floors">2</span></label>
-                    <input type="range" id="inp-maze-floors" min="1" max="3" step="1" value="2">
-                </div>
-                <div class="setup-field">
-                    <label class="setup-label">Врагов внутри <span class="val" id="val-maze-enemies">4</span></label>
-                    <input type="range" id="inp-maze-enemies" min="0" max="12" step="1" value="4">
-                </div>
-                <div class="setup-field">
-                    <label class="setup-label">Сид <input type="number" id="inp-maze-seed" min="1" max="99999" step="1" value="42"></label>
-                </div>
-                <h3>Боссы</h3>
                 <div class="setup-field">
                     <label class="setup-label">Количество <span class="val" id="val-boss-count">1</span></label>
                     <input type="range" id="inp-boss-count" min="0" max="5" step="1" value="1">
@@ -413,9 +588,9 @@
                     <input type="range" id="inp-boss-hp" min="10" max="80" step="5" value="25">
                 </div>
                 <div class="setup-field">
-                    <label class="setup-label">Форма</label>
+                    <label class="setup-label">Ядро (форма)</label>
                     <select id="inp-boss-shape">
-                        <option value="octahedron">Октаэдр</option>
+                        <option value="octahedron">Многогранник</option>
                         <option value="box">Куб</option>
                         <option value="sphere">Сфера</option>
                     </select>
@@ -430,6 +605,30 @@
                 <div class="setup-field">
                     <label class="setup-label">Пульсация <span class="val" id="val-boss-pulse">2</span></label>
                     <input type="range" id="inp-boss-pulse" min="0.5" max="6" step="0.5" value="2">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Заряд выстрела <span class="val" id="val-boss-charge">1.8</span> с</label>
+                    <input type="range" id="inp-boss-charge" min="0.8" max="3.5" step="0.1" value="1.8">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Пауза между выстрелами <span class="val" id="val-boss-cooldown">2.8</span> с</label>
+                    <input type="range" id="inp-boss-cooldown" min="1.5" max="6" step="0.1" value="2.8">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Жизней за попадание <span class="val" id="val-boss-bullet-lives">2</span></label>
+                    <input type="range" id="inp-boss-bullet-lives" min="1" max="4" step="1" value="2">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Дистанция преследования <span class="val" id="val-boss-chase">24</span> м</label>
+                    <input type="range" id="inp-boss-chase" min="8" max="45" step="1" value="24">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Скорость преследования <span class="val" id="val-boss-chase-speed">3.2</span></label>
+                    <input type="range" id="inp-boss-chase-speed" min="1.2" max="5.5" step="0.1" value="3.2">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Дальность выстрела <span class="val" id="val-boss-shoot-range">42</span> м</label>
+                    <input type="range" id="inp-boss-shoot-range" min="18" max="60" step="1" value="42">
                 </div>
             </section>
         </div>
@@ -496,6 +695,23 @@
         pitCount: 13,
         coverCount: 17,
         enemyCount: 18,
+        enemyDangerHealth: 4,
+        enemyPatrolSpeed: 1.8,
+        enemyChaseRange: 38,
+        enemyChaseSpeed: 3.8,
+        enemyShootRange: 36,
+        enemyFireRateShooter: 0.9,
+        enemyFireRateChaser: 1.4,
+        enemyContactDamage: 1,
+        enemyBulletLives: 1,
+        enemyColorMain: '#ff1133',
+        enemyColorExtra1: '#ff0044',
+        enemyColorExtra2: '#ffaa00',
+        enemyColorPatrol: '#55aa77',
+        enemyColorCharge: '#ffdd44',
+        enemyColorBullet: '#ff3333',
+        enemyChargeTime: 0.5,
+        staticTargetHp: 2,
         jumpHeight: 1.5,
         playerDamageRadius: 1.0,
         enemyDamageRadius: 1.2,
@@ -509,34 +725,80 @@
         bossColor: '#aa22ff',
         bossGlow: 1.2,
         bossPulse: 2,
+        bossDangerous: true,
+        bossChargeTime: 1.8,
+        bossFireCooldown: 2.8,
+        bossBulletLives: 2,
+        bossChaseRange: 24,
+        bossChaseSpeed: 3.2,
+        bossShootRange: 42,
+        bossSpawnAnim: 1.1,
+        bossDeathAnim: 1.15,
         spawnInMaze: false,
-        weaponsOnField: false
+        weaponsOnField: false,
+        treeCount: 12,
+        treeLayers: 4,
+        treeHeight: 5.5,
+        treeBaseRadius: 1.4,
+        treeLayerScale: 0.72,
+        treeSeed: 77,
+        treeColor: '#1a6b2e'
     };
 
     const DIFFICULTY_PRESETS = {
         easy: {
             mapWidth: 96, mapDepth: 120, terrainSeed: 0.85,
             lives: 8, pitCount: 5, coverCount: 17, enemyCount: 8,
+            enemyDangerHealth: 3, enemyPatrolSpeed: 1.5, enemyChaseRange: 28, enemyChaseSpeed: 3,
+            enemyShootRange: 30, enemyFireRateShooter: 1.2, enemyFireRateChaser: 1.8,
+            enemyContactDamage: 1, enemyBulletLives: 1,
+            enemyColorMain: '#cc3344', enemyColorExtra1: '#aa2255', enemyColorExtra2: '#cc8833',
+            enemyColorPatrol: '#66aa88', enemyColorCharge: '#ffcc66', enemyColorBullet: '#ff5555',
+            enemyChargeTime: 0.55, staticTargetHp: 2,
             jumpHeight: 2.2, playerDamageRadius: 0.6, enemyDamageRadius: 1.8,
             mazeEnabled: true, mazeFloors: 1, mazeEnemyCount: 1, mazeSeed: 42,
             bossCount: 0, bossHealth: 15, bossShape: 'sphere', bossColor: '#44cc88',
-            bossGlow: 0.8, bossPulse: 1.2, spawnInMaze: false
+            bossGlow: 0.8, bossPulse: 1.2, spawnInMaze: false,
+            bossDangerous: false, bossChargeTime: 2.2, bossFireCooldown: 3.5,
+            bossBulletLives: 1, bossChaseRange: 18, bossChaseSpeed: 2.4, bossShootRange: 38,
+            treeCount: 16, treeLayers: 4, treeHeight: 5, treeBaseRadius: 1.3,
+            treeLayerScale: 0.74, treeSeed: 77, treeColor: '#22884a'
         },
         normal: {
             mapWidth: 108, mapDepth: 144, terrainSeed: 1,
             lives: 5, pitCount: 13, coverCount: 17, enemyCount: 18,
+            enemyDangerHealth: 4, enemyPatrolSpeed: 1.8, enemyChaseRange: 38, enemyChaseSpeed: 3.8,
+            enemyShootRange: 36, enemyFireRateShooter: 0.9, enemyFireRateChaser: 1.4,
+            enemyContactDamage: 1, enemyBulletLives: 1,
+            enemyColorMain: '#ff1133', enemyColorExtra1: '#ff0044', enemyColorExtra2: '#ffaa00',
+            enemyColorPatrol: '#55aa77', enemyColorCharge: '#ffdd44', enemyColorBullet: '#ff3333',
+            enemyChargeTime: 0.5, staticTargetHp: 2,
             jumpHeight: 1.5, playerDamageRadius: 1.0, enemyDamageRadius: 1.2,
             mazeEnabled: true, mazeFloors: 2, mazeEnemyCount: 4, mazeSeed: 42,
             bossCount: 1, bossHealth: 25, bossShape: 'octahedron', bossColor: '#aa22ff',
-            bossGlow: 1.2, bossPulse: 2, spawnInMaze: false
+            bossGlow: 1.2, bossPulse: 2, spawnInMaze: false,
+            bossDangerous: true, bossChargeTime: 1.8, bossFireCooldown: 2.8,
+            bossBulletLives: 2, bossChaseRange: 24, bossChaseSpeed: 3.2, bossShootRange: 42,
+            treeCount: 12, treeLayers: 4, treeHeight: 5.5, treeBaseRadius: 1.4,
+            treeLayerScale: 0.72, treeSeed: 77, treeColor: '#1a6b2e'
         },
         hard: {
             mapWidth: 120, mapDepth: 160, terrainSeed: 1.35,
             lives: 3, pitCount: 13, coverCount: 8, enemyCount: 18,
+            enemyDangerHealth: 5, enemyPatrolSpeed: 2.1, enemyChaseRange: 45, enemyChaseSpeed: 4.5,
+            enemyShootRange: 40, enemyFireRateShooter: 0.65, enemyFireRateChaser: 1.1,
+            enemyContactDamage: 2, enemyBulletLives: 2,
+            enemyColorMain: '#ff0022', enemyColorExtra1: '#ff1166', enemyColorExtra2: '#ff6600',
+            enemyColorPatrol: '#448866', enemyColorCharge: '#ffff66', enemyColorBullet: '#ff1111',
+            enemyChargeTime: 0.4, staticTargetHp: 3,
             jumpHeight: 1.0, playerDamageRadius: 1.5, enemyDamageRadius: 0.7,
             mazeEnabled: true, mazeFloors: 3, mazeEnemyCount: 10, mazeSeed: 42,
             bossCount: 2, bossHealth: 50, bossShape: 'box', bossColor: '#ff2244',
-            bossGlow: 2.2, bossPulse: 4, spawnInMaze: true
+            bossGlow: 2.2, bossPulse: 4, spawnInMaze: true,
+            bossDangerous: true, bossChargeTime: 1.4, bossFireCooldown: 2.2,
+            bossBulletLives: 3, bossChaseRange: 30, bossChaseSpeed: 3.8, bossShootRange: 48,
+            treeCount: 7, treeLayers: 5, treeHeight: 6.5, treeBaseRadius: 1.5,
+            treeLayerScale: 0.68, treeSeed: 91, treeColor: '#145c28'
         }
     };
 
@@ -552,6 +814,7 @@
     const mazeMeshes = [];
     let mazeRngState = 1;
     let bossesToSpawn = 0;
+    const bossVfx = [];
     let JUMP_VELOCITY = 5.2;
     const GRAVITY = 16;
 
@@ -600,7 +863,26 @@
 
     function getEnemySpawnList() {
         const n = Math.min(arenaSettings.enemyCount, BASE_ENEMY_LAYOUT.length);
-        return scaleLayout(BASE_ENEMY_LAYOUT.slice(0, n), true);
+        const list = scaleLayout(BASE_ENEMY_LAYOUT.slice(0, n), true);
+        const patrolMul = arenaSettings.enemyPatrolSpeed / 1.8;
+        for (const cfg of list) {
+            if (cfg.dangerous) {
+                cfg.health = arenaSettings.enemyDangerHealth;
+            }
+            if (cfg.type === 'patrol' && cfg.speed) {
+                cfg.speed *= patrolMul;
+            }
+        }
+        return list;
+    }
+
+    function applyDangerousEnemyCombat(group, type) {
+        const s = arenaSettings;
+        group.userData.chaseRange = s.enemyChaseRange;
+        group.userData.shootRange = s.enemyShootRange;
+        group.userData.chaseSpeed = s.enemyChaseSpeed;
+        group.userData.fireRate = type === 'shooter' ? s.enemyFireRateShooter : s.enemyFireRateChaser;
+        group.userData.contactDamage = s.enemyContactDamage;
     }
 
     function getStaticTargetList() {
@@ -714,6 +996,8 @@
 
     let terrain;
     const covers = [];
+    const trees = [];
+    let treeRngState = 1;
     const shootables = [];
     const enemies = [];
     const bullets = [];
@@ -737,6 +1021,17 @@
         pitMeshes.length = 0;
         for (const m of covers) disposeMesh(m);
         covers.length = 0;
+        for (const t of trees) {
+            scene.remove(t);
+            t.traverse((c) => {
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) {
+                    if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
+                    else c.material.dispose();
+                }
+            });
+        }
+        trees.length = 0;
         for (const m of shellMeshes) disposeMesh(m);
         shellMeshes.length = 0;
         clearMaze();
@@ -878,6 +1173,105 @@
         ceiling.position.y = WORLD.ceilingY;
         scene.add(ceiling);
         shellMeshes.push(ceiling);
+    }
+
+    function treeRand() {
+        treeRngState = (treeRngState * 16807) % 2147483647;
+        return (treeRngState & 0x7fffffff) / 0x7fffffff;
+    }
+
+    function createLayeredConeTree(x, z) {
+        const layers = Math.max(2, Math.round(arenaSettings.treeLayers));
+        const totalH = arenaSettings.treeHeight;
+        const baseR = arenaSettings.treeBaseRadius;
+        const taper = arenaSettings.treeLayerScale;
+        const trunkH = totalH * 0.22;
+        const foliageH = totalH - trunkH;
+        const stepH = foliageH / layers;
+        const gy = getTerrainHeight(x, z);
+        const foliageBase = new THREE.Color(arenaSettings.treeColor);
+
+        const group = new THREE.Group();
+        group.position.set(x, gy, z);
+
+        const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(baseR * 0.1, baseR * 0.16, trunkH, 8),
+            new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.9, metalness: 0.05 })
+        );
+        trunk.position.y = trunkH / 2;
+        trunk.castShadow = true;
+        trunk.receiveShadow = true;
+        group.add(trunk);
+
+        let y = trunkH;
+        let radius = baseR;
+        for (let i = 0; i < layers; i++) {
+            const layerH = stepH * 1.08;
+            const shade = 1 - i * (0.42 / Math.max(1, layers - 1));
+            const cone = new THREE.Mesh(
+                new THREE.ConeGeometry(radius, layerH, 10),
+                new THREE.MeshStandardMaterial({
+                    color: foliageBase.clone().multiplyScalar(0.55 + shade * 0.45),
+                    roughness: 0.82,
+                    metalness: 0.04
+                })
+            );
+            cone.position.y = y + layerH / 2;
+            cone.castShadow = true;
+            cone.receiveShadow = true;
+            group.add(cone);
+            y += stepH * 0.88;
+            radius *= taper;
+        }
+
+        group.userData.isTree = true;
+        group.userData.blocksBullets = true;
+        group.userData.blocksMovement = true;
+        group.userData.halfW = baseR * 1.05;
+        group.userData.halfD = baseR * 1.05;
+        group.userData.height = totalH;
+        group.userData.baseY = gy;
+        return group;
+    }
+
+    function isInsideTreeZone(x, z, margin = 0) {
+        for (const tree of trees) {
+            const hw = tree.userData.halfW + margin;
+            const hd = tree.userData.halfD + margin;
+            if (Math.abs(x - tree.position.x) < hw && Math.abs(z - tree.position.z) < hd) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function buildTrees() {
+        const count = Math.max(0, Math.round(arenaSettings.treeCount));
+        if (count <= 0) return;
+        treeRngState = Math.max(1, Math.floor(arenaSettings.treeSeed) % 2147483646);
+        const margin = 9;
+        const minTreeDist = 4.5 + arenaSettings.treeBaseRadius * 2;
+        const placed = [];
+
+        for (let attempt = 0; attempt < count * 50 && placed.length < count; attempt++) {
+            const x = (treeRand() - 0.5) * (WORLD.halfW - margin) * 1.9;
+            const z = (treeRand() - 0.5) * (WORLD.halfD - margin) * 1.9;
+            if (!isSafeSpawnAt(x, z)) continue;
+            if (isInsideTreeZone(x, z, minTreeDist * 0.45)) continue;
+            if (mazeFootprint.active && isInsideMazeBuilding(x, z, 2.2)) continue;
+            let ok = true;
+            for (const p of placed) {
+                if (Math.hypot(x - p.x, z - p.z) < minTreeDist) {
+                    ok = false;
+                    break;
+                }
+            }
+            if (!ok) continue;
+            const tree = createLayeredConeTree(x, z);
+            scene.add(tree);
+            trees.push(tree);
+            placed.push({ x, z });
+        }
     }
 
     function buildCovers() {
@@ -1042,7 +1436,7 @@
     function createMazeFloorTile(x, z, size, yBase) {
         const piece = registerMazePiece({
             x, z, w: size, d: size, h: 0.28, yBase,
-            jumpable: true, blocksBullets: false, blocksMovement: false
+            jumpable: true, blocksBullets: true, blocksMovement: false
         });
         const mesh = new THREE.Mesh(
             new THREE.BoxGeometry(size, 0.28, size),
@@ -1298,49 +1692,94 @@
         buildArenaShell();
         buildCovers();
         buildMaze();
+        buildTrees();
         resolveSpawnPoint();
         applySpawnPosition();
     }
 
 
+    function parseSettingColor(hex, fallbackHex) {
+        const h = String(hex || '').replace('#', '');
+        const fb = String(fallbackHex).replace('#', '');
+        return parseInt((h.length === 6 ? h : fb), 16);
+    }
+
+    function emissiveFromColor(hex, scale = 0.38) {
+        const c = new THREE.Color(parseSettingColor(hex, 'ffffff'));
+        c.multiplyScalar(scale);
+        return c.getHex();
+    }
+
+    function enemyStandardMat(colorHex, emissiveScale = 0.38) {
+        const col = parseSettingColor(colorHex, 'ff1133');
+        return new THREE.MeshStandardMaterial({
+            color: col,
+            emissive: emissiveFromColor(colorHex, emissiveScale),
+            metalness: 0.65,
+            roughness: 0.25
+        });
+    }
+
     function createEnemyVisual(dangerous, type) {
+        const s = arenaSettings;
         const group = new THREE.Group();
         if (dangerous) {
+            const mainHex = s.enemyColorMain;
             const body = new THREE.Mesh(
                 new THREE.OctahedronGeometry(0.42, 0),
-                new THREE.MeshStandardMaterial({
-                    color: 0xff1133, emissive: 0x660011, metalness: 0.7, roughness: 0.2
-                })
+                enemyStandardMat(mainHex, 0.35)
             );
             body.position.y = 0.45;
             const ring = new THREE.Mesh(
                 new THREE.TorusGeometry(0.55, 0.06, 8, 20),
-                new THREE.MeshStandardMaterial({ color: 0xff0044, emissive: 0xff0022 })
+                enemyStandardMat(s.enemyColorExtra1, 0.45)
             );
             ring.rotation.x = Math.PI / 2;
             ring.position.y = 0.15;
             const spike = new THREE.Mesh(
                 new THREE.ConeGeometry(0.2, 0.5, 4),
-                new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0x442200 })
+                enemyStandardMat(s.enemyColorExtra2, 0.4)
             );
             spike.position.y = 0.85;
             if (type === 'shooter') {
                 const gun = new THREE.Mesh(
                     new THREE.BoxGeometry(0.15, 0.15, 0.5),
-                    new THREE.MeshStandardMaterial({ color: 0x222222, emissive: 0x330000 })
+                    new THREE.MeshStandardMaterial({
+                        color: 0x222222,
+                        emissive: emissiveFromColor(mainHex, 0.2),
+                        metalness: 0.5,
+                        roughness: 0.4
+                    })
                 );
                 gun.position.set(0.35, 0.5, 0);
                 group.add(gun);
             }
-            group.add(body, ring, spike);
-            const glow = new THREE.PointLight(0xff2244, 0.5, 4);
+            const chargeCol = parseSettingColor(s.enemyColorCharge, 'ffdd44');
+            const chargeOrb = new THREE.Mesh(
+                new THREE.SphereGeometry(0.22, 10, 10),
+                new THREE.MeshBasicMaterial({
+                    color: chargeCol,
+                    transparent: true,
+                    opacity: 0,
+                    depthWrite: false
+                })
+            );
+            chargeOrb.position.y = 0.72;
+            group.add(body, ring, spike, chargeOrb);
+            const glow = new THREE.PointLight(parseSettingColor(mainHex, 'ff2244'), 0.5, 4);
             glow.position.y = 0.6;
             group.add(glow);
             group.userData.glow = glow;
+            group.userData.chargeOrb = chargeOrb;
+            group.userData.enemyBody = body;
         } else {
             const body = new THREE.Mesh(
                 new THREE.BoxGeometry(0.65, 0.65, 0.65),
-                new THREE.MeshStandardMaterial({ color: 0x55aa77, metalness: 0.3, roughness: 0.4 })
+                new THREE.MeshStandardMaterial({
+                    color: parseSettingColor(s.enemyColorPatrol, '55aa77'),
+                    metalness: 0.3,
+                    roughness: 0.4
+                })
             );
             body.position.y = 0.33;
             group.add(body);
@@ -1368,25 +1807,29 @@
         group.userData.homePos = { x: cfg.x, z: cfg.z };
         group.userData.phase = Math.random() * Math.PI * 2;
         group.userData.lastShot = 0;
-        group.userData.chaseRange = dangerous ? 38 : 0;
-        group.userData.shootRange = dangerous ? 36 : 0;
-        group.userData.chaseSpeed = dangerous ? 3.8 : 0;
-        group.userData.fireRate = dangerous ? (type === 'shooter' ? 0.9 : 1.4) : 0;
-        group.userData.contactDamage = dangerous ? 1 : 0;
+        if (dangerous) {
+            applyDangerousEnemyCombat(group, type);
+        } else {
+            group.userData.chaseRange = 0;
+            group.userData.shootRange = 0;
+            group.userData.chaseSpeed = 0;
+            group.userData.fireRate = 0;
+            group.userData.contactDamage = 0;
+        }
         group.userData.inMaze = !!cfg.inMaze;
 
         if (type === 'patrol') {
             group.userData.patrol = {
                 axis: cfg.axis || 'x',
                 span: cfg.span || 5,
-                speed: cfg.speed || 1.8
+                speed: cfg.speed || arenaSettings.enemyPatrolSpeed
             };
         }
         if (type === 'shooter') {
             group.userData.patrol = {
                 axis: cfg.axis || 'x',
                 span: cfg.span || 4,
-                speed: cfg.speed || 1.1
+                speed: cfg.speed || arenaSettings.enemyPatrolSpeed * 0.65
             };
         }
 
@@ -1403,8 +1846,9 @@
             cube.position.set(x, getTerrainHeight(x, z) + 0.28, z);
             cube.castShadow = true;
             cube.userData.shootable = true;
-            cube.userData.health = 2;
-            cube.userData.maxHealth = 2;
+            cube.userData.isStaticTarget = true;
+            cube.userData.health = arenaSettings.staticTargetHp;
+            cube.userData.maxHealth = arenaSettings.staticTargetHp;
             scene.add(cube);
             shootables.push(cube);
         }
@@ -1427,7 +1871,7 @@
                 spawnY: sp.y,
                 type: types[i % types.length],
                 dangerous: true,
-                health: 3 + Math.floor(mazeRand() * 3),
+                health: Math.max(2, arenaSettings.enemyDangerHealth - 1 + Math.floor(mazeRand() * 2)),
                 inMaze: true
             });
         }
@@ -1481,7 +1925,6 @@
     const flameForward = new THREE.Vector3(0, 0, 1);
     const bulletGeometry = new THREE.SphereGeometry(0.06, 8, 8);
     const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff66 });
-    const enemyBulletMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
     const BULLET_SPEED = 24;
     const ENEMY_BULLET_SPEED = 16;
     const ENEMY_BULLET_HIT_Y = 1.05;
@@ -1503,7 +1946,7 @@
     const mines = [];
     let lastMinePlace = 0;
 
-    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5 };
+    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6 };
     const WEAPON_INFO = {
         1: {
             name: '1 — Стандарт',
@@ -1544,9 +1987,25 @@
             desc: 'ЛКМ — жарить (удерживать) · G — дальний бой',
             help: '5: ЛКМ удерживать · G — прицеливание WASD',
             slotLabel: '⑤ Огнемёт'
+        },
+        6: {
+            name: '6 — Лазер',
+            title: 'Лазер',
+            icon: '⚡',
+            desc: 'ЛКМ — зарядка и луч на всю дистанцию · G — дальний бой',
+            help: '6: ЛКМ заряд · луч мгновенно · G прицел',
+            slotLabel: '⑥ Лазер'
         }
     };
+    const LASER_CHARGE_TIME = 0.95;
+    const LASER_COOLDOWN = 1.5;
+    const LASER_DAMAGE = 2;
+    const LASER_MAX_RANGE = 300;
+    const LASER_BEAM_FADE = 0.4;
+    const laserForward = new THREE.Vector3(0, 1, 0);
     const FLAME_RANGE = 8.5;
+    const FLAME_VISUAL_RANGE = 5.8;
+    const FLAME_VISUAL_SEGMENTS = 6;
     const FLAME_MIN_DOT = Math.cos(0.42);
     const FLAME_TICK = 0.11;
     const FLAME_DAMAGE = 1;
@@ -1574,13 +2033,14 @@
     const ROCKET_DAMAGE = 3;
     const WEAPON_PICKUP_RADIUS = 1.75;
     const ALL_WEAPON_IDS = [
-        WEAPON.STANDARD, WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER
+        WEAPON.STANDARD, WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER
     ];
     const WEAPON_PICKUP_COLORS = {
         2: 0x66aaff,
         3: 0xff6622,
         4: 0x77dd55,
-        5: 0xff5522
+        5: 0xff5522,
+        6: 0xbb55ff
     };
     const weaponUnlocks = new Set([WEAPON.STANDARD]);
     const weaponPickups = [];
@@ -1598,8 +2058,21 @@
     let flameTickAcc = 0;
     let flameBurstCounted = false;
     let flameStream = null;
+    let laserCharge = null;
+    let laserChargeVisual = null;
+    const laserBeams = [];
+    let lastLaserShot = 0;
 
-    const stats = { shots: 0, hits: 0, destroyed: 0 };
+    const ARENA_STATS_STORAGE_KEY = 'three-app-arena-record';
+    const defaultPersistedStats = {
+        wins: 0,
+        totalPoints: 0,
+        bestRunPoints: 0,
+        lastWinPoints: 0
+    };
+    let persistedStats = loadPersistedStats();
+
+    const stats = { shots: 0, hits: 0, destroyed: 0, points: 0 };
     const spawnPoint = { x: 0, z: 0 };
     let lives = 5;
     let invincibleUntil = 0;
@@ -1610,14 +2083,47 @@
     let victoryShown = false;
 
     const keys = { w: false, a: false, s: false, d: false, strafeLeft: false, strafeRight: false };
+    const MOVEMENT_KEY_CODES = new Set([
+        'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE', 'ArrowLeft', 'ArrowRight'
+    ]);
+    const pressedMovementCodes = new Set();
+
+    function applyMovementKeysFromPressed() {
+        keys.w = pressedMovementCodes.has('KeyW');
+        keys.a = pressedMovementCodes.has('KeyA');
+        keys.s = pressedMovementCodes.has('KeyS');
+        keys.d = pressedMovementCodes.has('KeyD');
+        keys.strafeLeft = pressedMovementCodes.has('KeyQ') || pressedMovementCodes.has('ArrowLeft');
+        keys.strafeRight = pressedMovementCodes.has('KeyE') || pressedMovementCodes.has('ArrowRight');
+    }
 
     function resetMovementKeys() {
+        pressedMovementCodes.clear();
         keys.w = false;
         keys.a = false;
         keys.s = false;
         keys.d = false;
         keys.strafeLeft = false;
         keys.strafeRight = false;
+    }
+
+    function canAcceptMovementKeys() {
+        return gameActive && !victoryShown;
+    }
+
+    function handleMovementKeyDown(event) {
+        if (!MOVEMENT_KEY_CODES.has(event.code)) return false;
+        if (!canAcceptMovementKeys()) return true;
+        pressedMovementCodes.add(event.code);
+        applyMovementKeysFromPressed();
+        return true;
+    }
+
+    function handleMovementKeyUp(event) {
+        if (!MOVEMENT_KEY_CODES.has(event.code)) return false;
+        pressedMovementCodes.delete(event.code);
+        applyMovementKeysFromPressed();
+        return true;
     }
     let position = { x: 0, z: 0 };
     let rotate = 0;
@@ -1626,9 +2132,16 @@
     let onGround = true;
 
     const livesEl = document.getElementById('lives');
+    const statPointsEl = document.getElementById('stat-points');
     const statShotsEl = document.getElementById('stat-shots');
     const statHitsEl = document.getElementById('stat-hits');
     const statDestroyedEl = document.getElementById('stat-destroyed');
+    const persistWinsEl = document.getElementById('persist-wins');
+    const persistTotalPointsEl = document.getElementById('persist-total-points');
+    const persistBestRunEl = document.getElementById('persist-best-run');
+    const persistLastWinEl = document.getElementById('persist-last-win');
+    const victoryPointsEl = document.getElementById('victory-points');
+    const victoryWinsEl = document.getElementById('victory-wins');
     const statEnemiesAliveEl = document.getElementById('stat-enemies-alive');
     const statEnemiesTotalEl = document.getElementById('stat-enemies-total');
     const statEnemiesDangerEl = document.getElementById('stat-enemies-danger');
@@ -1758,6 +2271,7 @@
 
     function isSafeSpawnAt(x, z) {
         if (isInsidePitZone(x, z)) return false;
+        if (isInsideTreeZone(x, z, 1.2)) return false;
         const groundRef = getTerrainHeight(x, z) + 0.35;
         const footY = getSupportYAt(x, z, groundRef);
         if (footY < WORLD.spawnFootMinY) return false;
@@ -1869,13 +2383,61 @@
 
     function getBulletBlockers() {
         const maze = getMazeLosMeshes();
-        return terrain ? [terrain, ...covers, ...maze] : [...covers, ...maze];
+        const list = terrain ? [terrain, ...covers, ...trees, ...maze] : [...covers, ...trees, ...maze];
+        return list;
     }
 
     const BULLET_PATH_STEP = 0.22;
     const BULLET_TERRAIN_CLEARANCE = 0.14;
+    const BULLET_MAZE_PAD = 0.12;
 
-    function isBulletPathBlocked(prev, next) {
+    /** Пересечение отрезка с AABB стены лабиринта (надёжнее raycast по тонким мешам). */
+    function segmentHitsMazeBulletWall(p, ax, ay, az, bx, by, bz, pad = BULLET_MAZE_PAD) {
+        if (!p.blocksBullets) return false;
+        const x0 = p.x - p.hw - pad;
+        const x1 = p.x + p.hw + pad;
+        const y0 = p.yBase - pad;
+        const y1 = p.yBase + p.h + pad;
+        const z0 = p.z - p.hd - pad;
+        const z1 = p.z + p.hd + pad;
+        const dx = bx - ax;
+        const dy = by - ay;
+        const dz = bz - az;
+        let tmin = 0;
+        let tmax = 1;
+        const axes = [
+            [dx, x0 - ax, x1 - ax],
+            [dy, y0 - ay, y1 - ay],
+            [dz, z0 - az, z1 - az]
+        ];
+        for (const [d, minB, maxB] of axes) {
+            if (Math.abs(d) < 1e-8) {
+                if (minB > 0 || maxB < 0) return false;
+                continue;
+            }
+            const inv = 1 / d;
+            let t0 = minB * inv;
+            let t1 = maxB * inv;
+            if (t0 > t1) { const s = t0; t0 = t1; t1 = s; }
+            tmin = Math.max(tmin, t0);
+            tmax = Math.min(tmax, t1);
+            if (tmin > tmax) return false;
+        }
+        return tmax >= 0 && tmin <= 1;
+    }
+
+    function isMazeBulletSegmentBlocked(ax, ay, az, bx, by, bz) {
+        if (!mazeFootprint.active) return false;
+        for (const p of mazePieces) {
+            if (segmentHitsMazeBulletWall(p, ax, ay, az, bx, by, bz)) return true;
+        }
+        return false;
+    }
+
+    function isBulletPathBlocked(prev, next, skipMaze = false) {
+        if (!skipMaze && isMazeBulletSegmentBlocked(prev.x, prev.y, prev.z, next.x, next.y, next.z)) {
+            return true;
+        }
         const dx = next.x - prev.x;
         const dy = next.y - prev.y;
         const dz = next.z - prev.z;
@@ -1942,6 +2504,9 @@
     /** Проверка попадания по отрезку prevPos→position (важно для быстрой винтовки). */
     function resolvePlayerBulletHit(bullet, prevPos) {
         const end = bullet.position;
+        if (isMazeBulletSegmentBlocked(prevPos.x, prevPos.y, prevPos.z, end.x, end.y, end.z)) {
+            return 'block';
+        }
         const seg = tmpVec3.subVectors(end, prevPos);
         const segLen = seg.length();
         if (segLen < 1e-5) return null;
@@ -1955,7 +2520,7 @@
         );
         if (!hits.length) return null;
         const hit = hits[0];
-        if (isCoverObject(hit.object) || isMazeBulletBlocker(hit.object)) {
+        if (isCoverObject(hit.object) || isTreeObject(hit.object) || isMazeBulletBlocker(hit.object)) {
             return 'block';
         }
         const root = getShootableRoot(hit.object);
@@ -2088,7 +2653,68 @@
         }
     }
 
+    function loadPersistedStats() {
+        try {
+            const raw = localStorage.getItem(ARENA_STATS_STORAGE_KEY);
+            if (!raw) return { ...defaultPersistedStats };
+            const parsed = JSON.parse(raw);
+            return {
+                wins: Math.max(0, Number(parsed.wins) || 0),
+                totalPoints: Math.max(0, Number(parsed.totalPoints) || 0),
+                bestRunPoints: Math.max(0, Number(parsed.bestRunPoints) || 0),
+                lastWinPoints: Math.max(0, Number(parsed.lastWinPoints) || 0)
+            };
+        } catch {
+            return { ...defaultPersistedStats };
+        }
+    }
+
+    function savePersistedStats() {
+        try {
+            localStorage.setItem(ARENA_STATS_STORAGE_KEY, JSON.stringify(persistedStats));
+        } catch (e) {
+            console.warn('[stats] не удалось сохранить', e);
+        }
+    }
+
+    function updatePersistedStatsUI() {
+        if (!persistWinsEl) return;
+        persistWinsEl.textContent = persistedStats.wins;
+        persistTotalPointsEl.textContent = persistedStats.totalPoints;
+        persistBestRunEl.textContent = persistedStats.bestRunPoints;
+        persistLastWinEl.textContent = persistedStats.lastWinPoints;
+    }
+
+    /** 1 балл за 1 ед. HP (враг, босс, мишень). */
+    function getScorePerHp(target) {
+        if (!target?.userData) return 0;
+        if (target.userData.isBoss) return 1;
+        if (target.userData.isStaticTarget) return 1;
+        if (target.userData.enemy) return 1;
+        return 0;
+    }
+
+    function addMatchScore(target, hpDamage = 1) {
+        if (!gameActive || hpDamage <= 0) return;
+        const perHp = getScorePerHp(target);
+        if (perHp <= 0) return;
+        stats.points += perHp * hpDamage;
+    }
+
+    function recordVictory(matchPoints) {
+        const pts = Math.max(0, Math.round(matchPoints));
+        persistedStats.wins += 1;
+        persistedStats.totalPoints += pts;
+        persistedStats.lastWinPoints = pts;
+        if (pts > persistedStats.bestRunPoints) persistedStats.bestRunPoints = pts;
+        savePersistedStats();
+        updatePersistedStatsUI();
+        if (victoryPointsEl) victoryPointsEl.textContent = pts;
+        if (victoryWinsEl) victoryWinsEl.textContent = persistedStats.wins;
+    }
+
     function updateStatsUI() {
+        statPointsEl.textContent = stats.points;
         statShotsEl.textContent = stats.shots;
         statHitsEl.textContent = stats.hits;
         statDestroyedEl.textContent = stats.destroyed;
@@ -2114,6 +2740,15 @@
         return false;
     }
 
+    function isTreeObject(obj) {
+        let o = obj;
+        while (o) {
+            if (o.userData?.isTree) return true;
+            o = o.parent;
+        }
+        return false;
+    }
+
     function isMazeBulletBlocker(obj) {
         let o = obj;
         while (o) {
@@ -2129,7 +2764,7 @@
     }
 
     function countBossesAlive() {
-        return enemies.filter((e) => e.userData.isBoss).length;
+        return enemies.filter((e) => e.userData.isBoss && !e.userData.dying).length;
     }
 
     function checkVictory() {
@@ -2142,8 +2777,11 @@
         if (countBossesAlive() > 0) return;
         victoryShown = true;
         resetMovementKeys();
+        recordVictory(stats.points);
         victoryEl.classList.add('visible');
-        infoEl.innerHTML = '🏆 Победа!<div style="font-size:12px; opacity:0.8;">Арена и боссы уничтожены</div>';
+        infoEl.innerHTML =
+            `🏆 Победа!<div style="font-size:12px; opacity:0.8;">`
+            + `Арена зачищена · <b>${stats.points}</b> баллов · побед: <b>${persistedStats.wins}</b></div>`;
     }
 
     function parseBossColor() {
@@ -2151,36 +2789,377 @@
         return parseInt(hex.length === 6 ? hex : 'aa22ff', 16);
     }
 
+    function makeBossMaterial(col, intensity = 0.38) {
+        return new THREE.MeshStandardMaterial({
+            color: col,
+            emissive: col,
+            emissiveIntensity: intensity,
+            metalness: 0.7,
+            roughness: 0.22
+        });
+    }
+
     function createBossMesh() {
         const shape = arenaSettings.bossShape;
-        let geo;
-        if (shape === 'box') geo = new THREE.BoxGeometry(1.75, 2.45, 1.75);
-        else if (shape === 'sphere') geo = new THREE.SphereGeometry(1.38, 20, 20);
-        else geo = new THREE.OctahedronGeometry(1.42, 0);
         const col = parseBossColor();
-        const mat = new THREE.MeshStandardMaterial({
-            color: col, emissive: col, emissiveIntensity: 0.35,
-            metalness: 0.65, roughness: 0.25
-        });
         const group = new THREE.Group();
-        const body = new THREE.Mesh(geo, mat);
+        const body = new THREE.Group();
         body.position.y = 1.05;
+
+        let coreGeo;
+        if (shape === 'box') coreGeo = new THREE.BoxGeometry(1.35, 1.85, 1.35);
+        else if (shape === 'sphere') coreGeo = new THREE.SphereGeometry(1.15, 18, 18);
+        else coreGeo = new THREE.IcosahedronGeometry(1.12, 1);
+
+        const core = new THREE.Mesh(coreGeo, makeBossMaterial(col, 0.42));
+        body.add(core);
+
+        for (let i = 0; i < 4; i++) {
+            const a = (i / 4) * Math.PI * 2 + 0.4;
+            const pod = new THREE.Mesh(
+                new THREE.ConeGeometry(0.38, 0.95, 7),
+                makeBossMaterial(col, 0.28)
+            );
+            pod.position.set(Math.cos(a) * 1.25, 0.15, Math.sin(a) * 1.25);
+            pod.rotation.x = Math.PI;
+            body.add(pod);
+        }
+
+        for (let i = 0; i < 6; i++) {
+            const a = (i / 6) * Math.PI * 2;
+            const spike = new THREE.Mesh(
+                new THREE.ConeGeometry(0.2, 1.05, 6),
+                makeBossMaterial(col, 0.32)
+            );
+            spike.position.set(Math.cos(a) * 0.62, 1.25, Math.sin(a) * 0.62);
+            body.add(spike);
+        }
+
+        const halo = new THREE.Mesh(
+            new THREE.TorusGeometry(1.55, 0.07, 8, 24),
+            makeBossMaterial(col, 0.55)
+        );
+        halo.rotation.x = Math.PI / 2;
+        halo.position.y = 0.55;
+        body.add(halo);
+
         group.add(body);
-        const light = new THREE.PointLight(col, arenaSettings.bossGlow, 14);
-        light.position.y = 1.2;
+
+        const chargeOrb = new THREE.Mesh(
+            new THREE.SphereGeometry(0.4, 14, 14),
+            new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0,
+                depthWrite: false
+            })
+        );
+        chargeOrb.position.y = 1.45;
+        group.add(chargeOrb);
+
+        const spawnRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.5, 2.2, 32),
+            new THREE.MeshBasicMaterial({
+                color: col,
+                transparent: true,
+                opacity: 0.85,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            })
+        );
+        spawnRing.rotation.x = -Math.PI / 2;
+        spawnRing.position.y = 0.08;
+        group.add(spawnRing);
+
+        const light = new THREE.PointLight(col, arenaSettings.bossGlow, 16);
+        light.position.y = 1.35;
         group.add(light);
+
         group.userData.bossBody = body;
+        group.userData.bossCore = core;
+        group.userData.bossChargeOrb = chargeOrb;
+        group.userData.bossSpawnRing = spawnRing;
         group.userData.bossLight = light;
-        group.userData.pulseBase = 1;
+        group.userData.hpScale = 0.01;
         return group;
+    }
+
+    function addBossVfx(mesh, life) {
+        scene.add(mesh);
+        bossVfx.push({ mesh, life, maxLife: life });
+    }
+
+    function updateBossVfx(delta) {
+        for (let i = bossVfx.length - 1; i >= 0; i--) {
+            const v = bossVfx[i];
+            v.life -= delta;
+            const t = Math.max(0, v.life / v.maxLife);
+            if (v.mesh.material) v.mesh.material.opacity = t * (v.mesh.userData.peakOpacity || 0.9);
+            if (v.mesh.scale) {
+                const grow = 1 + (1 - t) * (v.mesh.userData.grow || 1.5);
+                v.mesh.scale.setScalar(grow);
+            }
+            if (v.life <= 0) {
+                scene.remove(v.mesh);
+                v.mesh.geometry?.dispose();
+                v.mesh.material?.dispose();
+                bossVfx.splice(i, 1);
+            }
+        }
+    }
+
+    function clearBossVfx() {
+        for (const v of bossVfx) {
+            scene.remove(v.mesh);
+            v.mesh.geometry?.dispose();
+            v.mesh.material?.dispose();
+        }
+        bossVfx.length = 0;
+    }
+
+    function spawnBossAppearBurst(boss) {
+        const col = parseBossColor();
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.3, 2.8, 40),
+            new THREE.MeshBasicMaterial({
+                color: col,
+                transparent: true,
+                opacity: 0.9,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(boss.position.x, boss.position.y + 0.12, boss.position.z);
+        ring.userData.peakOpacity = 0.9;
+        ring.userData.grow = 2.2;
+        addBossVfx(ring, 0.65);
+    }
+
+    function spawnBossDeathBurst(boss) {
+        const col = parseBossColor();
+        const x = boss.position.x;
+        const y = boss.position.y + 1.1;
+        const z = boss.position.z;
+        for (let i = 0; i < 3; i++) {
+            const shard = new THREE.Mesh(
+                new THREE.OctahedronGeometry(0.35 + i * 0.15, 0),
+                new THREE.MeshBasicMaterial({
+                    color: col,
+                    transparent: true,
+                    opacity: 0.85,
+                    depthWrite: false
+                })
+            );
+            shard.position.set(x + (i - 1) * 0.6, y, z + (i - 1) * 0.4);
+            shard.userData.peakOpacity = 0.85;
+            shard.userData.grow = 2.5 + i * 0.5;
+            addBossVfx(shard, 0.55 + i * 0.08);
+        }
+        const flash = new THREE.Mesh(
+            new THREE.SphereGeometry(2.5, 12, 12),
+            new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.55,
+                depthWrite: false
+            })
+        );
+        flash.position.set(x, y, z);
+        flash.userData.peakOpacity = 0.55;
+        flash.userData.grow = 1.8;
+        addBossVfx(flash, 0.45);
+    }
+
+    function faceBossTowardPlayer(boss, playerPos) {
+        const dx = playerPos.x - boss.position.x;
+        const dz = playerPos.z - boss.position.z;
+        if (Math.hypot(dx, dz) > 0.2) {
+            boss.rotation.y = Math.atan2(dx, dz);
+        }
+    }
+
+    function updateBossVisuals(boss, time, delta) {
+        const body = boss.userData.bossBody;
+        const orb = boss.userData.bossChargeOrb;
+        const ring = boss.userData.bossSpawnRing;
+        const light = boss.userData.bossLight;
+        const hpScale = boss.userData.hpScale ?? 1;
+
+        if (boss.userData.spawnState === 'spawning') {
+            boss.userData.spawnTime = (boss.userData.spawnTime || 0) + delta;
+            const dur = arenaSettings.bossSpawnAnim;
+            const t = Math.min(1, boss.userData.spawnTime / dur);
+            const ease = 1 - Math.pow(1 - t, 3);
+            boss.userData.hpScale = ease;
+            if (ring) {
+                ring.visible = true;
+                ring.scale.setScalar(0.4 + ease * 1.6);
+                ring.material.opacity = (1 - t) * 0.85;
+                ring.rotation.z += delta * 4;
+            }
+            if (orb) orb.material.opacity = 0;
+            if (body) {
+                const pulse = 1 + Math.sin(time * 18) * 0.08 * (1 - t);
+                body.scale.setScalar(hpScale * pulse);
+            }
+            if (t >= 1) {
+                boss.userData.spawnState = 'active';
+                if (ring) ring.visible = false;
+            }
+            if (light) {
+                light.intensity = arenaSettings.bossGlow * ease;
+            }
+            return;
+        }
+
+        if (boss.userData.dying) {
+            boss.userData.deathTime = (boss.userData.deathTime || 0) + delta;
+            const dur = arenaSettings.bossDeathAnim;
+            const t = Math.min(1, boss.userData.deathTime / dur);
+            if (body) {
+                body.scale.setScalar(hpScale * (1 + t * 1.8));
+                body.rotation.y += delta * 9;
+            }
+            if (orb) orb.material.opacity = (1 - t) * 0.9;
+            if (light) light.intensity = arenaSettings.bossGlow * (1 - t);
+            boss.traverse((c) => {
+                if (c.isMesh && c.material && c.material.emissive) {
+                    c.material.emissiveIntensity = 0.4 * (1 - t);
+                }
+            });
+            if (t >= 1 && !boss.userData.deathFinished) {
+                boss.userData.deathFinished = true;
+                spawnBossDeathBurst(boss);
+                const wasBoss = true;
+                removeShootable(boss);
+                checkVictory();
+            }
+            return;
+        }
+
+        if (ring) ring.visible = false;
+        const t = time * arenaSettings.bossPulse;
+        const pulse = 1 + Math.sin(t) * 0.12;
+        if (body) body.scale.setScalar(hpScale * pulse);
+
+        if (boss.userData.charging && orb) {
+            const p = boss.userData.chargeProgress || 0;
+            orb.material.opacity = 0.25 + p * 0.75;
+            orb.scale.setScalar(0.6 + p * 1.4);
+            orb.material.color.setHex(p > 0.85 ? 0xffffff : parseBossColor());
+            if (body) body.scale.setScalar(hpScale * (1 + p * 0.18));
+        } else if (orb) {
+            orb.material.opacity *= Math.max(0, 1 - delta * 8);
+            orb.scale.setScalar(Math.max(0.4, orb.scale.x - delta * 2));
+        }
+
+        if (boss.userData.fireFlash > 0) {
+            boss.userData.fireFlash -= delta;
+            if (light) {
+                light.intensity = arenaSettings.bossGlow * (2.5 + boss.userData.fireFlash * 3);
+            }
+            if (body) body.scale.setScalar(hpScale * (1.35 - boss.userData.fireFlash * 0.25));
+        } else if (light) {
+            light.intensity = arenaSettings.bossGlow * (0.65 + Math.sin(t * 1.35) * 0.35);
+        }
+    }
+
+    function startBossDeath(boss) {
+        if (boss.userData.dying) return;
+        boss.userData.dying = true;
+        boss.userData.deathTime = 0;
+        boss.userData.shootable = false;
+        boss.userData.charging = false;
+        boss.userData.spawnState = 'dead';
+        stats.destroyed++;
+    }
+
+    function bossShoot(enemy) {
+        if (!arenaSettings.bossDangerous) return;
+        const from = new THREE.Vector3(
+            enemy.position.x,
+            enemy.position.y + 1.35,
+            enemy.position.z
+        );
+        if (playerBehindCover(from)) return;
+        const toPlayer = getPlayerPos();
+        if (!lineOfSight(from, toPlayer, 0.35)) return;
+        const dir = toPlayer.clone().sub(from).normalize();
+        const mat = new THREE.MeshBasicMaterial({
+            color: parseBossColor(),
+            transparent: true,
+            opacity: 0.95
+        });
+        const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), mat);
+        bullet.position.copy(from);
+        bullet.userData.velocity = dir.multiplyScalar(ENEMY_BULLET_SPEED * 0.72);
+        bullet.userData.life = 4.5;
+        bullet.userData.fromPlayer = false;
+        bullet.userData.bossBullet = true;
+        bullet.userData.livesLoss = arenaSettings.bossBulletLives;
+        bullet.userData.prevPos = from.clone();
+        scene.add(bullet);
+        enemyBullets.push(bullet);
+
+        const col = parseBossColor();
+        const beam = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.06, 0.14, 3.5, 8),
+            new THREE.MeshBasicMaterial({
+                color: col,
+                transparent: true,
+                opacity: 0.75,
+                depthWrite: false
+            })
+        );
+        beam.position.copy(from).add(dir.clone().multiplyScalar(1.75));
+        beam.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            dir
+        );
+        beam.userData.peakOpacity = 0.75;
+        beam.userData.grow = 0.2;
+        addBossVfx(beam, 0.22);
+
+        enemy.userData.lastShot = performance.now() / 1000;
+        enemy.userData.charging = false;
+        enemy.userData.chargeProgress = 0;
+        enemy.userData.fireFlash = 0.35;
+    }
+
+    function updateBossCombat(boss, playerPos, dist, canSee, hidden, nowSec, delta) {
+        if (boss.userData.spawnState !== 'active' || boss.userData.dying) return;
+        faceBossTowardPlayer(boss, playerPos);
+
+        if (!arenaSettings.bossDangerous) return;
+
+        if (boss.userData.charging) {
+            boss.userData.chargeProgress = (boss.userData.chargeProgress || 0)
+                + delta / arenaSettings.bossChargeTime;
+            if (boss.userData.chargeProgress >= 1) {
+                bossShoot(boss);
+            }
+            return;
+        }
+
+        const since = nowSec - (boss.userData.lastShot || 0);
+        if (dist < boss.userData.shootRange && canSee && !hidden
+            && since >= arenaSettings.bossFireCooldown) {
+            boss.userData.charging = true;
+            boss.userData.chargeProgress = 0;
+        }
     }
 
     function spawnBossWave() {
         const n = bossesToSpawn;
         bossesToSpawn = 0;
-        infoEl.innerHTML =
-            '⚠️ Боссы снаружи!<div style="font-size:12px; opacity:0.85;">'
-            + 'Зачистите лабиринт и стреляйте из окон — босс не пролезет внутрь</div>';
+        const dangerous = arenaSettings.bossDangerous;
+        infoEl.innerHTML = dangerous
+            ? '⚠️ Опасные боссы!<div style="font-size:12px; opacity:0.85;">'
+                + 'Заряжают энергию и стреляют · преследуют вблизи · не заходят в лабиринт</div>'
+            : '⚠️ Боссы снаружи<div style="font-size:12px; opacity:0.85;">'
+                + 'Статичные — без выстрелов · зачистите лабиринт</div>';
+        const nowSec = performance.now() / 1000;
         for (let i = 0; i < n; i++) {
             const sp = getBossOutsideSpawnPosition(i, n);
             const bx = sp.x;
@@ -2192,22 +3171,26 @@
             group.userData.enemy = true;
             group.userData.isBoss = true;
             group.userData.stayOutsideMaze = true;
-            group.userData.dangerous = true;
+            group.userData.dangerous = dangerous;
             group.userData.type = 'chaser';
             group.userData.health = arenaSettings.bossHealth;
             group.userData.maxHealth = arenaSettings.bossHealth;
             group.userData.basePos = { x: bx, z: bz };
             group.userData.homePos = { x: bx, z: bz };
-            group.userData.chaseRange = 55;
-            group.userData.shootRange = 42;
-            group.userData.chaseSpeed = 2.8;
-            group.userData.fireRate = 0.65;
+            group.userData.chaseRange = dangerous ? arenaSettings.bossChaseRange : 0;
+            group.userData.shootRange = arenaSettings.bossShootRange;
+            group.userData.chaseSpeed = arenaSettings.bossChaseSpeed;
             group.userData.contactDamage = 2;
             group.userData.phase = Math.random() * Math.PI * 2;
-            group.userData.lastShot = 0;
+            group.userData.lastShot = nowSec;
+            group.userData.charging = false;
+            group.userData.chargeProgress = 0;
+            group.userData.spawnState = 'spawning';
+            group.userData.spawnTime = 0;
             scene.add(group);
             shootables.push(group);
             enemies.push(group);
+            spawnBossAppearBurst(group);
         }
         enemiesFieldTotal = enemies.length;
         updateStatsUI();
@@ -2262,19 +3245,40 @@
         position.z = resolved.z;
     }
 
+    function pushOutOfBoxCollider(x, z, cx, cz, hw, hd, r) {
+        const boxW = hw + r;
+        const boxD = hd + r;
+        if (Math.abs(x - cx) >= boxW || Math.abs(z - cz) >= boxD) return { x, z };
+        const dx = x - cx;
+        const dz = z - cz;
+        const ox = boxW - Math.abs(dx);
+        const oz = boxD - Math.abs(dz);
+        if (ox < oz) x += Math.sign(dx) * ox;
+        else z += Math.sign(dz) * oz;
+        return { x, z };
+    }
+
     function resolveCoverCollision(x, z) {
         const r = 0.45;
+        const footY = getFootY();
+        const headY = getPlayerHeadY();
         for (const cover of covers) {
-            const hw = cover.userData.halfW + r;
-            const hd = cover.userData.halfD + r;
-            if (Math.abs(x - cover.position.x) < hw && Math.abs(z - cover.position.z) < hd) {
-                const dx = x - cover.position.x;
-                const dz = z - cover.position.z;
-                const ox = hw - Math.abs(dx);
-                const oz = hd - Math.abs(dz);
-                if (ox < oz) x += Math.sign(dx) * ox;
-                else z += Math.sign(dz) * oz;
-            }
+            const res = pushOutOfBoxCollider(
+                x, z, cover.position.x, cover.position.z,
+                cover.userData.halfW, cover.userData.halfD, r
+            );
+            x = res.x;
+            z = res.z;
+        }
+        for (const tree of trees) {
+            const top = tree.userData.baseY + tree.userData.height;
+            if (headY <= tree.userData.baseY + 0.2 || footY >= top - 0.15) continue;
+            const res = pushOutOfBoxCollider(
+                x, z, tree.position.x, tree.position.z,
+                tree.userData.halfW, tree.userData.halfD, r
+            );
+            x = res.x;
+            z = res.z;
         }
         return { x, z };
     }
@@ -2367,6 +3371,7 @@
             if (target.userData.health <= 0) break;
             stats.hits++;
             target.userData.health--;
+            addMatchScore(target, 1);
             target.traverse((child) => {
                 if (child.isMesh && child.material) {
                     child.material = child.material.clone();
@@ -2381,11 +3386,15 @@
                 target.scale.setScalar(hpScale);
             }
             if (target.userData.health <= 0) {
+                if (target.userData.isBoss) {
+                    startBossDeath(target);
+                    updateStatsUI();
+                    return;
+                }
                 stats.destroyed++;
                 const wasDangerous = target.userData.dangerous;
-                const wasBoss = target.userData.isBoss;
                 removeShootable(target);
-                if (wasDangerous || wasBoss) checkVictory();
+                if (wasDangerous) checkVictory();
                 return;
             }
         }
@@ -2480,7 +3489,7 @@
     function spawnWeaponPickups() {
         clearWeaponPickups();
         if (!arenaSettings.weaponsOnField) return;
-        const toSpawn = [WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER];
+        const toSpawn = [WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER];
         const spots = pickWeaponPickupSpots(toSpawn.length);
         toSpawn.forEach((weaponId, i) => {
             const spot = spots[i] || { x: 20 + i * 6, z: 12 + i * 5 };
@@ -2533,6 +3542,7 @@
     function setWeapon(id) {
         if (!isWeaponUnlocked(id)) return;
         stopFlamethrower();
+        cancelLaserCharge();
         currentWeapon = id;
         rangedMode = false;
         rangedFov = RANGED_FOV_DEFAULT;
@@ -2606,10 +3616,7 @@
     function toggleRangedMode() {
         rangedMode = !rangedMode;
         if (rangedMode) {
-            keys.w = false;
-            keys.a = false;
-            keys.s = false;
-            keys.d = false;
+            resetMovementKeys();
             rangedFov = RANGED_FOV_DEFAULT;
             rangedCamPitch = 0;
             rangedCamYaw = 0;
@@ -2775,10 +3782,234 @@
 
     function handlePrimaryClick(event) {
         if (currentWeapon === WEAPON.FLAMETHROWER) return;
+        if (currentWeapon === WEAPON.LASER) {
+            startLaserCharge(event);
+            return;
+        }
         if (currentWeapon === WEAPON.STANDARD) shootStandard(event);
         else if (currentWeapon === WEAPON.SNIPER) shootSniper(event);
         else if (currentWeapon === WEAPON.AREA) fireAreaStrike();
         else if (currentWeapon === WEAPON.MINE) detonateMineClick(event);
+    }
+
+    function getLaserAimDirection() {
+        if (rangedMode) return getRangedAimDirection();
+        syncCameraForRaycast();
+        raycaster.setFromCamera(aimMouse, camera);
+        return raycaster.ray.direction.clone().normalize();
+    }
+
+    function getLaserOrigin(direction) {
+        return new THREE.Vector3(
+            position.x + direction.x * 0.55,
+            playerY + direction.y * 0.55 - 0.05,
+            position.z + direction.z * 0.55
+        );
+    }
+
+    function cancelLaserCharge() {
+        laserCharge = null;
+        if (laserChargeVisual) {
+            scene.remove(laserChargeVisual);
+            laserChargeVisual.traverse((c) => {
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) c.material.dispose();
+            });
+            laserChargeVisual = null;
+        }
+    }
+
+    function disposeLaserBeam(beam) {
+        scene.remove(beam.group);
+        beam.group.traverse((c) => {
+            if (c.geometry) c.geometry.dispose();
+            if (c.material) c.material.dispose();
+        });
+    }
+
+    function clearLaserBeams() {
+        for (const b of laserBeams) disposeLaserBeam(b);
+        laserBeams.length = 0;
+    }
+
+    function ensureLaserChargeVisual() {
+        if (laserChargeVisual) return;
+        const g = new THREE.Group();
+        const coreMat = new THREE.MeshBasicMaterial({
+            color: 0xcc66ff, transparent: true, opacity: 0.35, depthWrite: false
+        });
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: 0x55eeff, transparent: true, opacity: 0.45, side: THREE.DoubleSide, depthWrite: false
+        });
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 14), coreMat);
+        const ring1 = new THREE.Mesh(new THREE.RingGeometry(0.14, 0.2, 28), ringMat);
+        const ring2 = new THREE.Mesh(
+            new THREE.RingGeometry(0.22, 0.3, 32),
+            new THREE.MeshBasicMaterial({
+                color: 0x55eeff, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false
+            })
+        );
+        ring1.rotation.x = -Math.PI / 2;
+        ring2.rotation.x = -Math.PI / 2;
+        g.add(core, ring1, ring2);
+        g.userData.laserCore = core;
+        g.userData.laserRings = [ring1, ring2];
+        laserChargeVisual = g;
+        scene.add(g);
+    }
+
+    function updateLaserChargeVisual(progress, direction, time) {
+        ensureLaserChargeVisual();
+        const origin = getLaserOrigin(direction);
+        const pulse = 0.85 + Math.sin(time * 14) * 0.15;
+        const scale = 0.6 + progress * 1.4 * pulse;
+        laserChargeVisual.position.copy(origin);
+        laserChargeVisual.quaternion.setFromUnitVectors(laserForward, direction);
+        laserChargeVisual.userData.laserCore.scale.setScalar(scale * 0.9);
+        laserChargeVisual.userData.laserCore.material.opacity = 0.25 + progress * 0.65;
+        laserChargeVisual.userData.laserCore.material.color.setHex(
+            progress < 0.55 ? 0x8844ff : 0xcc66ff
+        );
+        laserChargeVisual.userData.laserRings.forEach((ring, i) => {
+            const rs = scale * (1 + i * 0.35);
+            ring.scale.set(rs, rs, rs);
+            ring.material.opacity = (0.2 + progress * 0.55) * (1 - i * 0.15);
+            ring.rotation.z = time * (2.5 + i * 1.2);
+        });
+    }
+
+    function findMazeLaserBlockDistance(origin, direction, maxDist) {
+        if (!mazeFootprint.active) return maxDist;
+        const steps = Math.max(8, Math.ceil(maxDist / 0.3));
+        let lastClear = 0;
+        let ax = origin.x;
+        let ay = origin.y;
+        let az = origin.z;
+        for (let i = 1; i <= steps; i++) {
+            const t = (i / steps) * maxDist;
+            const bx = origin.x + direction.x * t;
+            const by = origin.y + direction.y * t;
+            const bz = origin.z + direction.z * t;
+            if (isMazeBulletSegmentBlocked(ax, ay, az, bx, by, bz)) {
+                return Math.max(0.4, lastClear + (t - lastClear) * 0.85);
+            }
+            lastClear = t;
+            ax = bx;
+            ay = by;
+            az = bz;
+        }
+        return maxDist;
+    }
+
+    function computeLaserBeamLength(origin, direction) {
+        let dist = LASER_MAX_RANGE;
+        raycaster.set(origin, direction);
+        raycaster.near = 0.08;
+        raycaster.far = dist;
+        const blockHits = raycaster.intersectObjects(getBulletBlockers(), true);
+        if (blockHits.length) dist = Math.min(dist, blockHits[0].distance);
+        dist = Math.min(dist, findMazeLaserBlockDistance(origin, direction, dist));
+        return Math.max(0.5, dist);
+    }
+
+    function spawnLaserBeamVisual(origin, direction, length) {
+        const group = new THREE.Group();
+        const beamMat = new THREE.MeshBasicMaterial({
+            color: 0x66ffff, transparent: true, opacity: 0.92, depthWrite: false
+        });
+        const coreMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false
+        });
+        const glow = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, length, 10), beamMat);
+        const core = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.035, length, 8), coreMat);
+        glow.position.y = length / 2;
+        core.position.y = length / 2;
+        group.add(glow, core);
+        group.position.copy(origin);
+        group.quaternion.setFromUnitVectors(laserForward, direction);
+        scene.add(group);
+        laserBeams.push({
+            group,
+            life: LASER_BEAM_FADE,
+            maxLife: LASER_BEAM_FADE,
+            baseOpacity: 0.92
+        });
+    }
+
+    function applyLaserBeamDamage(origin, direction, beamDist) {
+        const damaged = new Set();
+        let hitAny = false;
+        raycaster.set(origin, direction);
+        raycaster.near = 0.08;
+        raycaster.far = beamDist;
+        const hits = raycaster.intersectObjects(shootables, true)
+            .filter((h) => h.distance <= beamDist + 0.05)
+            .sort((a, b) => a.distance - b.distance);
+        for (const h of hits) {
+            const root = getShootableRoot(h.object);
+            if (!root || damaged.has(root) || root.userData.health <= 0) continue;
+            if (!lineOfSight(origin, h.point, 0.22)) continue;
+            if (!canDamageEnemyAt(root, h.point, 1.3)) continue;
+            damaged.add(root);
+            onTargetHit(root, LASER_DAMAGE, h.point);
+            hitAny = true;
+        }
+        return hitAny;
+    }
+
+    function fireLaserBeam() {
+        const direction = laserCharge?.direction || getLaserAimDirection();
+        const origin = getLaserOrigin(direction);
+        const beamDist = computeLaserBeamLength(origin, direction);
+        stats.shots++;
+        applyLaserBeamDamage(origin, direction, beamDist);
+        updateStatsUI();
+        spawnLaserBeamVisual(origin, direction, beamDist);
+        lastLaserShot = performance.now() / 1000;
+    }
+
+    function startLaserCharge(event) {
+        if (!gameActive || currentWeapon !== WEAPON.LASER) return;
+        if (laserCharge) return;
+        const now = performance.now() / 1000;
+        if (now - lastLaserShot < LASER_COOLDOWN) return;
+        if (event) setMouseNDC(event);
+        laserCharge = { progress: 0 };
+        updateWeaponUI();
+    }
+
+    function updateLaserCharge(delta, time) {
+        if (!laserCharge) return;
+        if (!gameActive || currentWeapon !== WEAPON.LASER) {
+            cancelLaserCharge();
+            updateWeaponUI();
+            return;
+        }
+        const direction = getLaserAimDirection();
+        laserCharge.progress += delta / LASER_CHARGE_TIME;
+        updateLaserChargeVisual(laserCharge.progress, direction, time);
+        const pct = Math.min(100, Math.floor(laserCharge.progress * 100));
+        weaponDescEl.textContent = `Зарядка ${pct}%… · G — дальний бой`;
+        if (laserCharge.progress >= 1) {
+            cancelLaserCharge();
+            fireLaserBeam();
+            updateWeaponUI();
+        }
+    }
+
+    function updateLaserBeams(delta) {
+        for (let i = laserBeams.length - 1; i >= 0; i--) {
+            const b = laserBeams[i];
+            b.life -= delta;
+            const t = Math.max(0, b.life / b.maxLife);
+            b.group.children.forEach((c) => {
+                if (c.material) c.material.opacity = b.baseOpacity * t;
+            });
+            if (b.life <= 0) {
+                disposeLaserBeam(b);
+                laserBeams.splice(i, 1);
+            }
+        }
     }
 
     function startFlamethrower() {
@@ -2801,29 +4032,43 @@
         return raycaster.ray.direction.clone().normalize();
     }
 
+    /** Точка выхода струи — впереди игрока, не в центре камеры. */
+    function getFlameMuzzleWorld(dir, out) {
+        out.set(position.x, playerY - 0.42, position.z);
+        out.addScaledVector(dir, 0.72);
+        return out;
+    }
+
     function ensureFlameVisual() {
-        if (flameStream) return;
+        if (flameStream?.children.length === FLAME_VISUAL_SEGMENTS) return;
+        if (flameStream) {
+            scene.remove(flameStream);
+            flameStream.traverse((c) => {
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) c.material.dispose();
+            });
+            flameStream = null;
+        }
         flameStream = new THREE.Group();
-        const layers = [
-            { color: 0xff2200, opacity: 0.5, scale: 1.1 },
-            { color: 0xff6600, opacity: 0.38, scale: 0.85 },
-            { color: 0xffcc44, opacity: 0.28, scale: 0.55 }
-        ];
-        for (const layer of layers) {
+        const segLen = FLAME_VISUAL_RANGE / FLAME_VISUAL_SEGMENTS;
+        for (let i = 0; i < FLAME_VISUAL_SEGMENTS; i++) {
+            const t = (i + 0.5) / FLAME_VISUAL_SEGMENTS;
+            const radius = 0.06 + t * 0.2;
+            const opacity = 0.34 - i * 0.045;
             const mesh = new THREE.Mesh(
-                new THREE.ConeGeometry(0.55, 1, 10, 1, true),
+                new THREE.ConeGeometry(radius, segLen * 0.88, 8, 1, true),
                 new THREE.MeshBasicMaterial({
-                    color: layer.color,
+                    color: i < 2 ? 0xff3300 : (i < 4 ? 0xff7700 : 0xffcc55),
                     transparent: true,
-                    opacity: layer.opacity,
-                    side: THREE.DoubleSide,
-                    depthWrite: false
+                    opacity,
+                    side: THREE.FrontSide,
+                    depthWrite: true,
+                    blending: THREE.AdditiveBlending
                 })
             );
             mesh.rotation.x = Math.PI / 2;
-            mesh.position.z = 0.45;
-            mesh.userData.flameScale = layer.scale;
-            mesh.userData.flameBaseOpacity = layer.opacity;
+            mesh.position.z = i * segLen + segLen * 0.44;
+            mesh.userData.flameBaseOpacity = opacity;
             flameStream.add(mesh);
         }
         flameStream.visible = false;
@@ -2834,17 +4079,16 @@
         if (!flamethrowerFiring) return;
         ensureFlameVisual();
         const dir = getFlameAimDirection();
-        const origin = tmpVec.set(position.x, playerY - 0.12, position.z);
+        getFlameMuzzleWorld(dir, tmpVec);
         flameStream.visible = true;
-        flameStream.position.copy(origin);
+        flameStream.position.copy(tmpVec);
         flameStream.quaternion.setFromUnitVectors(flameForward, dir);
-        const flicker = 0.88 + Math.sin(time * 28) * 0.12;
-        const len = FLAME_RANGE * 0.92 * flicker;
+        const flicker = 0.9 + Math.sin(time * 31) * 0.1;
         flameStream.children.forEach((mesh, i) => {
-            const s = mesh.userData.flameScale * (0.9 + i * 0.08);
-            mesh.scale.set(s * 1.35 * flicker, s * 1.35 * flicker, len);
-            mesh.material.opacity = mesh.userData.flameBaseOpacity
-                * (0.75 + Math.sin(time * 22 + i) * 0.25);
+            const pulse = flicker * (0.82 + Math.sin(time * 24 + i * 1.3) * 0.18);
+            mesh.material.opacity = mesh.userData.flameBaseOpacity * pulse;
+            const wobble = 1 + Math.sin(time * 19 + i * 0.9) * 0.07;
+            mesh.scale.set(wobble, wobble, 1);
         });
     }
 
@@ -3119,17 +4363,71 @@
         return true;
     }
 
+    function faceEnemyTowardPlayer(enemy, playerPos) {
+        const dx = playerPos.x - enemy.position.x;
+        const dz = playerPos.z - enemy.position.z;
+        if (Math.hypot(dx, dz) > 0.15) {
+            enemy.rotation.y = Math.atan2(dx, dz);
+        }
+    }
+
+    function updateEnemyChargeVisual(enemy, time) {
+        const orb = enemy.userData.chargeOrb;
+        if (!orb) return;
+        const p = enemy.userData.chargeProgress || 0;
+        if (!enemy.userData.charging) {
+            orb.material.opacity = Math.max(0, orb.material.opacity - 0.05);
+            orb.scale.setScalar(0.5);
+            if (enemy.userData.enemyBody) enemy.userData.enemyBody.scale.setScalar(1);
+            return;
+        }
+        const chargeHex = arenaSettings.enemyColorCharge;
+        orb.material.color.setHex(parseSettingColor(chargeHex, 'ffdd44'));
+        orb.material.opacity = 0.3 + p * 0.7;
+        orb.scale.setScalar(0.45 + p * 0.9);
+        if (enemy.userData.enemyBody) {
+            const pulse = 1 + Math.sin(time * 16) * 0.06 * p;
+            enemy.userData.enemyBody.scale.setScalar(pulse);
+        }
+    }
+
+    function enemyWantsToShoot(enemy, dist, canSee, hidden, nowSec) {
+        return dist < enemy.userData.shootRange && canSee && !hidden
+            && nowSec - (enemy.userData.lastShot || 0) >= enemy.userData.fireRate;
+    }
+
+    function tryStartEnemyShotCharge(enemy) {
+        if (enemy.userData.charging || enemy.userData.isBoss) return;
+        enemy.userData.charging = true;
+        enemy.userData.chargeProgress = 0;
+    }
+
+    function tickEnemyShotCharge(enemy, delta, playerPos) {
+        if (!enemy.userData.charging || enemy.userData.isBoss) return;
+        enemy.userData.chargeProgress += delta / arenaSettings.enemyChargeTime;
+        faceEnemyTowardPlayer(enemy, playerPos);
+        if (enemy.userData.chargeProgress >= 1) {
+            enemy.userData.charging = false;
+            enemy.userData.chargeProgress = 0;
+            enemyShoot(enemy);
+        }
+    }
+
     function enemyShoot(enemy) {
         const from = new THREE.Vector3(enemy.position.x, enemy.position.y + 0.55, enemy.position.z);
         if (playerBehindCover(from)) return;
         const toPlayer = getPlayerPos();
         if (!lineOfSight(from, toPlayer, 0.35)) return;
         const dir = toPlayer.clone().sub(from).normalize();
-        const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), enemyBulletMat);
+        const bulletMat = new THREE.MeshBasicMaterial({
+            color: parseSettingColor(arenaSettings.enemyColorBullet, 'ff3333')
+        });
+        const bullet = new THREE.Mesh(new THREE.SphereGeometry(0.1, 6, 6), bulletMat);
         bullet.position.copy(from);
         bullet.userData.velocity = dir.multiplyScalar(ENEMY_BULLET_SPEED);
         bullet.userData.life = 3;
         bullet.userData.fromPlayer = false;
+        bullet.userData.livesLoss = arenaSettings.enemyBulletLives;
         bullet.userData.prevPos = from.clone();
         scene.add(bullet);
         enemyBullets.push(bullet);
@@ -3148,8 +4446,16 @@
             bullet.position.addScaledVector(vel, delta);
             bullet.userData.life -= delta;
 
+            if (isMazeBulletSegmentBlocked(
+                prevPos.x, prevPos.y, prevPos.z,
+                bullet.position.x, bullet.position.y, bullet.position.z
+            )) {
+                scene.remove(bullet);
+                list.splice(i, 1);
+                continue;
+            }
             const blockOk = performance.now() >= (bullet.userData.blockIgnoreUntil || 0);
-            if (blockOk && isBulletPathBlocked(prevPos, bullet.position)) {
+            if (blockOk && isBulletPathBlocked(prevPos, bullet.position, true)) {
                 scene.remove(bullet);
                 list.splice(i, 1);
                 continue;
@@ -3171,7 +4477,10 @@
                 && isEnemyBulletHittingPlayer(
                     bullet.position.x, bullet.position.y, bullet.position.z
                 )) {
-                damagePlayer('пуля_врага', {
+                const livesLoss = bullet.userData.bossBullet
+                    ? (bullet.userData.livesLoss || arenaSettings.bossBulletLives)
+                    : (bullet.userData.livesLoss || arenaSettings.enemyBulletLives);
+                damagePlayer(bullet.userData.bossBullet ? 'пуля_босса' : 'пуля_врага', {
                     bullet: {
                         x: +bullet.position.x.toFixed(2),
                         y: +bullet.position.y.toFixed(2),
@@ -3181,8 +4490,9 @@
                         bullet.position.x - position.x,
                         bullet.position.z - position.z
                     ).toFixed(2),
-                    distY: +Math.abs(bullet.position.y - getPlayerBodyCenterY()).toFixed(2)
-                });
+                    distY: +Math.abs(bullet.position.y - getPlayerBodyCenterY()).toFixed(2),
+                    bossBullet: !!bullet.userData.bossBullet
+                }, livesLoss);
                 scene.remove(bullet);
                 list.splice(i, 1);
                 continue;
@@ -3197,11 +4507,13 @@
         }
     }
 
-    function damagePlayer(reason, details = {}) {
+    function damagePlayer(reason, details = {}, livesLoss = 1) {
         const now = performance.now();
+        const loss = Math.max(1, Math.round(livesLoss));
         const logBase = {
             reason,
             livesBefore: lives,
+            livesLoss: loss,
             pos: {
                 x: +position.x.toFixed(2),
                 z: +position.z.toFixed(2),
@@ -3224,14 +4536,14 @@
             });
             return;
         }
-        lives--;
-        invincibleUntil = now + 1200;
+        lives = Math.max(0, lives - loss);
+        invincibleUntil = now + 1200 + (loss - 1) * 400;
         const entry = {
             ...logBase,
             livesAfter: lives,
             time: new Date().toISOString()
         };
-        console.warn(`[HP] −1 жизнь: ${reason}`, entry);
+        console.warn(`[HP] −${loss} жизн${loss === 1 ? 'ь' : 'и'}: ${reason}`, entry);
         window.lastPlayerDamageLog = entry;
         updateStatsUI();
         if (lives <= 0) endGame();
@@ -3463,19 +4775,23 @@
         const playerPos = getPlayerPos();
         const nowSec = performance.now() / 1000;
         for (const enemy of enemies) {
-            if (enemy.userData.isBoss && enemy.userData.bossBody) {
-                const t = time * arenaSettings.bossPulse;
-                const pulse = 1 + Math.sin(t) * 0.14;
-                const hpScale = enemy.userData.hpScale ?? 1;
-                enemy.userData.bossBody.scale.setScalar(hpScale * pulse);
-                if (enemy.userData.bossLight) {
-                    enemy.userData.bossLight.intensity =
-                        arenaSettings.bossGlow * (0.65 + Math.sin(t * 1.35) * 0.35);
+            if (enemy.userData.isBoss) {
+                updateBossVisuals(enemy, time, delta);
+                enemy.rotation.y += delta * 1.8;
+                if (enemy.userData.spawnState === 'spawning') {
+                    placeEnemyAt(enemy, enemy.position.x, enemy.position.z, delta);
+                    continue;
+                }
+                if (enemy.userData.dying) {
+                    continue;
                 }
             } else if (enemy.userData.dangerous && enemy.userData.glow) {
                 enemy.userData.glow.intensity = 0.35 + Math.sin(time * 6) * 0.25;
+                updateEnemyChargeVisual(enemy, time);
             }
-            enemy.rotation.y += delta * (enemy.userData.isBoss ? 1.8 : enemy.userData.dangerous ? 2.5 : 1.2);
+            if (!enemy.userData.isBoss) {
+                enemy.rotation.y += delta * (enemy.userData.dangerous ? 2.5 : 1.2);
+            }
 
             if (applyEnemyKnockback(enemy, delta)) continue;
             if (enemy.userData.stunnedUntil && nowSec < enemy.userData.stunnedUntil) {
@@ -3496,7 +4812,14 @@
                 tmpVec.set(enemy.position.x, enemy.position.y + 0.5, enemy.position.z)
             );
 
-            if (type === 'chaser' && dist < enemy.userData.chaseRange && canSee && !hidden) {
+            if (enemy.userData.dangerous && !enemy.userData.isBoss && enemy.userData.charging) {
+                tickEnemyShotCharge(enemy, delta, playerPos);
+                placeEnemyAt(enemy, enemy.position.x, enemy.position.z, delta);
+                continue;
+            }
+
+            if (type === 'chaser' && !enemy.userData.charging
+                && dist < enemy.userData.chaseRange && canSee && !hidden) {
                 const dx = playerPos.x - enemy.position.x;
                 const dz = playerPos.z - enemy.position.z;
                 const len = Math.hypot(dx, dz) || 1;
@@ -3506,6 +4829,9 @@
                     const clamped = clampBossOutsideBuilding(x, z);
                     x = clamped.x;
                     z = clamped.z;
+                }
+                if (!enemy.userData.isBoss && enemyWantsToShoot(enemy, dist, canSee, hidden, nowSec)) {
+                    tryStartEnemyShotCharge(enemy);
                 }
             } else if (type === 'patrol' && enemy.userData.patrol) {
                 const p = enemy.userData.patrol;
@@ -3519,10 +4845,8 @@
                     * Math.min(p.span * 0.5, 5.5);
                 x = p.axis === 'x' ? home.x + off : home.x;
                 z = p.axis === 'z' ? home.z + off : home.z;
-                const now = performance.now() / 1000;
-                if (dist < enemy.userData.shootRange && canSee && !hidden
-                    && now - enemy.userData.lastShot > enemy.userData.fireRate) {
-                    enemyShoot(enemy);
+                if (!enemy.userData.isBoss && enemyWantsToShoot(enemy, dist, canSee, hidden, nowSec)) {
+                    tryStartEnemyShotCharge(enemy);
                 }
             }
 
@@ -3536,6 +4860,9 @@
                 resolved = resolveMazeCollision(resolved.x, resolved.z, footY, headY);
             }
             placeEnemyAt(enemy, resolved.x, resolved.z, delta);
+            if (enemy.userData.isBoss) {
+                updateBossCombat(enemy, playerPos, dist, canSee, hidden, nowSec, delta);
+            }
         }
     }
 
@@ -3562,6 +4889,23 @@
         document.getElementById('inp-pits').value = s.pitCount;
         document.getElementById('inp-covers').value = s.coverCount;
         document.getElementById('inp-enemies').value = s.enemyCount;
+        document.getElementById('inp-enemy-hp').value = s.enemyDangerHealth;
+        document.getElementById('inp-enemy-patrol').value = s.enemyPatrolSpeed;
+        document.getElementById('inp-enemy-chase').value = s.enemyChaseRange;
+        document.getElementById('inp-enemy-chase-spd').value = s.enemyChaseSpeed;
+        document.getElementById('inp-enemy-shoot').value = s.enemyShootRange;
+        document.getElementById('inp-enemy-fr-sh').value = s.enemyFireRateShooter;
+        document.getElementById('inp-enemy-fr-ch').value = s.enemyFireRateChaser;
+        document.getElementById('inp-enemy-contact').value = s.enemyContactDamage;
+        document.getElementById('inp-enemy-bullet').value = s.enemyBulletLives;
+        document.getElementById('inp-enemy-charge-t').value = s.enemyChargeTime;
+        document.getElementById('inp-enemy-color-main').value = s.enemyColorMain;
+        document.getElementById('inp-enemy-color-ex1').value = s.enemyColorExtra1;
+        document.getElementById('inp-enemy-color-ex2').value = s.enemyColorExtra2;
+        document.getElementById('inp-enemy-color-patrol').value = s.enemyColorPatrol;
+        document.getElementById('inp-enemy-color-charge').value = s.enemyColorCharge;
+        document.getElementById('inp-enemy-color-bullet').value = s.enemyColorBullet;
+        document.getElementById('inp-static-hp').value = s.staticTargetHp;
         document.getElementById('inp-jump').value = s.jumpHeight;
         document.getElementById('inp-player-radius').value = s.playerDamageRadius;
         document.getElementById('inp-enemy-radius').value = s.enemyDamageRadius;
@@ -3575,9 +4919,23 @@
         document.getElementById('inp-boss-color').value = s.bossColor;
         document.getElementById('inp-boss-glow').value = s.bossGlow;
         document.getElementById('inp-boss-pulse').value = s.bossPulse;
+        document.getElementById('inp-boss-dangerous').checked = !!s.bossDangerous;
+        document.getElementById('inp-boss-charge').value = s.bossChargeTime;
+        document.getElementById('inp-boss-cooldown').value = s.bossFireCooldown;
+        document.getElementById('inp-boss-bullet-lives').value = s.bossBulletLives;
+        document.getElementById('inp-boss-chase').value = s.bossChaseRange;
+        document.getElementById('inp-boss-chase-speed').value = s.bossChaseSpeed;
+        document.getElementById('inp-boss-shoot-range').value = s.bossShootRange;
         document.getElementById('inp-spawn-outside').checked = !s.spawnInMaze;
         document.getElementById('inp-spawn-maze').checked = s.spawnInMaze;
         document.getElementById('inp-weapons-on-field').checked = !!s.weaponsOnField;
+        document.getElementById('inp-tree-count').value = s.treeCount;
+        document.getElementById('inp-tree-layers').value = s.treeLayers;
+        document.getElementById('inp-tree-height').value = s.treeHeight;
+        document.getElementById('inp-tree-radius').value = s.treeBaseRadius;
+        document.getElementById('inp-tree-scale').value = s.treeLayerScale;
+        document.getElementById('inp-tree-seed').value = s.treeSeed;
+        document.getElementById('inp-tree-color').value = s.treeColor;
     }
 
     function updateSetupLabelsFromSettings() {
@@ -3586,7 +4944,23 @@
         document.getElementById('val-lives').textContent = arenaSettings.lives;
         document.getElementById('val-pits').textContent = arenaSettings.pitCount;
         document.getElementById('val-covers').textContent = arenaSettings.coverCount;
+        document.getElementById('val-tree-count').textContent = arenaSettings.treeCount;
+        document.getElementById('val-tree-layers').textContent = arenaSettings.treeLayers;
+        document.getElementById('val-tree-height').textContent = arenaSettings.treeHeight.toFixed(1);
+        document.getElementById('val-tree-radius').textContent = arenaSettings.treeBaseRadius.toFixed(1);
+        document.getElementById('val-tree-scale').textContent = arenaSettings.treeLayerScale.toFixed(2);
         document.getElementById('val-enemies').textContent = arenaSettings.enemyCount;
+        document.getElementById('val-enemy-hp').textContent = arenaSettings.enemyDangerHealth;
+        document.getElementById('val-enemy-patrol').textContent = arenaSettings.enemyPatrolSpeed.toFixed(1);
+        document.getElementById('val-enemy-chase').textContent = arenaSettings.enemyChaseRange;
+        document.getElementById('val-enemy-chase-spd').textContent = arenaSettings.enemyChaseSpeed.toFixed(1);
+        document.getElementById('val-enemy-shoot').textContent = arenaSettings.enemyShootRange;
+        document.getElementById('val-enemy-fr-sh').textContent = arenaSettings.enemyFireRateShooter.toFixed(1);
+        document.getElementById('val-enemy-fr-ch').textContent = arenaSettings.enemyFireRateChaser.toFixed(1);
+        document.getElementById('val-enemy-contact').textContent = arenaSettings.enemyContactDamage;
+        document.getElementById('val-enemy-bullet').textContent = arenaSettings.enemyBulletLives;
+        document.getElementById('val-enemy-charge-t').textContent = arenaSettings.enemyChargeTime.toFixed(2);
+        document.getElementById('val-static-hp').textContent = arenaSettings.staticTargetHp;
         document.getElementById('val-jump').textContent = arenaSettings.jumpHeight.toFixed(1);
         document.getElementById('val-player-radius').textContent = arenaSettings.playerDamageRadius.toFixed(2);
         document.getElementById('val-enemy-radius').textContent = arenaSettings.enemyDamageRadius.toFixed(1);
@@ -3596,6 +4970,12 @@
         document.getElementById('val-boss-hp').textContent = arenaSettings.bossHealth;
         document.getElementById('val-boss-glow').textContent = arenaSettings.bossGlow.toFixed(1);
         document.getElementById('val-boss-pulse').textContent = arenaSettings.bossPulse.toFixed(1);
+        document.getElementById('val-boss-charge').textContent = arenaSettings.bossChargeTime.toFixed(1);
+        document.getElementById('val-boss-cooldown').textContent = arenaSettings.bossFireCooldown.toFixed(1);
+        document.getElementById('val-boss-bullet-lives').textContent = arenaSettings.bossBulletLives;
+        document.getElementById('val-boss-chase').textContent = arenaSettings.bossChaseRange;
+        document.getElementById('val-boss-chase-speed').textContent = arenaSettings.bossChaseSpeed.toFixed(1);
+        document.getElementById('val-boss-shoot-range').textContent = arenaSettings.bossShootRange;
         const maxEnemies = BASE_ENEMY_LAYOUT.length;
         const maxPits = BASE_PITS.length;
         const maxCovers = BASE_COVERS.length;
@@ -3642,6 +5022,23 @@
         arenaSettings.pitCount = Number(document.getElementById('inp-pits').value);
         arenaSettings.coverCount = Number(document.getElementById('inp-covers').value);
         arenaSettings.enemyCount = Number(document.getElementById('inp-enemies').value);
+        arenaSettings.enemyDangerHealth = Number(document.getElementById('inp-enemy-hp').value);
+        arenaSettings.enemyPatrolSpeed = Number(document.getElementById('inp-enemy-patrol').value);
+        arenaSettings.enemyChaseRange = Number(document.getElementById('inp-enemy-chase').value);
+        arenaSettings.enemyChaseSpeed = Number(document.getElementById('inp-enemy-chase-spd').value);
+        arenaSettings.enemyShootRange = Number(document.getElementById('inp-enemy-shoot').value);
+        arenaSettings.enemyFireRateShooter = Number(document.getElementById('inp-enemy-fr-sh').value);
+        arenaSettings.enemyFireRateChaser = Number(document.getElementById('inp-enemy-fr-ch').value);
+        arenaSettings.enemyContactDamage = Number(document.getElementById('inp-enemy-contact').value);
+        arenaSettings.enemyBulletLives = Number(document.getElementById('inp-enemy-bullet').value);
+        arenaSettings.enemyChargeTime = Number(document.getElementById('inp-enemy-charge-t').value);
+        arenaSettings.enemyColorMain = document.getElementById('inp-enemy-color-main').value;
+        arenaSettings.enemyColorExtra1 = document.getElementById('inp-enemy-color-ex1').value;
+        arenaSettings.enemyColorExtra2 = document.getElementById('inp-enemy-color-ex2').value;
+        arenaSettings.enemyColorPatrol = document.getElementById('inp-enemy-color-patrol').value;
+        arenaSettings.enemyColorCharge = document.getElementById('inp-enemy-color-charge').value;
+        arenaSettings.enemyColorBullet = document.getElementById('inp-enemy-color-bullet').value;
+        arenaSettings.staticTargetHp = Number(document.getElementById('inp-static-hp').value);
         arenaSettings.jumpHeight = Number(document.getElementById('inp-jump').value);
         arenaSettings.playerDamageRadius = Number(document.getElementById('inp-player-radius').value);
         arenaSettings.enemyDamageRadius = Number(document.getElementById('inp-enemy-radius').value);
@@ -3655,8 +5052,22 @@
         arenaSettings.bossColor = document.getElementById('inp-boss-color').value;
         arenaSettings.bossGlow = Number(document.getElementById('inp-boss-glow').value);
         arenaSettings.bossPulse = Number(document.getElementById('inp-boss-pulse').value);
+        arenaSettings.bossDangerous = document.getElementById('inp-boss-dangerous').checked;
+        arenaSettings.bossChargeTime = Number(document.getElementById('inp-boss-charge').value);
+        arenaSettings.bossFireCooldown = Number(document.getElementById('inp-boss-cooldown').value);
+        arenaSettings.bossBulletLives = Number(document.getElementById('inp-boss-bullet-lives').value);
+        arenaSettings.bossChaseRange = Number(document.getElementById('inp-boss-chase').value);
+        arenaSettings.bossChaseSpeed = Number(document.getElementById('inp-boss-chase-speed').value);
+        arenaSettings.bossShootRange = Number(document.getElementById('inp-boss-shoot-range').value);
         arenaSettings.spawnInMaze = document.getElementById('inp-spawn-maze').checked;
         arenaSettings.weaponsOnField = document.getElementById('inp-weapons-on-field').checked;
+        arenaSettings.treeCount = Number(document.getElementById('inp-tree-count').value);
+        arenaSettings.treeLayers = Number(document.getElementById('inp-tree-layers').value);
+        arenaSettings.treeHeight = Number(document.getElementById('inp-tree-height').value);
+        arenaSettings.treeBaseRadius = Number(document.getElementById('inp-tree-radius').value);
+        arenaSettings.treeLayerScale = Number(document.getElementById('inp-tree-scale').value);
+        arenaSettings.treeSeed = Number(document.getElementById('inp-tree-seed').value);
+        arenaSettings.treeColor = document.getElementById('inp-tree-color').value;
         updateSetupLabelsFromSettings();
     }
 
@@ -3677,12 +5088,16 @@
         areaExplosions.length = 0;
         clearMines();
         stopFlamethrower();
+        cancelLaserCharge();
+        clearLaserBeams();
         clearWeaponPickups();
+        clearBossVfx();
     }
 
     function openSetupPanel() {
         gameActive = false;
         stopFlamethrower();
+        cancelLaserCharge();
         resetMovementKeys();
         bossesToSpawn = 0;
         rangedMode = false;
@@ -3712,6 +5127,7 @@
         stats.shots = 0;
         stats.hits = 0;
         stats.destroyed = 0;
+        stats.points = 0;
         lives = arenaSettings.lives;
         invincibleUntil = 0;
         spawnSafeUntil = 0;
@@ -3767,8 +5183,14 @@
     });
     for (const id of [
         'inp-width', 'inp-depth', 'inp-lives', 'inp-pits', 'inp-covers', 'inp-enemies',
-        'inp-jump', 'inp-player-radius', 'inp-enemy-radius', 'inp-maze-floors',
-        'inp-maze-enemies', 'inp-boss-count', 'inp-boss-hp', 'inp-boss-glow', 'inp-boss-pulse'
+        'inp-enemy-hp', 'inp-enemy-patrol', 'inp-enemy-chase', 'inp-enemy-chase-spd',
+        'inp-enemy-shoot', 'inp-enemy-fr-sh', 'inp-enemy-fr-ch', 'inp-enemy-contact',
+        'inp-enemy-bullet', 'inp-enemy-charge-t', 'inp-static-hp', 'inp-enemy-radius',
+        'inp-jump', 'inp-player-radius', 'inp-maze-floors',
+        'inp-maze-enemies', 'inp-boss-count', 'inp-boss-hp', 'inp-boss-glow', 'inp-boss-pulse',
+        'inp-boss-charge', 'inp-boss-cooldown', 'inp-boss-bullet-lives', 'inp-boss-chase',
+        'inp-boss-chase-speed', 'inp-boss-shoot-range',
+        'inp-tree-count', 'inp-tree-layers', 'inp-tree-height', 'inp-tree-radius', 'inp-tree-scale'
     ]) {
         document.getElementById(id).addEventListener('input', syncSetupLabels);
     }
@@ -3777,6 +5199,7 @@
     document.getElementById('inp-spawn-outside').addEventListener('change', syncSetupLabels);
     document.getElementById('inp-boss-shape').addEventListener('change', syncSetupLabels);
     document.getElementById('inp-terrain-seed').addEventListener('change', syncSetupLabels);
+    document.getElementById('inp-boss-dangerous').addEventListener('change', syncSetupLabels);
 
     function updateCrosshair(clientX, clientY) {
         crosshairEl.style.left = `${clientX}px`;
@@ -3829,19 +5252,21 @@
             Digit3: WEAPON.AREA,
             Digit4: WEAPON.MINE,
             Digit5: WEAPON.FLAMETHROWER,
+            Digit6: WEAPON.LASER,
             Numpad1: WEAPON.STANDARD,
             Numpad2: WEAPON.SNIPER,
             Numpad3: WEAPON.AREA,
             Numpad4: WEAPON.MINE,
-            Numpad5: WEAPON.FLAMETHROWER
+            Numpad5: WEAPON.FLAMETHROWER,
+            Numpad6: WEAPON.LASER
         };
         let weaponId = byCode[event.code];
         if (weaponId == null) {
             const byKey = {
                 '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA, '4': WEAPON.MINE,
-                '5': WEAPON.FLAMETHROWER,
+                '5': WEAPON.FLAMETHROWER, '6': WEAPON.LASER,
                 '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA, '$': WEAPON.MINE,
-                '%': WEAPON.FLAMETHROWER
+                '%': WEAPON.FLAMETHROWER, '^': WEAPON.LASER
             };
             weaponId = byKey[event.key];
         }
@@ -3870,22 +5295,12 @@
         }
         if (tryCycleWeapon(event)) return;
         if (trySelectWeapon(event)) return;
+        if (handleMovementKeyDown(event)) {
+            if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') event.preventDefault();
+            return;
+        }
         if (!gameActive) return;
         switch (event.code) {
-            case 'KeyW': keys.w = true; break;
-            case 'KeyA': keys.a = true; break;
-            case 'KeyS': keys.s = true; break;
-            case 'KeyD': keys.d = true; break;
-            case 'KeyQ': keys.strafeLeft = true; break;
-            case 'KeyE': keys.strafeRight = true; break;
-            case 'ArrowLeft':
-                keys.strafeLeft = true;
-                event.preventDefault();
-                break;
-            case 'ArrowRight':
-                keys.strafeRight = true;
-                event.preventDefault();
-                break;
             case 'Space':
                 if (!event.repeat && canPlayerJump()) {
                     velocityY = JUMP_VELOCITY;
@@ -3903,16 +5318,7 @@
     }
 
     function keyUp(event) {
-        switch (event.code) {
-            case 'KeyW': keys.w = false; break;
-            case 'KeyA': keys.a = false; break;
-            case 'KeyS': keys.s = false; break;
-            case 'KeyD': keys.d = false; break;
-            case 'KeyQ': keys.strafeLeft = false; break;
-            case 'KeyE': keys.strafeRight = false; break;
-            case 'ArrowLeft': keys.strafeLeft = false; break;
-            case 'ArrowRight': keys.strafeRight = false; break;
-        }
+        if (handleMovementKeyUp(event)) return;
     }
 
     window.addEventListener('keydown', keyDown, true);
@@ -3920,6 +5326,9 @@
     window.addEventListener('blur', resetMovementKeys);
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') resetMovementKeys();
+    });
+    window.addEventListener('mouseup', () => {
+        if (!canAcceptMovementKeys()) resetMovementKeys();
     });
     renderer.domElement.addEventListener('blur', () => {
         resetMovementKeys();
@@ -3943,7 +5352,7 @@
         const time = now * 0.001;
 
         if (gameActive) {
-            if (!document.hasFocus()) resetMovementKeys();
+            if (!document.hasFocus() || victoryShown) resetMovementKeys();
             updateEnemyRadar();
             const moveSpeed = 3.4 * delta;
             const rotSpeed = 2.0 * delta;
@@ -3951,7 +5360,7 @@
 
             if (rangedMode) {
                 updateRangedAimCamera(delta);
-            } else {
+            } else if (!victoryShown) {
                 if (keys.a && !keys.d) rotate += rotSpeed;
                 if (!keys.a && keys.d) rotate -= rotSpeed;
 
@@ -4039,6 +5448,9 @@
         updateBullets(enemyBullets, delta, false);
         updateImpulseWaves(delta);
         updateFlamethrower(delta, time);
+        updateLaserCharge(delta, time);
+        updateLaserBeams(delta);
+        updateBossVfx(delta);
         updateRockets(delta);
         updateAreaExplosions(delta);
         if (areaMarker) areaMarker.material.opacity = 0.55 + Math.sin(time * 4) * 0.2;
@@ -4046,6 +5458,7 @@
     }
 
     animate();
+    updatePersistedStatsUI();
     updateStatsUI();
     updateWeaponUI();
 </script>

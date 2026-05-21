@@ -5,7 +5,7 @@
 Константа `WEAPON` и метаданные `WEAPON_INFO`:
 
 ```javascript
-const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5 };
+const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6 };
 ```
 
 | ID | Ключ | Слот | ЛКМ | ПКМ |
@@ -15,8 +15,22 @@ const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5 };
 | 3 | `AREA` | ③ | `fireAreaStrike` | `markArea` |
 | 4 | `MINE` | ④ | `detonateMineClick` | `placeMine` |
 | 5 | `FLAMETHROWER` | ⑤ | удержание `ЛКМ` | — |
+| 6 | `LASER` | ⑥ | `startLaserCharge` → луч | — |
 
-Переключение: `setWeapon(id)`, клавиши `1`–`5`, `B` → `cycleWeapon()`.
+Переключение: `setWeapon(id)`, клавиши `1`–`6`, `B` → `cycleWeapon()`.
+
+## Режим «Оружие на поле»
+
+Чекбокс `inp-weapons-on-field` → `arenaSettings.weaponsOnField`.
+
+| Режим | Поведение |
+|-------|-----------|
+| Выключен (по умолчанию) | Все слоты ①–⑤ доступны сразу |
+| Включен | Старт только с ①; ②–⑥ — пикапы на карте (`weaponPickups`) |
+
+**Состояние:** `weaponUnlocks` (`Set`), сброс в `resetWeaponProgress()` при старте и в меню.
+
+**Пикапы:** `spawnWeaponPickups()` после `spawnWorldEntities()`; сбор в `updateWeaponPickups(time)` при дистанции ≈ 1.75 м. Заблокированные слоты в HUD помечены 🔒; `setWeapon` / `cycleWeapon` / клавиши `2`–`5` работают только для разблокированного оружия.
 
 ## Точки входа (компонент Weapons)
 
@@ -69,8 +83,8 @@ flowchart TD
 
 ## ② Винтовка
 
-- Кулдаун `SNIPER_COOLDOWN`, скорость `SNIPER_SPEED`, урон `SNIPER_DAMAGE`.
-- Попадание: `SNIPER_HIT_DIST`, флаг `bullet.userData.sniper`.
+- Кулдаун `SNIPER_COOLDOWN`, скорость `SNIPER_SPEED`, время полёта `SNIPER_LIFE`, урон `SNIPER_DAMAGE`.
+- Попадание: `resolvePlayerBulletHit` по отрезку кадра + `SNIPER_SEGMENT_PAD` / `SNIPER_HIT_RADIUS_MUL`, флаг `bullet.userData.sniper`.
 - Медленнее движение вне режима G: `SNIPER_MOVE_MULT`.
 
 ## ③ Ракетница
@@ -94,18 +108,16 @@ flowchart TD
 | Функция | Роль |
 |---------|------|
 | `applyFlameDamage()` | Конус + LOS, `onTargetHit` каждые ~0.11 с |
-| `updateFlameVisual(time)` | Группа `flameStream` (конусы) |
+| `updateFlameVisual(time)` | `flameStream` — узкая струя сегментов от `getFlameMuzzleWorld` (~`FLAME_VISUAL_RANGE`) |
 | `getFlameAimDirection()` | Луч: в G — `getRangedAimDirection`, иначе raycast по мыши |
 
-## Добавление шестого оружия
+## ⑥ Лазер
 
-1. `WEAPON.NEW = 6` и запись в `WEAPON_INFO`.
-2. HTML: `<div class="weapon-slot slot-6" data-slot="6">`.
-3. CSS: `#weapon-panel.weapon-6`, `.slot-6.active`.
-4. Ветки в `handlePrimaryClick` / `handleSecondaryDown`.
-5. `cycleWeapon`: цепочка `FLAMETHROWER → NEW → STANDARD`.
-6. `trySelectWeapon`: `Digit6`, `'6'`.
-7. При необходимости — шаг в `animate()`.
+- ЛКМ: `startLaserCharge` → `updateLaserCharge` (~`LASER_CHARGE_TIME` с) → `fireLaserBeam`.
+- Визуал зарядки: `laserChargeVisual` (сфера + кольца у дула).
+- Выстрел: hitscan-луч на `LASER_MAX_RANGE`, длина до первой стены/укрытия (`computeLaserBeamLength`, AABB лабиринта).
+- Урон всем врагам на линии до преграды; луч `spawnLaserBeamVisual`, затухание `updateLaserBeams`.
+- Кулдаун `LASER_COOLDOWN`; в G прицеливание как у остального оружия.
 
 ## Связанные системы
 

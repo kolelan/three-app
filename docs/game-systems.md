@@ -28,7 +28,7 @@ const keys = { w, a, s, d, strafeLeft, strafeRight };
 | Событие | Действие |
 |---------|----------|
 | `keydown` / `keyup` | Движение, прыжок, G, смена оружия |
-| `resetMovementKeys()` | blur, visibility, game over, победа |
+| `resetMovementKeys()` | blur, visibility, game over, победа; `pressedMovementCodes` + `keyup` |
 
 Стрейф: `Q` / `E` или стрелки ← →.
 
@@ -115,10 +115,22 @@ flowchart TB
 
 Причины: `пуля_врага`, `контакт_врага`, `взрыв`, `провал`, и т.д.
 
+## Баллы и победы
+
+| Показатель | Правило |
+|------------|---------|
+| Баллы забега | `stats.points` — +1 за каждую единицу HP, снятую у врага, босса или статичной мишени (`onTargetHit` → `addMatchScore`) |
+| Победа | `checkVictory()` — все опасные враги и боссы уничтожены |
+| Запись победы | `recordVictory(stats.points)` — `wins++`, `totalPoints += забег`, обновление `bestRunPoints` / `lastWinPoints` |
+| Хранение | `localStorage`, ключ `three-app-arena-record` |
+
+Укрытия и деревья в баллы не входят (не shootable).
+
 ## Чеклист изменения боевой механики
 
 - [ ] Обновлены blockers / LOS meshes?
 - [ ] Путь пули: `isBulletPathBlocked` и субшаги
 - [ ] Урон цели: `onTargetHit` / `canDamageEnemyAt`
-- [ ] Статистика: `stats.shots` / `hits` / `destroyed`
+- [ ] Статистика: `stats.shots` / `hits` / `destroyed` / `points`
+- [ ] Победы: `recordVictory` → `localStorage` (`three-app-arena-record`)
 - [ ] Документация: `weapons.md` или этот файл

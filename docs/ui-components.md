@@ -27,9 +27,12 @@
 | ID | JS-переменная | Обновление |
 |----|---------------|------------|
 | `#lives` | `livesEl` | `damagePlayer`, `startGame` |
+| `#stat-points` | `stats.points` | `updateStatsUI` — 1 балл за 1 HP урона по врагу/боссу/мишени |
 | `#stat-shots` | — | `updateStatsUI` |
 | `#stat-hits` | — | `updateStatsUI` |
 | `#stat-destroyed` | — | `updateStatsUI` |
+| `#persist-wins` и др. | `persistedStats` | `updatePersistedStatsUI`, `recordVictory` |
+| `#victory-points` | забег | экран победы |
 | `#stat-enemies-alive` | `statEnemiesAliveEl` | `updateEnemyRadar` |
 | `#stat-enemies-total` | `statEnemiesTotalEl` | `updateEnemyRadar` |
 | `#stat-enemies-danger` | `statEnemiesDangerEl` | счётчики боссов/опасных |

@@ -43,7 +43,7 @@ buildMaze()          // если arenaSettings.mazeEnabled
 | Этап | Функция |
 |------|---------|
 | Сетка | `generateMazeGrid(cols, rows, maxFloors)` |
-| Пол | `createMazeFloorTile` — плитка = ячейка |
+| Пол | `createMazeFloorTile` — плитка = ячейка, `blocksBullets: true` (непробиваема) |
 | Стены | `buildMazeCellWalls`, `createMazeWall` |
 | Регистрация | `registerMazePiece`, `addMazeMesh` |
 

@@ -26,7 +26,15 @@ const arenaSettings = {
     bossColor: '#aa22ff',
     bossGlow: 1.2,
     bossPulse: 2,
-    spawnInMaze: false
+    spawnInMaze: false,
+    weaponsOnField: false,
+    treeCount: 12,
+    treeLayers: 4,
+    treeHeight: 5.5,
+    treeBaseRadius: 1.4,
+    treeLayerScale: 0.72,
+    treeSeed: 77,
+    treeColor: '#1a6b2e'
 };
 ```
 
@@ -60,6 +68,24 @@ const arenaSettings = {
 | `inp-player-radius` | `playerDamageRadius` |
 | `inp-enemy-radius` | `enemyDamageRadius` |
 | `inp-enemies` | `enemyCount` |
+| `inp-enemy-hp` | `enemyDangerHealth` |
+| `inp-enemy-patrol` | `enemyPatrolSpeed` |
+| `inp-enemy-chase` | `enemyChaseRange` |
+| `inp-enemy-chase-spd` | `enemyChaseSpeed` |
+| `inp-enemy-shoot` | `enemyShootRange` |
+| `inp-enemy-fr-sh` | `enemyFireRateShooter` |
+| `inp-enemy-fr-ch` | `enemyFireRateChaser` |
+| `inp-enemy-contact` | `enemyContactDamage` |
+| `inp-enemy-bullet` | `enemyBulletLives` |
+| `inp-enemy-charge-t` | `enemyChargeTime` |
+| `inp-enemy-color-main` | `enemyColorMain` |
+| `inp-enemy-color-ex1` | `enemyColorExtra1` (кольцо) |
+| `inp-enemy-color-ex2` | `enemyColorExtra2` (шип) |
+| `inp-enemy-color-patrol` | `enemyColorPatrol` |
+| `inp-enemy-color-charge` | `enemyColorCharge` |
+| `inp-enemy-color-bullet` | `enemyColorBullet` |
+| `inp-static-hp` | `staticTargetHp` |
+| `inp-enemy-radius` | `enemyDamageRadius` |
 | `inp-maze-enabled` | `mazeEnabled` |
 | `inp-maze-floors` | `mazeFloors` |
 | `inp-maze-enemies` | `mazeEnemyCount` |
@@ -70,7 +96,22 @@ const arenaSettings = {
 | `inp-boss-color` | `bossColor` |
 | `inp-boss-glow` | `bossGlow` |
 | `inp-boss-pulse` | `bossPulse` |
+| `inp-boss-dangerous` | `bossDangerous` |
+| `inp-boss-charge` | `bossChargeTime` |
+| `inp-boss-cooldown` | `bossFireCooldown` |
+| `inp-boss-bullet-lives` | `bossBulletLives` |
+| `inp-boss-chase` | `bossChaseRange` |
+| `inp-boss-chase-speed` | `bossChaseSpeed` |
+| `inp-boss-shoot-range` | `bossShootRange` |
 | `inp-spawn-maze` | `spawnInMaze` |
+| `inp-weapons-on-field` | `weaponsOnField` |
+| `inp-tree-count` | `treeCount` |
+| `inp-tree-layers` | `treeLayers` |
+| `inp-tree-height` | `treeHeight` |
+| `inp-tree-radius` | `treeBaseRadius` |
+| `inp-tree-scale` | `treeLayerScale` |
+| `inp-tree-seed` | `treeSeed` |
+| `inp-tree-color` | `treeColor` |
 
 **Функции:**
 
