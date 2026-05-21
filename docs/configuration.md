@@ -132,11 +132,24 @@ const arenaSettings = {
 | `pitCount` | Число опасных зон провала |
 | `coverCount` | Число укрытий на карте |
 | `jumpHeight` | Прыжок, `floorStep` лабиринта, `canReachMazeTop` |
+| `mazeFootSnap` | Радиус прилипания ног к полу лабиринта у края плиты (`footXZOnMazeWalkPiece`) |
+| `mazeFootInset` | Сжатие площади плиты внутрь — меньше «висения» на краю без опоры снизу |
 | `playerDamageRadius` | Зона попадания по игроку (пули, взрывы) |
 | `enemyDamageRadius` | Дистанция урона по опасным врагам/боссам |
 | `mazeFloors` | Этажи в `generateMazeGrid` |
 | `mazeSeed` | RNG лабиринта `mazeRngState` |
 | `bossShape` | `box` / `sphere` / `octahedron` в `createBossMesh` |
+
+## Уровни (прогрессия после победы)
+
+| Поле | По умолчанию | Эффект за каждый уровень после 1-го |
+|------|--------------|--------------------------------------|
+| `levelEnemyPerStep` | 5 | + врагов на поле (`enemyCount`, макс. 18) |
+| `levelBossPerStep` | 1 | + боссов каждые **2** уровня: ур. 1–2 — база, ур. 3 — +1, ур. 5 — +2… (макс. 5) |
+| `levelEnemyRadiusStep` | 0.04 | − `enemyDamageRadius` (мин. 0.35) |
+| `levelPlayerRadiusStep` | 0.03 | + `playerDamageRadius` (макс. 2.2) |
+
+База уровня 1 — снимок настроек при «Начать игру» (`runBaseSettings`). Уровень N применяется в `applySettingsForLevel(N)` перед перегенерацией арены у двери.
 
 ## Константы вне `arenaSettings`
 

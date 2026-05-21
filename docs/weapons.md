@@ -5,7 +5,7 @@
 Константа `WEAPON` и метаданные `WEAPON_INFO`:
 
 ```javascript
-const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6 };
+const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6, TELEPORT: 7 };
 ```
 
 | ID | Ключ | Слот | ЛКМ | ПКМ |
@@ -16,8 +16,9 @@ const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASE
 | 4 | `MINE` | ④ | `detonateMineClick` | `placeMine` |
 | 5 | `FLAMETHROWER` | ⑤ | удержание `ЛКМ` | — |
 | 6 | `LASER` | ⑥ | `startLaserCharge` → луч | — |
+| 7 | `TELEPORT` | ⑦ | `executeTeleport` | `markTeleport` |
 
-Переключение: `setWeapon(id)`, клавиши `1`–`6`, `B` → `cycleWeapon()`.
+Переключение: `setWeapon(id)`, клавиши `1`–`7`, `B` → `cycleWeapon()`.
 
 ## Режим «Оружие на поле»
 
@@ -60,8 +61,11 @@ flowchart TD
 | Действие | Поведение |
 |----------|-----------|
 | `G` | `toggleRangedMode()` |
-| `W` / `S` | Наклон прицела вверх / вниз |
-| `A` / `D` | Поворот прицела влево / вправо |
+| `W` / `S` | Наклон прицела вверх / вниз (`updateRangedAimCamera`) — **не** ходьба |
+| `A` / `D` | Поворот прицела влево / вправо (`updateRangedAimCamera`) — **не** поворот тела |
+| `Q` / `E` | Стрейф игрока влево / вправо (`applyPlayerStrafeMove`, `useAimYaw: true`) — **не** камера |
+
+> Не смешивать ветку `rangedMode` в `animate()` с обычной ходьбой: иначе WASD снова двигают тело.
 | Колесо | Изменение `rangedFov` (8°–45°) |
 | Мышь | Прицел (`#scope-reticle`) и луч попадания следуют за курсором |
 
@@ -69,7 +73,7 @@ flowchart TD
 
 **Ограничения в режиме G:**
 
-- Нет ходьбы (WASD не двигают `position`)
+- Нет ходьбы вперёд/назад (W/S не двигают `position`); Q/E — медленный стрейф
 - Нет прыжка (`canPlayerJump` → false)
 - Обычный `#crosshair` скрыт
 
@@ -89,9 +93,10 @@ flowchart TD
 
 ## ③ Ракетница
 
-1. ПКМ: `markArea` → `raycastMarkPoint` → `areaTarget` + кольцо `#areaMarker`.
-2. ЛКМ: `fireAreaStrike` — спавн ракеты, падение, `spawnAreaExplosion`.
-3. Урон с учётом укрытий: `isUnderMazeRoof`, `isExplosionBlockedToTarget`.
+1. ЛКМ: `markArea` (по прицелу) + `fireAreaStrike` — ракета и взрыв.
+2. ПКМ: только `markArea` — метка без выстрела.
+3. `raycastMarkPoint` — hit по миру или fallback на поверхность вдоль луча.
+4. Урон с учётом укрытий: `isUnderMazeRoof`, `isExplosionBlockedToTarget`.
 
 ## ④ Мины
 
@@ -118,6 +123,19 @@ flowchart TD
 - Выстрел: hitscan-луч на `LASER_MAX_RANGE`, длина до первой стены/укрытия (`computeLaserBeamLength`, AABB лабиринта).
 - Урон всем врагам на линии до преграды; луч `spawnLaserBeamVisual`, затухание `updateLaserBeams`.
 - Кулдаун `LASER_COOLDOWN`; в G прицеливание как у остального оружия.
+
+## ⑦ Телепорт
+
+Как ракетница по метке, но вместо удара — перенос игрока.
+
+| Действие | Поведение |
+|----------|-----------|
+| ПКМ | `markTeleport` — только метка |
+| ЛКМ | метка + `executeTeleport` |
+| Прицел в небо / над лабиринтом | точка на **верхней проходимой плите** лабиринта (`getMazeHighestWalkTop`), столб прилёта |
+| Прицел в землю/стены | верхняя поверхность в точке (лабиринт приоритетнее рельефа) |
+
+Кулдаун `TELEPORT_COOLDOWN`; проверка `canTeleportTo` (ямы, стены лабиринта). Вспышка `spawnTeleportFlash` на старте и финишe.
 
 ## Связанные системы
 

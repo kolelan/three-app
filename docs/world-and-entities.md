@@ -45,6 +45,7 @@ buildMaze()          // если arenaSettings.mazeEnabled
 | Сетка | `generateMazeGrid(cols, rows, maxFloors)` |
 | Пол | `createMazeFloorTile` — плитка = ячейка, `blocksBullets: true` (непробиваема) |
 | Стены | `buildMazeCellWalls`, `createMazeWall` |
+| Проёмы | `annotateMazeFloorOpenings` + `ensureMazeCellFloorHasOpening` — на каждом этаже нет полностью глухих «коробок»: окна (`isWindow`) или отсутствующая панель |
 | Регистрация | `registerMazePiece`, `addMazeMesh` |
 
 **Поле `mazePiece` (на mesh):**
@@ -54,6 +55,7 @@ buildMaze()          // если arenaSettings.mazeEnabled
 | `blocksBullets` | Блокирует пули и LOS |
 | `blocksMovement` | Стена для игрока |
 | `jumpable` | Можно перепрыгнуть |
+| `bouncy` | Плита пола — `Пробел` отскакивает вверх; при падении с высоты — автоотскок (~0.64, \|vy\| ≥ 2) |
 | `isWindow` | Окно — пули проходят |
 | `hasRoof` / `roofY` | Крыша — укрытие от взрывов сверху |
 

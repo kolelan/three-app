@@ -98,13 +98,38 @@
         }
         #game-over.visible { display: flex; pointer-events: auto; }
         #victory {
-            display: none; position: fixed; inset: 0; z-index: 16;
-            background: rgba(0,30,10,0.8); color: #fff;
+            display: none; position: fixed; inset: 0; z-index: 30;
+            background: rgba(0, 18, 8, 0.88); color: #fff;
             flex-direction: column; align-items: center; justify-content: center;
             font-size: 26px; pointer-events: none; text-align: center;
+            padding: 24px;
         }
         #victory.visible { display: flex; pointer-events: auto; }
+        #victory .victory-card {
+            max-width: min(520px, 92vw); padding: 28px 32px 24px;
+            border-radius: 16px; border: 2px solid rgba(120, 255, 160, 0.55);
+            background: linear-gradient(165deg, rgba(8, 48, 28, 0.97), rgba(4, 22, 14, 0.98));
+            box-shadow: 0 0 48px rgba(80, 255, 140, 0.22), 0 12px 40px rgba(0, 0, 0, 0.55);
+        }
+        #victory .victory-title { font-size: 32px; font-weight: 700; color: #b8ffcc; letter-spacing: 0.02em; }
+        #victory .victory-lead { font-size: 17px; margin-top: 12px; color: #e8fff0; line-height: 1.45; }
         #victory .sub { font-size: 15px; margin-top: 14px; opacity: 0.9; color: #aaffaa; }
+        #victory .victory-steps {
+            margin-top: 20px; padding: 14px 16px; border-radius: 10px;
+            background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 238, 120, 0.35);
+            text-align: left; font-size: 14px; line-height: 1.65; color: #fff8d8;
+        }
+        #victory .victory-steps strong { color: #ffee99; }
+        #victory .sub-hint { font-size: 15px; margin-top: 20px; color: #ffee88; font-weight: 600; }
+        #victory-continue-btn {
+            margin-top: 22px; padding: 12px 28px; font-size: 16px; cursor: pointer;
+            background: linear-gradient(180deg, #3a9a55, #267040);
+            color: #fff; border: 1px solid #8effaa; border-radius: 10px;
+            font-family: inherit; font-weight: 600;
+            box-shadow: 0 4px 16px rgba(60, 200, 100, 0.35);
+        }
+        #victory-continue-btn:hover { filter: brightness(1.12); }
+        #setup-panel .setup-col-levels h3 { color: #88ddff; }
         #weapon-panel {
             margin-top: 10px; padding: 10px 12px; border-radius: 8px;
             border: 2px solid rgba(255, 220, 100, 0.5);
@@ -116,6 +141,7 @@
         #weapon-panel.weapon-4 { border-color: rgba(180, 255, 100, 0.9); box-shadow: 0 0 12px rgba(120, 255, 60, 0.3); }
         #weapon-panel.weapon-5 { border-color: rgba(255, 90, 40, 0.95); box-shadow: 0 0 14px rgba(255, 60, 20, 0.4); }
         #weapon-panel.weapon-6 { border-color: rgba(180, 100, 255, 0.95); box-shadow: 0 0 16px rgba(140, 60, 255, 0.45); }
+        #weapon-panel.weapon-7 { border-color: rgba(80, 220, 255, 0.95); box-shadow: 0 0 16px rgba(40, 180, 255, 0.4); }
         #weapon-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
         #weapon-panel-main { display: flex; align-items: center; gap: 10px; }
         #weapon-icon { font-size: 28px; line-height: 1; width: 36px; text-align: center; }
@@ -125,6 +151,8 @@
         #weapon-panel.weapon-4 #weapon-title { color: #bbff99; }
         #weapon-panel.weapon-5 #weapon-title { color: #ffaa77; }
         #weapon-panel.weapon-6 #weapon-title { color: #ddaaff; }
+        #weapon-panel.weapon-7 #weapon-title { color: #88eeff; }
+        .weapon-slot.slot-7.active { color: #66eeff; }
         #weapon-desc { font-size: 11px; opacity: 0.85; margin-top: 2px; line-height: 1.3; }
         #weapon-slots { display: flex; gap: 6px; margin-top: 8px; }
         .weapon-slot {
@@ -167,9 +195,9 @@
         }
         #setup-panel.visible { display: flex; }
         #setup-panel .setup-card {
-            width: min(1180px, 98vw); max-height: calc(100vh - 32px); overflow-y: auto;
+            width: min(1580px, 98vw); max-height: calc(100vh - 32px); overflow-y: auto;
             background: rgba(30, 32, 55, 0.95); border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px; padding: 20px 22px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            border-radius: 12px; padding: 22px 28px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
         }
         #setup-panel .setup-header { margin-bottom: 16px; }
         #setup-panel .setup-difficulty {
@@ -196,7 +224,7 @@
         #setup-panel h2 { margin: 0 0 6px; font-size: 20px; color: #aad8ff; }
         #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin: 0; }
         #setup-panel .setup-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 16px;
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 16px;
             align-items: start;
         }
         #setup-panel .setup-col-boss h3 { color: #c9a0ff; }
@@ -306,7 +334,13 @@
             border-color: #6fcf97; font-weight: bold;
         }
         #setup-panel #btn-start-game:hover { background: rgba(40, 130, 65, 1); }
-        @media (max-width: 1100px) {
+        @media (max-width: 1680px) {
+            #setup-panel .setup-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 1320px) {
+            #setup-panel .setup-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 1000px) {
             #setup-panel .setup-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 640px) {
@@ -327,6 +361,7 @@
 </div>
 <div id="stats">
     <div id="lives">❤️ Жизни: 5</div>
+    <div id="stat-level-line">📊 Уровень: <span id="stat-level">1</span></div>
     <div id="stat-enemies-line">👾 Враги: <span id="stat-enemies-alive">0</span> / <span id="stat-enemies-total">0</span>
         <span id="stat-enemies-danger" style="opacity:0.85;font-size:11px"></span></div>
     <div id="stat-points-line">⭐ Баллы: <span id="stat-points">0</span></div>
@@ -349,13 +384,14 @@
             <div class="weapon-slot slot-4" data-slot="4">④ Мины</div>
             <div class="weapon-slot slot-5" data-slot="5">⑤ Огнемёт</div>
             <div class="weapon-slot slot-6" data-slot="6">⑥ Лазер</div>
+            <div class="weapon-slot slot-7" data-slot="7">⑦ Телепорт</div>
         </div>
     </div>
 </div>
 <div id="scope-overlay"></div>
 <div id="scope-reticle"></div>
 <div id="controls">
-    [B] Смена оружия · [1]–[6] · [W][S][A][D][Q][E] · [Пробел] · [R] · [G] прицел<br>
+    [B] Смена оружия · [1]–[7] · [W][S][A][D][Q][E] · [Пробел] · [R] · [G] прицел (WASD — наводка, Q/E — шаг вбок) · [V] вид сзади<br>
     <span style="opacity:0.75">Серые — укрытия · 🔴 атакуют · <span style="color:#ff6644">оранжевые</span> — ямы · радар справа — враги сзади</span>
 </div>
 <div id="enemy-radar" aria-label="Радар врагов">
@@ -372,11 +408,22 @@
     <div>💀 Игра окончена</div>
     <div style="font-size:14px; margin-top:12px; opacity:0.8">Нажми R — настройка арены и новая игра</div>
 </div>
-<div id="victory">
-    <div>🎉 Поздравляем!</div>
-    <div class="sub">Все опасные враги уничтожены — арена зачищена!</div>
-    <div class="sub" id="victory-score-line">⭐ Забег: <span id="victory-points">0</span> баллов · 🏆 Побед: <span id="victory-wins">0</span></div>
-    <div class="sub" style="margin-top:8px">Нажми R для настройки и новой игры</div>
+<div id="victory" role="dialog" aria-labelledby="victory-title" aria-modal="true">
+    <div class="victory-card">
+        <div class="victory-title" id="victory-title">🏆 Победа! Арена зачищена</div>
+        <div class="victory-lead" id="victory-lead">Все опасные враги и боссы уничтожены — вы справились с уровнем <span id="victory-level">1</span>.</div>
+        <div class="sub" id="victory-score-line">⭐ Забег: <span id="victory-points">0</span> баллов · 🏆 Побед за всё время: <span id="victory-wins">0</span></div>
+        <div class="victory-steps" id="victory-steps">
+            <div><strong>Что дальше?</strong></div>
+            <div>1. Нажмите кнопку ниже или <strong>ЛКМ</strong> по экрану — вы останетесь на арене.</div>
+            <div>2. Найдите <strong>светящуюся дверь</strong> в наружной стене арены (зелёно-голубое свечение).</div>
+            <div>3. Подойдите к двери вплотную — откроется <strong>следующий уровень</strong> (сложнее).</div>
+            <div style="margin-top:8px;opacity:0.9">После «Продолжить» можно <strong>добить мишени</strong> на арене для баллов.</div>
+        </div>
+        <div class="sub-hint">Дверь появится после продолжения · осмотрите периметр стен</div>
+        <button type="button" id="victory-continue-btn">Продолжить — искать дверь</button>
+        <div class="sub" style="margin-top:14px; opacity:0.7; font-size:13px">R — настройка и новая игра с уровня 1</div>
+    </div>
 </div>
 <div id="setup-panel">
     <div class="setup-card">
@@ -475,6 +522,14 @@
                     </div>
                     <div class="setup-field setup-field-wide">
                         <label class="setup-label">Сид <input type="number" id="inp-maze-seed" min="1" max="99999" step="1" value="42"></label>
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Прилипание к полу <span class="val" id="val-maze-foot-snap">0.55</span> м</label>
+                        <input type="range" id="inp-maze-foot-snap" min="0" max="2" step="0.05" value="0.55">
+                    </div>
+                    <div class="setup-field">
+                        <label class="setup-label">Внутр. пол платформы <span class="val" id="val-maze-foot-inset">0.45</span> м</label>
+                        <input type="range" id="inp-maze-foot-inset" min="0" max="1.5" step="0.05" value="0.45">
                     </div>
                 </div>
                 <h3>Оружие</h3>
@@ -631,6 +686,29 @@
                     <input type="range" id="inp-boss-shoot-range" min="18" max="60" step="1" value="42">
                 </div>
             </section>
+            <section class="setup-col setup-col-levels" aria-labelledby="setup-col-levels">
+                <h3 id="setup-col-levels">Уровни</h3>
+                <p class="setup-sub" style="margin:0 0 8px;font-size:11px;opacity:0.75">Усложнение за каждый пройденный уровень (дверь после победы)</p>
+                <div class="setup-field">
+                    <label class="setup-label">+ врагов за уровень <span class="val" id="val-level-enemies">5</span></label>
+                    <input type="range" id="inp-level-enemies" min="0" max="10" step="1" value="5">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">+ боссов каждые 2 ур. <span class="val" id="val-level-bosses">1</span></label>
+                    <input type="range" id="inp-level-bosses" min="0" max="3" step="1" value="1">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">− радиус врага <span class="val" id="val-level-enemy-rad">0.04</span></label>
+                    <input type="range" id="inp-level-enemy-rad" min="0" max="0.15" step="0.01" value="0.04">
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">+ радиус героя <span class="val" id="val-level-player-rad">0.03</span></label>
+                    <input type="range" id="inp-level-player-rad" min="0" max="0.12" step="0.01" value="0.03">
+                </div>
+                <div class="setup-field setup-field-wide" style="margin-top:8px;font-size:11px;opacity:0.8" id="val-level-preview">
+                    Ур. 2: +5 вр. · Ур. 3: +1 босс
+                </div>
+            </section>
         </div>
         <div class="setup-actions">
             <button type="button" id="btn-regen-terrain">🔄 Перегенерировать арену</button>
@@ -714,6 +792,8 @@
         staticTargetHp: 2,
         jumpHeight: 1.5,
         playerDamageRadius: 1.0,
+        mazeFootSnap: 0.55,
+        mazeFootInset: 0.45,
         enemyDamageRadius: 1.2,
         mazeEnabled: true,
         mazeFloors: 2,
@@ -742,7 +822,11 @@
         treeBaseRadius: 1.4,
         treeLayerScale: 0.72,
         treeSeed: 77,
-        treeColor: '#1a6b2e'
+        treeColor: '#1a6b2e',
+        levelEnemyPerStep: 5,
+        levelBossPerStep: 1,
+        levelEnemyRadiusStep: 0.04,
+        levelPlayerRadiusStep: 0.03
     };
 
     const DIFFICULTY_PRESETS = {
@@ -816,6 +900,8 @@
     let bossesToSpawn = 0;
     const bossVfx = [];
     let JUMP_VELOCITY = 5.2;
+    const MAZE_FLOOR_BOUNCE_RESTITUTION = 0.64;
+    const MAZE_FLOOR_BOUNCE_MIN_VY = 2.0;
     const GRAVITY = 16;
 
     function applyJumpFromSettings() {
@@ -983,6 +1069,9 @@
     document.body.appendChild(renderer.domElement);
     renderer.domElement.tabIndex = 0;
     renderer.domElement.style.outline = 'none';
+    renderer.domElement.style.position = 'fixed';
+    renderer.domElement.style.inset = '0';
+    renderer.domElement.style.zIndex = '0';
     renderer.domElement.addEventListener('click', () => renderer.domElement.focus());
 
     scene.add(new THREE.AmbientLight(0x353550));
@@ -1297,6 +1386,7 @@
             x: def.x, z: def.z, w: def.w, d: def.d, h: def.h,
             yBase: def.yBase, hw: def.w / 2, hd: def.d / 2,
             jumpable: !!def.jumpable,
+            bouncy: !!def.bouncy,
             blocksBullets: def.blocksBullets !== false,
             blocksMovement: def.blocksMovement !== false,
             isWindow: !!def.isWindow,
@@ -1383,7 +1473,7 @@
                 const wobble = 0.14 * Math.sin(ang * 4 + seedAng) + 0.09 * Math.cos(ang * 6 - seedAng * 2);
                 const noise = (mazeRand() - 0.5) * 0.28;
                 const inside = blob < 1.02 + wobble + noise;
-                grid[r][c] = { inside, floors: 0, c, r, gate: false };
+                grid[r][c] = { inside, floors: 0, c, r, gate: false, openEdges: null };
             }
         }
 
@@ -1421,6 +1511,58 @@
         return { grid, cols, rows, cx, rz };
     }
 
+    function mazeCellBuildsWallsAt(grid, r, c, floorIdx) {
+        const data = grid[r]?.[c];
+        if (!data?.inside) return false;
+        return floorIdx < data.floors;
+    }
+
+    /** На каждом этаже — достаточно окон/проёмов по периметру и в «коробках» верхних площадок. */
+    function annotateMazeFloorOpenings(grid, rows, cols, maxFloors) {
+        const dirs = [
+            { dr: -1, dc: 0, key: 'n' },
+            { dr: 1, dc: 0, key: 's' },
+            { dr: 0, dc: -1, key: 'w' },
+            { dr: 0, dc: 1, key: 'e' }
+        ];
+        for (let f = 0; f < maxFloors; f++) {
+            const candidates = [];
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (!mazeCellBuildsWallsAt(grid, r, c, f)) continue;
+                    const data = grid[r][c];
+                    for (const dir of dirs) {
+                        const neigh = grid[r + dir.dr]?.[c + dir.dc];
+                        const neighIn = neigh?.inside;
+                        const exterior = !neighIn;
+                        const heightGap = neighIn && neigh.floors < f + 1;
+                        if (!exterior && !heightGap) continue;
+                        if (exterior && f === 0 && data.gate) continue;
+                        candidates.push({ r, c, key: dir.key, f, heightGap });
+                    }
+                }
+            }
+            candidates.sort(() => mazeRand() - 0.5);
+            const minOpen = Math.max(4, Math.ceil(candidates.length * 0.11));
+            for (let i = 0; i < Math.min(minOpen, candidates.length); i++) {
+                const { r, c, key, f: fl, heightGap } = candidates[i];
+                const cell = grid[r][c];
+                if (!cell.openEdges) cell.openEdges = {};
+                const id = `${fl}-${key}`;
+                if (cell.openEdges[id]) continue;
+                cell.openEdges[id] = heightGap && mazeRand() > 0.35 ? 'omit' : 'window';
+            }
+        }
+    }
+
+    function ensureMazeCellFloorHasOpening(planned) {
+        if (!planned.length) return;
+        if (planned.some((p) => p.omit || p.isWindow || p.isGate)) return;
+        const pick = planned[Math.floor(mazeRand() * planned.length)];
+        if (pick.heightGap) pick.omit = true;
+        else pick.isWindow = true;
+    }
+
     function cellNeedsFloorAt(grid, r, c, floorIdx) {
         const data = grid[r]?.[c];
         if (!data?.inside) return false;
@@ -1436,7 +1578,7 @@
     function createMazeFloorTile(x, z, size, yBase) {
         const piece = registerMazePiece({
             x, z, w: size, d: size, h: 0.28, yBase,
-            jumpable: true, blocksBullets: true, blocksMovement: false
+            jumpable: true, bouncy: true, blocksBullets: true, blocksMovement: false
         });
         const mesh = new THREE.Mesh(
             new THREE.BoxGeometry(size, 0.28, size),
@@ -1454,11 +1596,12 @@
         const edgeThick = 0.2;
         const edgeSpan = cell * 0.96;
         const edges = [
-            { nr: r - 1, nc: c, wx: px, wz: pz - cell / 2, w: edgeSpan, d: edgeThick },
-            { nr: r + 1, nc: c, wx: px, wz: pz + cell / 2, w: edgeSpan, d: edgeThick },
-            { nr: r, nc: c - 1, wx: px - cell / 2, wz: pz, w: edgeThick, d: edgeSpan },
-            { nr: r, nc: c + 1, wx: px + cell / 2, wz: pz, w: edgeThick, d: edgeSpan }
+            { nr: r - 1, nc: c, key: 'n', wx: px, wz: pz - cell / 2, w: edgeSpan, d: edgeThick },
+            { nr: r + 1, nc: c, key: 's', wx: px, wz: pz + cell / 2, w: edgeSpan, d: edgeThick },
+            { nr: r, nc: c - 1, key: 'w', wx: px - cell / 2, wz: pz, w: edgeThick, d: edgeSpan },
+            { nr: r, nc: c + 1, key: 'e', wx: px + cell / 2, wz: pz, w: edgeThick, d: edgeSpan }
         ];
+        const planned = [];
         for (const e of edges) {
             const inBounds = e.nr >= 0 && e.nr < rows && e.nc >= 0 && e.nc < cols;
             const neigh = inBounds ? grid[e.nr][e.nc] : null;
@@ -1467,20 +1610,36 @@
             const exterior = !neighIn;
             const heightGap = neighIn && neighFloors < floorIdx + 1;
             if (!exterior && !heightGap) {
-                if (floorIdx === 0 && neighIn && mazeRand() > 0.96) {
+                if (floorIdx === 0 && neighIn && mazeRand() > 0.94) {
                     createMazeWall(e.wx, e.wz, e.w * 0.7, e.d * 0.7, 1.65, yBase, { isWindow: true });
                 }
                 continue;
             }
             if (floorIdx >= cellData.floors) continue;
-            const isGate = exterior && floorIdx === 0 && cellData.gate;
+
+            const forced = cellData.openEdges?.[`${floorIdx}-${e.key}`];
+            const isGate = exterior && floorIdx === 0 && cellData.gate && forced !== 'window' && forced !== 'omit';
+            let isWindow = isGate || forced === 'window';
+            const omit = forced === 'omit';
+            if (omit) continue;
+
             const tall = exterior && floorIdx > 0 && mazeRand() > 0.55;
             const h = tall ? 3.15 : wallH;
-            createMazeWall(e.wx, e.wz, e.w, e.d, h, yBase, {
-                isWindow: isGate,
-                jumpable: h <= jumpReach + floorIdx * floorStep,
-                hasRoof: floorIdx === cellData.floors - 1 && !isGate && mazeRand() > 0.72,
-                roofY: yBase + h + 0.35
+            planned.push({
+                e, h, isWindow, isGate, exterior, heightGap,
+                jumpable: h <= jumpReach + floorIdx * floorStep
+            });
+        }
+
+        ensureMazeCellFloorHasOpening(planned);
+
+        for (const p of planned) {
+            if (p.omit) continue;
+            createMazeWall(p.e.wx, p.e.wz, p.e.w, p.e.d, p.h, yBase, {
+                isWindow: p.isWindow,
+                jumpable: p.jumpable,
+                hasRoof: floorIdx === cellData.floors - 1 && !p.isWindow && !p.isGate && mazeRand() > 0.72,
+                roofY: yBase + p.h + 0.35
             });
         }
     }
@@ -1492,6 +1651,7 @@
         const maxFloors = arenaSettings.mazeFloors;
         const cell = 4.4;
         const { grid, cols, rows } = generateMazeGrid(9, 9, maxFloors);
+        annotateMazeFloorOpenings(grid, rows, cols, maxFloors);
         const halfW = (cols * cell) / 2;
         const halfD = (rows * cell) / 2;
         const baseY = getTerrainHeight(0, 0) + 0.15;
@@ -1533,6 +1693,7 @@
                     if (platH + y0 - baseY <= jumpReach + (data.floors - 1) * floorStep) {
                         createMazeWall(px, pz, platSize, platSize, platH, y0, {
                             jumpable: true,
+                            bouncy: true,
                             hasRoof: mazeRand() > 0.75,
                             roofY: y0 + platH + 0.35,
                             color: 0x6a7078
@@ -1589,12 +1750,54 @@
         return resolved;
     }
 
-    function getMazeWalkHeight(x, z, refFootY, maxAbove = 0.55, maxBelow = 1.15) {
+    /** Ноги на плите лабиринта: inset сжимает площадь, snap — допуск у края (м). */
+    function footXZOnMazeWalkPiece(p, x, z) {
+        const snap = arenaSettings.mazeFootSnap;
+        const inset = arenaSettings.mazeFootInset;
+        const dx = Math.abs(x - p.x);
+        const dz = Math.abs(z - p.z);
+        const innerW = Math.max(0.06, p.hw - inset);
+        const innerD = Math.max(0.06, p.hd - inset);
+        if (dx <= innerW && dz <= innerD) return true;
+        const ox = Math.max(dx - innerW, 0);
+        const oz = Math.max(dz - innerD, 0);
+        return Math.hypot(ox, oz) <= snap;
+    }
+
+    function footOnMazePieceWide(p, x, z, margin = 0.38) {
+        return Math.abs(x - p.x) <= p.hw + margin && Math.abs(z - p.z) <= p.hd + margin;
+    }
+
+    function mazePieceIsBouncy(p) {
+        return !!p.bouncy || (p.jumpable && p.h <= 0.35);
+    }
+
+    function getMazeHighestWalkTop(x, z, margin = 0.38) {
         let best = -Infinity;
-        const snap = 2.15;
         for (const p of mazePieces) {
             if (!p.jumpable) continue;
-            if (Math.abs(x - p.x) > p.hw + snap || Math.abs(z - p.z) > p.hd + snap) continue;
+            if (!footOnMazePieceWide(p, x, z, margin)) continue;
+            best = Math.max(best, p.yBase + p.h);
+        }
+        return best;
+    }
+
+    function resolveTeleportLandFootY(x, z, hintY) {
+        const terrain = getTerrainHeight(x, z);
+        const mazeTop = getMazeHighestWalkTop(x, z);
+        const overMaze = mazeFootprint.active && isInsideMazeBuilding(x, z, 0.5);
+        if (overMaze && mazeTop > -Infinity) return mazeTop + 0.02;
+        if (mazeTop > -Infinity && mazeTop >= terrain - 0.15) {
+            return Math.max(terrain, mazeTop) + 0.02;
+        }
+        return getSupportYAt(x, z, hintY ?? 1e5) + 0.02;
+    }
+
+    function getMazeWalkHeight(x, z, refFootY, maxAbove = 0.55, maxBelow = 1.15) {
+        let best = -Infinity;
+        for (const p of mazePieces) {
+            if (!p.jumpable) continue;
+            if (!footXZOnMazeWalkPiece(p, x, z)) continue;
             const top = p.yBase + p.h;
             if (top <= refFootY + maxAbove && top >= refFootY - maxBelow) {
                 best = Math.max(best, top);
@@ -1626,7 +1829,27 @@
         syncCameraForRaycast();
         raycaster.setFromCamera(mouse, camera);
         const hits = raycaster.intersectObjects(getMazeMarkTargets(), true);
-        return hits.length > 0 ? hits[0].point : null;
+        if (hits.length > 0) return hits[0].point.clone();
+
+        const o = raycaster.ray.origin;
+        const d = raycaster.ray.direction;
+        if (Math.abs(d.y) < 1e-5) return null;
+        let t = 0;
+        while (t < 200) {
+            const x = o.x + d.x * t;
+            const z = o.z + d.z * t;
+            const yRay = o.y + d.y * t;
+            const g = getSupportYAt(x, z, yRay);
+            if (yRay <= g + 0.25) {
+                return new THREE.Vector3(x, g + 0.05, z);
+            }
+            t += 1.5;
+        }
+        return null;
+    }
+
+    function resolveAreaStrikeY(x, z, hintY) {
+        return getSupportYAt(x, z, hintY ?? 1e5) + 0.1;
     }
 
     function isExplosionBlockedToTarget(ex, ey, ez, tx, ty, tz) {
@@ -1670,14 +1893,49 @@
         return { x, z };
     }
 
+    /** Проходимая плита лабиринта под ногами (широкая зона — край плиты, верхние этажи). */
+    function getMazeBouncyFloorUnderfoot(footY) {
+        let best = null;
+        let bestTop = -Infinity;
+        for (const p of mazePieces) {
+            if (!p.jumpable || !mazePieceIsBouncy(p)) continue;
+            const top = p.yBase + p.h;
+            if (footY < top - 0.48 || footY > top + 0.58) continue;
+            if (!footOnMazePieceWide(p, position.x, position.z)) continue;
+            if (top > bestTop) {
+                bestTop = top;
+                best = p;
+            }
+        }
+        return best;
+    }
+
     function canPlayerJump() {
         if (rangedMode) return false;
         if (velocityY > 0.55) return false;
+        if (getMazeBouncyFloorUnderfoot(getFootY())) return true;
         const footY = getFootY();
         const mazeStand = getMazeStandSupportAt(position.x, position.z, footY);
         const terrain = getTerrainHeight(position.x, position.z);
         const support = Math.max(terrain, mazeStand > -Infinity ? mazeStand : terrain);
         return footY <= support + 0.55;
+    }
+
+    function tryPlayerJump() {
+        if (rangedMode) return false;
+        if (velocityY > 0.55) return false;
+        const footY = getFootY();
+        const slab = getMazeBouncyFloorUnderfoot(footY);
+        if (slab) {
+            velocityY = JUMP_VELOCITY;
+            onGround = false;
+            playerY = (slab.yBase + slab.h) + WORLD.eyeOffset;
+            return true;
+        }
+        if (!canPlayerJump()) return false;
+        velocityY = JUMP_VELOCITY;
+        onGround = false;
+        return true;
     }
 
     function getMazeLosMeshes() {
@@ -1946,7 +2204,7 @@
     const mines = [];
     let lastMinePlace = 0;
 
-    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6 };
+    const WEAPON = { STANDARD: 1, SNIPER: 2, AREA: 3, MINE: 4, FLAMETHROWER: 5, LASER: 6, TELEPORT: 7 };
     const WEAPON_INFO = {
         1: {
             name: '1 — Стандарт',
@@ -1968,8 +2226,8 @@
             name: '3 — Ракетница',
             title: 'Ракетница',
             icon: '🚀',
-            desc: 'ПКМ — метка · ЛКМ — удар · G — дальний бой',
-            help: '3: G дальний бой · ПКМ метка · ЛКМ',
+            desc: 'ЛКМ — удар по прицелу · ПКМ — только метка · G — дальний бой',
+            help: '3: ЛКМ удар · ПКМ метка · G прицел',
             slotLabel: '③ Ракета'
         },
         4: {
@@ -1995,6 +2253,14 @@
             desc: 'ЛКМ — зарядка и луч на всю дистанцию · G — дальний бой',
             help: '6: ЛКМ заряд · луч мгновенно · G прицел',
             slotLabel: '⑥ Лазер'
+        },
+        7: {
+            name: '7 — Телепорт',
+            title: 'Телепорт',
+            icon: '🌀',
+            desc: 'ЛКМ — метка и прыжок · ПКМ — метка · в небо — прилёт сверху',
+            help: '7: ЛКМ телепорт · ПКМ метка · прицел в небо — с высоты',
+            slotLabel: '⑦ Телепорт'
         }
     };
     const LASER_CHARGE_TIME = 0.95;
@@ -2020,6 +2286,13 @@
     const RANGED_CAM_SPEED = 1.1;
     const RANGED_CAM_PITCH_LIMIT = 0.95;
     const RANGED_CAM_YAW_LIMIT = 1.15;
+    /**
+     * Режим G (rangedMode) — НЕ МЕНЯТЬ раскладку клавиш без явной задачи:
+     *   W/S/A/D — только камера прицела (updateRangedAimCamera), НЕ ходьба и НЕ поворот тела.
+     *   Q/E (и стрелки ← →) — только стрейф игрока влево/вправо (applyPlayerStrafeMove, useAimYaw: true).
+     * Вне G: W/S — вперёд/назад, A/D — поворот тела, Q/E — стрейф (ветка canPlayerMoveThisFrame в animate).
+     */
+    const RANGED_STRAFE_MULT = 0.5;
     const SNIPER_MOVE_MULT = 0.55;
     const NORMAL_FOV = 75;
     const SNIPER_COOLDOWN = 0.38;
@@ -2031,28 +2304,45 @@
     const AREA_RADIUS = 6;
     const AREA_COOLDOWN = 1.8;
     const ROCKET_DAMAGE = 3;
+    const TELEPORT_RADIUS = 2.15;
+    const TELEPORT_COOLDOWN = 1.35;
+    const TELEPORT_DROP_HEIGHT = 34;
+    const TELEPORT_SKY_PLANE_Y = 48;
     const WEAPON_PICKUP_RADIUS = 1.75;
     const ALL_WEAPON_IDS = [
-        WEAPON.STANDARD, WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER
+        WEAPON.STANDARD, WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER,
+        WEAPON.TELEPORT
     ];
     const WEAPON_PICKUP_COLORS = {
         2: 0x66aaff,
         3: 0xff6622,
         4: 0x77dd55,
         5: 0xff5522,
-        6: 0xbb55ff
+        6: 0xbb55ff,
+        7: 0x44ddff
     };
     const weaponUnlocks = new Set([WEAPON.STANDARD]);
     const weaponPickups = [];
 
     let currentWeapon = WEAPON.STANDARD;
     let rangedMode = false;
+    let thirdPersonView = false;
+    let playerMeshGroup = null;
+    const THIRD_PERSON_DIST = 4.1;
+    const THIRD_PERSON_DIST_MIN = 2.4;
+    const THIRD_PERSON_DIST_MAX = 10.5;
+    const THIRD_PERSON_HEIGHT = 1.5;
+    let thirdPersonDist = THIRD_PERSON_DIST;
     let rangedFov = RANGED_FOV_DEFAULT;
     let rangedCamPitch = 0;
     let rangedCamYaw = 0;
     let areaTarget = null;
     let areaMarker = null;
     let lastAreaStrike = 0;
+    let teleportTarget = null;
+    let teleportMarker = null;
+    let lastTeleport = 0;
+    const teleportFlashes = [];
     let targetFov = NORMAL_FOV;
     let flamethrowerFiring = false;
     let flameTickAcc = 0;
@@ -2081,6 +2371,12 @@
     let lastShotTime = 0;
     let gameActive = false;
     let victoryShown = false;
+    /** none | overlay (экран победы) | door (поиск портала) */
+    let victoryPhase = 'none';
+    let currentLevel = 1;
+    let runBaseSettings = null;
+    let levelDoor = null;
+    const LEVEL_DOOR_TRIGGER_DIST = 2.35;
 
     const keys = { w: false, a: false, s: false, d: false, strafeLeft: false, strafeRight: false };
     const MOVEMENT_KEY_CODES = new Set([
@@ -2088,6 +2384,7 @@
     ]);
     const pressedMovementCodes = new Set();
 
+    /** Синхронизация keys.* из pressedMovementCodes; в G значения w/a/s/d идут в updateRangedAimCamera, strafe* — в стрейф. */
     function applyMovementKeysFromPressed() {
         keys.w = pressedMovementCodes.has('KeyW');
         keys.a = pressedMovementCodes.has('KeyA');
@@ -2108,18 +2405,61 @@
     }
 
     function canAcceptMovementKeys() {
-        return gameActive && !victoryShown;
+        return gameActive && (!victoryShown || victoryPhase === 'door');
+    }
+
+    function canPlayerMoveThisFrame() {
+        return gameActive && (!victoryShown || victoryPhase === 'door');
+    }
+
+    function isStrafeLeftKey(event) {
+        return event.code === 'KeyQ' || event.code === 'ArrowLeft'
+            || event.key === 'q' || event.key === 'Q' || event.key === 'й' || event.key === 'Й';
+    }
+
+    function isStrafeRightKey(event) {
+        return event.code === 'KeyE' || event.code === 'ArrowRight'
+            || event.key === 'e' || event.key === 'E' || event.key === 'у' || event.key === 'У';
     }
 
     function handleMovementKeyDown(event) {
+        if (!canAcceptMovementKeys()) {
+            if (MOVEMENT_KEY_CODES.has(event.code) || isStrafeLeftKey(event) || isStrafeRightKey(event)) {
+                return true;
+            }
+            return false;
+        }
+        if (isStrafeLeftKey(event)) {
+            pressedMovementCodes.add('KeyQ');
+            pressedMovementCodes.add('ArrowLeft');
+            applyMovementKeysFromPressed();
+            return true;
+        }
+        if (isStrafeRightKey(event)) {
+            pressedMovementCodes.add('KeyE');
+            pressedMovementCodes.add('ArrowRight');
+            applyMovementKeysFromPressed();
+            return true;
+        }
         if (!MOVEMENT_KEY_CODES.has(event.code)) return false;
-        if (!canAcceptMovementKeys()) return true;
         pressedMovementCodes.add(event.code);
         applyMovementKeysFromPressed();
         return true;
     }
 
     function handleMovementKeyUp(event) {
+        if (isStrafeLeftKey(event)) {
+            pressedMovementCodes.delete('KeyQ');
+            pressedMovementCodes.delete('ArrowLeft');
+            applyMovementKeysFromPressed();
+            return true;
+        }
+        if (isStrafeRightKey(event)) {
+            pressedMovementCodes.delete('KeyE');
+            pressedMovementCodes.delete('ArrowRight');
+            applyMovementKeysFromPressed();
+            return true;
+        }
         if (!MOVEMENT_KEY_CODES.has(event.code)) return false;
         pressedMovementCodes.delete(event.code);
         applyMovementKeysFromPressed();
@@ -2132,6 +2472,7 @@
     let onGround = true;
 
     const livesEl = document.getElementById('lives');
+    const statLevelEl = document.getElementById('stat-level');
     const statPointsEl = document.getElementById('stat-points');
     const statShotsEl = document.getElementById('stat-shots');
     const statHitsEl = document.getElementById('stat-hits');
@@ -2155,6 +2496,8 @@
     let enemiesFieldTotal = 0;
     const gameOverEl = document.getElementById('game-over');
     const victoryEl = document.getElementById('victory');
+    const victoryLevelEl = document.getElementById('victory-level');
+    const victoryContinueBtn = document.getElementById('victory-continue-btn');
     const infoEl = document.getElementById('info');
     const weaponPanelEl = document.getElementById('weapon-panel');
     const weaponIconEl = document.getElementById('weapon-icon');
@@ -2188,22 +2531,36 @@
     }
 
     function sweepMazeLanding(prevFootY, nextFootY) {
-        const snap = 2.15;
         let bestTop = null;
+        let bestBouncy = false;
         for (const p of mazePieces) {
             if (!p.jumpable) continue;
-            if (Math.abs(position.x - p.x) > p.hw + snap || Math.abs(position.z - p.z) > p.hd + snap) {
-                continue;
-            }
+            if (!footOnMazePieceWide(p, position.x, position.z)) continue;
             const top = p.yBase + p.h;
             const crossedDown = prevFootY > top - 0.12 && nextFootY <= top + 0.48;
             const onPlatform = nextFootY <= top + 0.12 && nextFootY >= top - 0.5
                 && velocityY <= 0.15 && prevFootY >= top - 0.65;
             if (crossedDown || onPlatform) {
-                if (bestTop == null || top > bestTop) bestTop = top;
+                if (bestTop == null || top > bestTop) {
+                    bestTop = top;
+                    bestBouncy = mazePieceIsBouncy(p);
+                }
             }
         }
-        return bestTop != null ? bestTop + WORLD.eyeOffset : null;
+        if (bestTop == null) return null;
+        return { eyeY: bestTop + WORLD.eyeOffset, bouncy: bestBouncy };
+    }
+
+    function applyMazeLanding(landing) {
+        playerY = landing.eyeY;
+        const impactVy = velocityY;
+        if (landing.bouncy && impactVy < -MAZE_FLOOR_BOUNCE_MIN_VY) {
+            velocityY = Math.min(-impactVy * MAZE_FLOOR_BOUNCE_RESTITUTION, JUMP_VELOCITY * 0.92);
+            onGround = false;
+            return;
+        }
+        velocityY = 0;
+        onGround = true;
     }
 
     function getPlayerSupportFootY() {
@@ -2719,6 +3076,7 @@
         statHitsEl.textContent = stats.hits;
         statDestroyedEl.textContent = stats.destroyed;
         livesEl.textContent = `❤️ Жизни: ${lives}`;
+        if (statLevelEl) statLevelEl.textContent = currentLevel;
         if (gameActive) updateEnemyRadar();
     }
 
@@ -2767,6 +3125,17 @@
         return enemies.filter((e) => e.userData.isBoss && !e.userData.dying).length;
     }
 
+    function showVictoryOverlay() {
+        if (victoryLevelEl) victoryLevelEl.textContent = String(currentLevel);
+        updatePersistedStatsUI();
+        stopFlamethrower();
+        crosshairEl.classList.remove('visible');
+        victoryEl.classList.add('visible');
+        infoEl.innerHTML =
+            `🏆 <b>Победа!</b> Уровень ${currentLevel} зачищен<div style="font-size:12px; opacity:0.9; margin-top:4px;">`
+            + `Нажмите «Продолжить» или ЛКМ — затем найдите <b>светящуюся дверь</b> в стене</div>`;
+    }
+
     function checkVictory() {
         if (victoryShown || !gameActive) return;
         if (countDangerousEnemies() > 0) return;
@@ -2776,12 +3145,13 @@
         }
         if (countBossesAlive() > 0) return;
         victoryShown = true;
+        victoryPhase = 'overlay';
+        setThirdPersonView(false);
+        rangedMode = false;
+        updateRangedVisual();
         resetMovementKeys();
         recordVictory(stats.points);
-        victoryEl.classList.add('visible');
-        infoEl.innerHTML =
-            `🏆 Победа!<div style="font-size:12px; opacity:0.8;">`
-            + `Арена зачищена · <b>${stats.points}</b> баллов · побед: <b>${persistedStats.wins}</b></div>`;
+        showVictoryOverlay();
     }
 
     function parseBossColor() {
@@ -3295,12 +3665,49 @@
         setMouseNDCFromClient(event.clientX, event.clientY);
     }
 
+    /** G: W/S — pitch, A/D — yaw прицела (камера на месте, position не меняется). */
     function updateRangedAimCamera(delta) {
         const speed = RANGED_CAM_SPEED * delta;
         if (keys.w) rangedCamPitch = Math.min(RANGED_CAM_PITCH_LIMIT, rangedCamPitch + speed);
         if (keys.s) rangedCamPitch = Math.max(-RANGED_CAM_PITCH_LIMIT, rangedCamPitch - speed);
         if (keys.a) rangedCamYaw = Math.min(RANGED_CAM_YAW_LIMIT, rangedCamYaw + speed);
         if (keys.d) rangedCamYaw = Math.max(-RANGED_CAM_YAW_LIMIT, rangedCamYaw - speed);
+    }
+
+    /** Q/E — смещение position.x/z; useAimYaw: в G стрейф перпендикулярно прицелу (rotate + rangedCamYaw). */
+    function applyPlayerStrafeMove(delta, speedMul = 1, useAimYaw = false) {
+        if (!keys.strafeLeft && !keys.strafeRight) return;
+        const walkSpeed = 3.4 * delta * speedMul;
+        const yaw = useAimYaw ? rotate + rangedCamYaw : rotate;
+        const rightX = Math.cos(yaw);
+        const rightZ = -Math.sin(yaw);
+        let moveX = 0;
+        let moveZ = 0;
+        if (keys.strafeLeft) {
+            moveX += rightX;
+            moveZ += rightZ;
+        }
+        if (keys.strafeRight) {
+            moveX -= rightX;
+            moveZ -= rightZ;
+        }
+        const len = Math.hypot(moveX, moveZ);
+        if (len < 1e-5) return;
+        moveX = (moveX / len) * walkSpeed;
+        moveZ = (moveZ / len) * walkSpeed;
+
+        let newX = position.x + moveX;
+        let newZ = position.z + moveZ;
+        const margin = 0.7;
+        newX = Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, newX));
+        newZ = Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, newZ));
+        const moveFootY = getFootY();
+        const moveHeadY = getPlayerHeadY();
+        let resolved = resolveCoverCollision(newX, newZ);
+        resolved = resolveMazeCollision(resolved.x, resolved.z, moveFootY, moveHeadY);
+        position.x = resolved.x;
+        position.z = resolved.z;
+        separatePlayerFromEnemies(0.55);
     }
 
     function getRangedLookTarget(out) {
@@ -3317,7 +3724,7 @@
         return [terrain, ...covers, ...getMazeLosMeshes(), ...shootables];
     }
 
-    function getRangedAimDirection() {
+    function getCrosshairAimDirection() {
         applyCameraLook();
         const origin = tmpVec.set(position.x, playerY, position.z);
         raycaster.setFromCamera(aimMouse, camera);
@@ -3329,13 +3736,96 @@
         return raycaster.ray.direction.clone().normalize();
     }
 
+    function getRangedAimDirection() {
+        return getCrosshairAimDirection();
+    }
+
+    function ensurePlayerMesh() {
+        if (playerMeshGroup) return;
+        playerMeshGroup = new THREE.Group();
+        playerMeshGroup.userData.isPlayerVisual = true;
+        const bodyMat = new THREE.MeshStandardMaterial({
+            color: 0x44aa88,
+            emissive: 0x113322,
+            emissiveIntensity: 0.28,
+            roughness: 0.5,
+            metalness: 0.15
+        });
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.88, 10), bodyMat);
+        body.position.y = 0.44;
+        body.castShadow = true;
+        const head = new THREE.Mesh(
+            new THREE.SphereGeometry(0.21, 10, 10),
+            bodyMat.clone()
+        );
+        head.position.y = 0.98;
+        head.castShadow = true;
+        playerMeshGroup.add(body, head);
+        playerMeshGroup.visible = false;
+        scene.add(playerMeshGroup);
+    }
+
+    function updatePlayerMesh() {
+        ensurePlayerMesh();
+        const footY = getFootY();
+        playerMeshGroup.position.set(position.x, footY, position.z);
+        playerMeshGroup.rotation.y = rotate;
+        playerMeshGroup.visible = thirdPersonView && gameActive;
+    }
+
+    function setThirdPersonView(enabled) {
+        thirdPersonView = !!enabled;
+        if (thirdPersonView) thirdPersonDist = THIRD_PERSON_DIST;
+        ensurePlayerMesh();
+        playerMeshGroup.visible = thirdPersonView && gameActive;
+    }
+
+    function pullThirdPersonCamera(camPos, lookAt) {
+        tmpVec3.copy(camPos).sub(lookAt);
+        const dist = tmpVec3.length();
+        if (dist < 0.25) return;
+        tmpVec3.normalize();
+        raycaster.set(lookAt, tmpVec3);
+        raycaster.near = 0.05;
+        raycaster.far = dist;
+        const blockers = terrain
+            ? [terrain, ...covers, ...trees, ...getMazeLosMeshes()]
+            : [...covers, ...trees, ...getMazeLosMeshes()];
+        const hits = raycaster.intersectObjects(blockers, true);
+        if (hits.length > 0) {
+            camPos.copy(lookAt).addScaledVector(tmpVec3, Math.max(0.55, hits[0].distance - 0.35));
+        }
+    }
+
     function applyCameraLook() {
-        camera.position.set(position.x, playerY, position.z);
-        camera.rotation.set(0, 0, 0, 'YXZ');
+        const target = tmpVec2.set(
+            position.x + Math.sin(rotate),
+            playerY - 0.3,
+            position.z + Math.cos(rotate)
+        );
         if (rangedMode) {
-            camera.lookAt(getRangedLookTarget(tmpVec));
+            getRangedLookTarget(target);
+            camera.position.set(position.x, playerY, position.z);
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(target);
+        } else if (thirdPersonView) {
+            const footY = getFootY();
+            const backX = position.x - Math.sin(rotate);
+            const backZ = position.z - Math.cos(rotate);
+            const backLen = Math.hypot(backX - position.x, backZ - position.z) || 1;
+            const nx = (backX - position.x) / backLen;
+            const nz = (backZ - position.z) / backLen;
+            camera.position.set(
+                position.x + nx * thirdPersonDist,
+                footY + THIRD_PERSON_HEIGHT,
+                position.z + nz * thirdPersonDist
+            );
+            pullThirdPersonCamera(camera.position, target);
+            camera.lookAt(target);
         } else {
-            camera.lookAt(position.x + Math.sin(rotate), playerY - 0.3, position.z + Math.cos(rotate));
+            camera.position.set(position.x, playerY, position.z);
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(target);
         }
         camera.updateMatrixWorld();
     }
@@ -3346,12 +3836,8 @@
 
     function getShootDirectionFromMouse(event) {
         setMouseNDC(event);
-        applyCameraLook();
-        if (rangedMode) {
-            return getRangedAimDirection();
-        }
-        raycaster.setFromCamera(mouse, camera);
-        return raycaster.ray.direction.clone();
+        if (rangedMode) return getRangedAimDirection();
+        return getCrosshairAimDirection();
     }
 
     function removeShootable(target) {
@@ -3489,7 +3975,9 @@
     function spawnWeaponPickups() {
         clearWeaponPickups();
         if (!arenaSettings.weaponsOnField) return;
-        const toSpawn = [WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER];
+        const toSpawn = [
+            WEAPON.SNIPER, WEAPON.AREA, WEAPON.MINE, WEAPON.FLAMETHROWER, WEAPON.LASER, WEAPON.TELEPORT
+        ];
         const spots = pickWeaponPickupSpots(toSpawn.length);
         toSpawn.forEach((weaponId, i) => {
             const spot = spots[i] || { x: 20 + i * 6, z: 12 + i * 5 };
@@ -3550,6 +4038,7 @@
         rangedCamYaw = 0;
         targetFov = NORMAL_FOV;
         if (id !== WEAPON.AREA) clearAreaTarget();
+        if (id !== WEAPON.TELEPORT) clearTeleportTarget();
         updateRangedVisual();
         updateWeaponUI();
     }
@@ -3614,9 +4103,16 @@
     }
 
     function toggleRangedMode() {
-        rangedMode = !rangedMode;
+        const enabling = !rangedMode;
+        if (enabling) setThirdPersonView(false);
+        rangedMode = enabling;
         if (rangedMode) {
-            resetMovementKeys();
+            // Сброс только WASD: в G они снова читаются как прицел, не как шаг/поворот тела. Q/E не трогаем.
+            pressedMovementCodes.delete('KeyW');
+            pressedMovementCodes.delete('KeyS');
+            pressedMovementCodes.delete('KeyA');
+            pressedMovementCodes.delete('KeyD');
+            applyMovementKeysFromPressed();
             rangedFov = RANGED_FOV_DEFAULT;
             rangedCamPitch = 0;
             rangedCamYaw = 0;
@@ -3644,7 +4140,7 @@
     function updateAreaMarker() {
         clearAreaMarker();
         if (!areaTarget) return;
-        const gy = (areaTarget.y ?? getSupportYAt(areaTarget.x, areaTarget.z, 1e5)) + 0.08;
+        const gy = resolveAreaStrikeY(areaTarget.x, areaTarget.z, areaTarget.y) + 0.05;
         areaMarker = new THREE.Mesh(
             new THREE.RingGeometry(AREA_RADIUS * 0.85, AREA_RADIUS, 40),
             new THREE.MeshBasicMaterial({
@@ -3657,11 +4153,225 @@
     }
 
     function markArea(event) {
-        if (!gameActive) return;
+        if (!gameActive) return false;
         const point = raycastGround(event);
-        if (!point) return;
+        if (!point) return false;
         areaTarget = { x: point.x, y: point.y, z: point.z };
         updateAreaMarker();
+        return true;
+    }
+
+    function clampMarkXZ(x, z) {
+        const margin = 1.2;
+        return {
+            x: Math.max(-WORLD.halfW + margin, Math.min(WORLD.halfW - margin, x)),
+            z: Math.max(-WORLD.halfD + margin, Math.min(WORLD.halfD - margin, z))
+        };
+    }
+
+    /** Метка телепорта: земля по лучу; прицел в небо — точка на земле под лучом, прилёт сверху. */
+    function raycastTeleportMarkPoint(event) {
+        setMouseNDC(event);
+        syncCameraForRaycast();
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObjects(getMazeMarkTargets(), true);
+        const o = raycaster.ray.origin;
+        const d = raycaster.ray.direction;
+        let fromAbove = false;
+        let x = null;
+        let z = null;
+        let hintY;
+
+        if (hits.length > 0) {
+            x = hits[0].point.x;
+            z = hits[0].point.z;
+            const mazeTop = getMazeHighestWalkTop(x, z);
+            if (mazeFootprint.active && isInsideMazeBuilding(x, z, 1) && mazeTop > -Infinity) {
+                hintY = mazeTop;
+                fromAbove = d.y > 0.02;
+            } else {
+                hintY = hits[0].point.y;
+            }
+        } else if (d.y > 0.06) {
+            const planeY = Math.max(playerY + 10, TELEPORT_SKY_PLANE_Y);
+            const t = (planeY - o.y) / d.y;
+            if (t <= 0) return null;
+            x = o.x + d.x * t;
+            z = o.z + d.z * t;
+            hintY = planeY;
+            fromAbove = true;
+        } else {
+            if (Math.abs(d.y) < 1e-5) return null;
+            let t = 0;
+            while (t < 220) {
+                const px = o.x + d.x * t;
+                const pz = o.z + d.z * t;
+                const yRay = o.y + d.y * t;
+                const g = getSupportYAt(px, pz, yRay);
+                if (yRay <= g + 0.25) {
+                    x = px;
+                    z = pz;
+                    hintY = g + 0.05;
+                    break;
+                }
+                t += 1.5;
+            }
+            if (x == null) return null;
+        }
+
+        const c = clampMarkXZ(x, z);
+        if (isInsidePitZone(c.x, c.z)) return null;
+        const landY = resolveTeleportLandFootY(c.x, c.z, hintY);
+        const overMaze = mazeFootprint.active && isInsideMazeBuilding(c.x, c.z, 0.5);
+        if (overMaze || d.y > 0.06) fromAbove = true;
+        return { x: c.x, z: c.z, y: landY + 0.03, fromAbove };
+    }
+
+    function clearTeleportMarker() {
+        if (!teleportMarker) return;
+        scene.remove(teleportMarker);
+        teleportMarker.traverse((child) => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) child.material.dispose();
+        });
+        teleportMarker = null;
+    }
+
+    function clearTeleportTarget() {
+        clearTeleportMarker();
+        teleportTarget = null;
+    }
+
+    function updateTeleportMarker() {
+        clearTeleportMarker();
+        if (!teleportTarget) return;
+        const g = new THREE.Group();
+        const gy = resolveTeleportLandFootY(teleportTarget.x, teleportTarget.z, teleportTarget.y) + 0.06;
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(TELEPORT_RADIUS * 0.55, TELEPORT_RADIUS, 36),
+            new THREE.MeshBasicMaterial({
+                color: 0x44eeff, transparent: true, opacity: 0.88, side: THREE.DoubleSide
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(teleportTarget.x, gy, teleportTarget.z);
+        g.add(ring);
+
+        if (teleportTarget.fromAbove) {
+            const beam = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1, 0.32, TELEPORT_DROP_HEIGHT, 10, 1, true),
+                new THREE.MeshBasicMaterial({
+                    color: 0x55ccff, transparent: true, opacity: 0.38, side: THREE.DoubleSide
+                })
+            );
+            beam.position.set(teleportTarget.x, gy + TELEPORT_DROP_HEIGHT * 0.5, teleportTarget.z);
+            g.add(beam);
+            const topRing = new THREE.Mesh(
+                new THREE.RingGeometry(0.35, 0.9, 20),
+                new THREE.MeshBasicMaterial({
+                    color: 0xaaffff, transparent: true, opacity: 0.72, side: THREE.DoubleSide
+                })
+            );
+            topRing.rotation.x = -Math.PI / 2;
+            topRing.position.set(teleportTarget.x, gy + TELEPORT_DROP_HEIGHT, teleportTarget.z);
+            g.add(topRing);
+        }
+
+        scene.add(g);
+        teleportMarker = g;
+    }
+
+    function markTeleport(event) {
+        if (!gameActive) return false;
+        const point = raycastTeleportMarkPoint(event);
+        if (!point) return false;
+        teleportTarget = point;
+        updateTeleportMarker();
+        return true;
+    }
+
+    function canTeleportTo(x, z) {
+        if (isInsidePitZone(x, z) || isInsideTreeZone(x, z, 1)) return false;
+        const footY = resolveTeleportLandFootY(x, z, 1e5);
+        if (footY < WORLD.spawnFootMinY - 0.5) return false;
+        const headY = footY + 0.88;
+        const resolved = resolveMazeCollision(x, z, footY, headY);
+        if (Math.hypot(resolved.x - x, resolved.z - z) > 0.85) return false;
+        if (isInsidePitZone(resolved.x, resolved.z)) return false;
+        return true;
+    }
+
+    function spawnTeleportFlash(x, z, footY) {
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(0.4, TELEPORT_RADIUS * 1.4, 28),
+            new THREE.MeshBasicMaterial({
+                color: 0x66ffff, transparent: true, opacity: 0.92, side: THREE.DoubleSide
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(x, footY + 0.12, z);
+        scene.add(ring);
+        teleportFlashes.push({ mesh: ring, life: 0.45, maxLife: 0.45 });
+    }
+
+    function updateTeleportFlashes(delta) {
+        for (let i = teleportFlashes.length - 1; i >= 0; i--) {
+            const fx = teleportFlashes[i];
+            fx.life -= delta;
+            fx.mesh.material.opacity = 0.92 * Math.max(0, fx.life / fx.maxLife);
+            fx.mesh.scale.setScalar(1 + (1 - fx.life / fx.maxLife) * 0.6);
+            if (fx.life <= 0) {
+                scene.remove(fx.mesh);
+                fx.mesh.geometry.dispose();
+                fx.mesh.material.dispose();
+                teleportFlashes.splice(i, 1);
+            }
+        }
+    }
+
+    function executeTeleport() {
+        if (!gameActive || !teleportTarget) return;
+        const now = performance.now() / 1000;
+        if (now - lastTeleport < TELEPORT_COOLDOWN) return;
+
+        const x = teleportTarget.x;
+        const z = teleportTarget.z;
+        if (!canTeleportTo(x, z)) {
+            infoEl.innerHTML =
+                '🌀 <b>Телепорт</b><div style="font-size:12px;opacity:0.85">'
+                + 'Сюда нельзя — яма, стена или недоступная зона</div>';
+            return;
+        }
+
+        lastTeleport = now;
+        stats.shots++;
+        updateStatsUI();
+
+        const fromX = position.x;
+        const fromZ = position.z;
+        const fromFoot = getFootY();
+        spawnTeleportFlash(fromX, fromZ, fromFoot);
+
+        const footY = resolveTeleportLandFootY(x, z, teleportTarget.y);
+        const headY = footY + 0.88;
+        const resolved = resolveMazeCollision(x, z, footY, headY);
+        position.x = resolved.x;
+        position.z = resolved.z;
+        const landFoot = resolveTeleportLandFootY(resolved.x, resolved.z, footY);
+        playerY = landFoot + WORLD.eyeOffset;
+        velocityY = 0;
+        onGround = true;
+        separatePlayerFromEnemies(0.55);
+
+        spawnTeleportFlash(resolved.x, resolved.z, landFoot);
+        const fromSky = !!teleportTarget.fromAbove;
+        clearTeleportTarget();
+
+        infoEl.innerHTML =
+            '🌀 Телепорт выполнен'
+            + `<div style="font-size:12px;opacity:0.8">`
+            + (fromSky ? 'Прилёт на метку сверху · ' : '')
+            + 'Новая позиция на метке</div>';
     }
 
     function clearBullets(list) {
@@ -3729,7 +4439,7 @@
 
         const x = areaTarget.x;
         const z = areaTarget.z;
-        const strikeY = areaTarget.y ?? getSupportYAt(x, z, 1e5) + 0.1;
+        const strikeY = resolveAreaStrikeY(x, z, areaTarget.y);
         const rocket = new THREE.Mesh(
             new THREE.ConeGeometry(0.25, 1.2, 8),
             new THREE.MeshBasicMaterial({ color: 0xff4400 })
@@ -3780,7 +4490,12 @@
         }
     }
 
+    function canUseCombatAfterVictory() {
+        return victoryPhase !== 'overlay';
+    }
+
     function handlePrimaryClick(event) {
+        if (!canUseCombatAfterVictory()) return;
         if (currentWeapon === WEAPON.FLAMETHROWER) return;
         if (currentWeapon === WEAPON.LASER) {
             startLaserCharge(event);
@@ -3788,15 +4503,20 @@
         }
         if (currentWeapon === WEAPON.STANDARD) shootStandard(event);
         else if (currentWeapon === WEAPON.SNIPER) shootSniper(event);
-        else if (currentWeapon === WEAPON.AREA) fireAreaStrike();
+        else if (currentWeapon === WEAPON.AREA) {
+            markArea(event);
+            fireAreaStrike();
+        }
+        else if (currentWeapon === WEAPON.TELEPORT) {
+            markTeleport(event);
+            executeTeleport();
+        }
         else if (currentWeapon === WEAPON.MINE) detonateMineClick(event);
     }
 
     function getLaserAimDirection() {
         if (rangedMode) return getRangedAimDirection();
-        syncCameraForRaycast();
-        raycaster.setFromCamera(aimMouse, camera);
-        return raycaster.ray.direction.clone().normalize();
+        return getCrosshairAimDirection();
     }
 
     function getLaserOrigin(direction) {
@@ -4027,9 +4747,7 @@
 
     function getFlameAimDirection() {
         if (rangedMode) return getRangedAimDirection();
-        syncCameraForRaycast();
-        raycaster.setFromCamera(aimMouse, camera);
-        return raycaster.ray.direction.clone().normalize();
+        return getCrosshairAimDirection();
     }
 
     /** Точка выхода струи — впереди игрока, не в центре камеры. */
@@ -4147,8 +4865,10 @@
 
     function handleSecondaryDown(event) {
         event.preventDefault();
+        if (!canUseCombatAfterVictory()) return;
         if (currentWeapon === WEAPON.STANDARD) fireImpulse();
         else if (currentWeapon === WEAPON.AREA) markArea(event);
+        else if (currentWeapon === WEAPON.TELEPORT) markTeleport(event);
         else if (currentWeapon === WEAPON.MINE) placeMine(event);
     }
 
@@ -4735,6 +5455,10 @@
     function endGame() {
         gameActive = false;
         stopFlamethrower();
+        setThirdPersonView(false);
+        victoryPhase = 'none';
+        victoryShown = false;
+        removeLevelDoor();
         resetMovementKeys();
         gameOverEl.classList.add('visible');
     }
@@ -4879,6 +5603,173 @@
         arenaSettings.enemyCount = Math.min(arenaSettings.enemyCount, maxEnemies);
         arenaSettings.pitCount = Math.min(arenaSettings.pitCount, maxPits);
         arenaSettings.coverCount = Math.min(arenaSettings.coverCount, maxCovers);
+        arenaSettings.bossCount = Math.min(5, Math.max(0, arenaSettings.bossCount));
+        arenaSettings.enemyDamageRadius = Math.max(0.35, Math.min(2.5, arenaSettings.enemyDamageRadius));
+        arenaSettings.playerDamageRadius = Math.max(0.35, Math.min(2.2, arenaSettings.playerDamageRadius));
+        arenaSettings.mazeFootSnap = Math.max(0, Math.min(2, arenaSettings.mazeFootSnap));
+        arenaSettings.mazeFootInset = Math.max(0, Math.min(1.5, arenaSettings.mazeFootInset));
+    }
+
+    function cloneArenaSettings(src) {
+        return JSON.parse(JSON.stringify(src));
+    }
+
+    function captureRunBaseSettings() {
+        runBaseSettings = cloneArenaSettings(arenaSettings);
+    }
+
+    function applySettingsForLevel(level) {
+        if (!runBaseSettings) return;
+        const steps = Math.max(0, level - 1);
+        const enemyStep = arenaSettings.levelEnemyPerStep;
+        const bossStep = arenaSettings.levelBossPerStep;
+        const enRadStep = arenaSettings.levelEnemyRadiusStep;
+        const plRadStep = arenaSettings.levelPlayerRadiusStep;
+        Object.assign(arenaSettings, cloneArenaSettings(runBaseSettings));
+        arenaSettings.levelEnemyPerStep = enemyStep;
+        arenaSettings.levelBossPerStep = bossStep;
+        arenaSettings.levelEnemyRadiusStep = enRadStep;
+        arenaSettings.levelPlayerRadiusStep = plRadStep;
+        arenaSettings.enemyCount = Math.min(
+            BASE_ENEMY_LAYOUT.length,
+            runBaseSettings.enemyCount + steps * enemyStep
+        );
+        const bossBonusSteps = Math.floor(steps / 2);
+        arenaSettings.bossCount = Math.min(5, runBaseSettings.bossCount + bossBonusSteps * bossStep);
+        arenaSettings.enemyDamageRadius = Math.max(
+            0.35,
+            +(runBaseSettings.enemyDamageRadius - steps * enRadStep).toFixed(2)
+        );
+        arenaSettings.playerDamageRadius = Math.min(
+            2.2,
+            +(runBaseSettings.playerDamageRadius + steps * plRadStep).toFixed(2)
+        );
+        clampArenaSettingsToLimits();
+    }
+
+    function updateLevelPreviewLabel() {
+        const el = document.getElementById('val-level-preview');
+        if (!el) return;
+        const e = arenaSettings.levelEnemyPerStep;
+        const b = arenaSettings.levelBossPerStep;
+        const er = arenaSettings.levelEnemyRadiusStep;
+        const pr = arenaSettings.levelPlayerRadiusStep;
+        el.textContent =
+            `Ур. 2: +${e} вр. · Ур. 3: +${b} босс · Ур. 4: +${e * 2} вр., +${b} босс`;
+    }
+
+    function removeLevelDoor() {
+        if (!levelDoor) return;
+        if (levelDoor.group) {
+            scene.remove(levelDoor.group);
+            levelDoor.group.traverse((c) => {
+                if (c.geometry) c.geometry.dispose();
+                if (c.material) c.material.dispose();
+            });
+        }
+        levelDoor = null;
+    }
+
+    function spawnLevelDoor() {
+        removeLevelDoor();
+        const wallIdx = Math.floor(Math.random() * 4);
+        const inset = 1.35;
+        const configs = [
+            { x: 0, z: -WORLD.halfD + inset, rotY: 0 },
+            { x: 0, z: WORLD.halfD - inset, rotY: 0 },
+            { x: -WORLD.halfW + inset, z: 0, rotY: Math.PI / 2 },
+            { x: WORLD.halfW - inset, z: 0, rotY: -Math.PI / 2 }
+        ];
+        const cfg = configs[wallIdx];
+        const gy = getSupportYAt(cfg.x, cfg.z, 1e5);
+        const group = new THREE.Group();
+        const frameMat = new THREE.MeshStandardMaterial({
+            color: 0x44ffcc,
+            emissive: 0x22aa88,
+            emissiveIntensity: 1.2,
+            metalness: 0.4,
+            roughness: 0.25,
+            transparent: true,
+            opacity: 0.92
+        });
+        const outer = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.14, 10, 24), frameMat);
+        outer.rotation.x = Math.PI / 2;
+        const inner = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.35, 2.1),
+            new THREE.MeshBasicMaterial({
+                color: 0xaaeeff,
+                transparent: true,
+                opacity: 0.55,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            })
+        );
+        const portalLight = new THREE.PointLight(0x66ffdd, 2.8, 14);
+        group.add(outer, inner, portalLight);
+        group.position.set(cfg.x, gy + 1.05, cfg.z);
+        group.rotation.y = cfg.rotY;
+        scene.add(group);
+        levelDoor = { group, x: cfg.x, z: cfg.z, y: gy + 1.05, rotY: cfg.rotY, pulse: 0 };
+    }
+
+    function updateLevelDoor(time) {
+        if (!levelDoor?.group) return;
+        const t = time * 2.2;
+        levelDoor.pulse = 0.85 + Math.sin(t) * 0.15;
+        levelDoor.group.children[0].material.emissiveIntensity = 0.9 + Math.sin(t * 1.7) * 0.5;
+        levelDoor.group.children[2].intensity = 2.2 + Math.sin(t * 2.5) * 0.8;
+        levelDoor.group.scale.setScalar(levelDoor.pulse);
+    }
+
+    function checkLevelDoorProximity() {
+        if (victoryPhase !== 'door' || !levelDoor) return;
+        const dist = Math.hypot(position.x - levelDoor.x, position.z - levelDoor.z);
+        if (dist <= LEVEL_DOOR_TRIGGER_DIST) advanceToNextLevel();
+    }
+
+    function beginVictoryDoorPhase() {
+        if (victoryPhase !== 'overlay') return;
+        victoryPhase = 'door';
+        victoryEl.classList.remove('visible');
+        spawnLevelDoor();
+        infoEl.innerHTML =
+            `🚪 Уровень <b>${currentLevel}</b> пройден — найдите дверь<div style="font-size:12px; opacity:0.9; margin-top:4px;">`
+            + `Ищите <b>светящийся проём</b> в стене · можно <b>добить мишени</b> для баллов</div>`
+            + `<div style="font-size:11px; opacity:0.75; margin-top:3px;">Следующий уровень будет сложнее</div>`;
+        renderer.domElement.focus();
+    }
+
+    function advanceToNextLevel() {
+        currentLevel += 1;
+        applySettingsForLevel(currentLevel);
+        removeLevelDoor();
+        victoryPhase = 'none';
+        victoryShown = false;
+        clearCombatState();
+        randomizeArenaSeeds();
+        applyJumpFromSettings();
+        rebuildArenaGeometry();
+        relocatePlayerToSpawn();
+        spawnWorldEntities();
+        if (arenaSettings.weaponsOnField) spawnWeaponPickups();
+        stats.shots = 0;
+        stats.hits = 0;
+        stats.destroyed = 0;
+        resetWeaponProgress();
+        setWeapon(WEAPON.STANDARD);
+        setThirdPersonView(false);
+        rangedMode = false;
+        updateRangedVisual();
+        const total = getEnemiesFieldTotal();
+        const danger = countDangerousEnemies();
+        infoEl.innerHTML =
+            `📈 Уровень <b>${currentLevel}</b><div style="font-size:12px; opacity:0.85;">`
+            + `Врагов <b>${arenaSettings.enemyCount}</b> · боссов <b>${arenaSettings.bossCount}</b>`
+            + ` · рад. врага <b>${arenaSettings.enemyDamageRadius.toFixed(2)}</b>`
+            + ` · рад. героя <b>${arenaSettings.playerDamageRadius.toFixed(2)}</b></div>`;
+        updateStatsUI();
+        spawnSafeUntil = performance.now() + 2200;
+        invincibleUntil = performance.now() + 2200;
     }
 
     function applyArenaSettingsToUI(s) {
@@ -4908,6 +5799,8 @@
         document.getElementById('inp-static-hp').value = s.staticTargetHp;
         document.getElementById('inp-jump').value = s.jumpHeight;
         document.getElementById('inp-player-radius').value = s.playerDamageRadius;
+        document.getElementById('inp-maze-foot-snap').value = s.mazeFootSnap;
+        document.getElementById('inp-maze-foot-inset').value = s.mazeFootInset;
         document.getElementById('inp-enemy-radius').value = s.enemyDamageRadius;
         document.getElementById('inp-maze-enabled').checked = s.mazeEnabled;
         document.getElementById('inp-maze-floors').value = s.mazeFloors;
@@ -4936,6 +5829,10 @@
         document.getElementById('inp-tree-scale').value = s.treeLayerScale;
         document.getElementById('inp-tree-seed').value = s.treeSeed;
         document.getElementById('inp-tree-color').value = s.treeColor;
+        document.getElementById('inp-level-enemies').value = s.levelEnemyPerStep;
+        document.getElementById('inp-level-bosses').value = s.levelBossPerStep;
+        document.getElementById('inp-level-enemy-rad').value = s.levelEnemyRadiusStep;
+        document.getElementById('inp-level-player-rad').value = s.levelPlayerRadiusStep;
     }
 
     function updateSetupLabelsFromSettings() {
@@ -4963,6 +5860,8 @@
         document.getElementById('val-static-hp').textContent = arenaSettings.staticTargetHp;
         document.getElementById('val-jump').textContent = arenaSettings.jumpHeight.toFixed(1);
         document.getElementById('val-player-radius').textContent = arenaSettings.playerDamageRadius.toFixed(2);
+        document.getElementById('val-maze-foot-snap').textContent = arenaSettings.mazeFootSnap.toFixed(2);
+        document.getElementById('val-maze-foot-inset').textContent = arenaSettings.mazeFootInset.toFixed(2);
         document.getElementById('val-enemy-radius').textContent = arenaSettings.enemyDamageRadius.toFixed(1);
         document.getElementById('val-maze-floors').textContent = arenaSettings.mazeFloors;
         document.getElementById('val-maze-enemies').textContent = arenaSettings.mazeEnemyCount;
@@ -4990,6 +5889,11 @@
             arenaSettings.spawnInMaze = false;
             spawnMazeInp.checked = false;
         }
+        document.getElementById('val-level-enemies').textContent = arenaSettings.levelEnemyPerStep;
+        document.getElementById('val-level-bosses').textContent = arenaSettings.levelBossPerStep;
+        document.getElementById('val-level-enemy-rad').textContent = arenaSettings.levelEnemyRadiusStep.toFixed(2);
+        document.getElementById('val-level-player-rad').textContent = arenaSettings.levelPlayerRadiusStep.toFixed(2);
+        updateLevelPreviewLabel();
     }
 
     function setActiveDifficultyButton(key) {
@@ -5041,6 +5945,8 @@
         arenaSettings.staticTargetHp = Number(document.getElementById('inp-static-hp').value);
         arenaSettings.jumpHeight = Number(document.getElementById('inp-jump').value);
         arenaSettings.playerDamageRadius = Number(document.getElementById('inp-player-radius').value);
+        arenaSettings.mazeFootSnap = Number(document.getElementById('inp-maze-foot-snap').value);
+        arenaSettings.mazeFootInset = Number(document.getElementById('inp-maze-foot-inset').value);
         arenaSettings.enemyDamageRadius = Number(document.getElementById('inp-enemy-radius').value);
         arenaSettings.mazeEnabled = document.getElementById('inp-maze-enabled').checked;
         arenaSettings.mazeFloors = Number(document.getElementById('inp-maze-floors').value);
@@ -5068,6 +5974,10 @@
         arenaSettings.treeLayerScale = Number(document.getElementById('inp-tree-scale').value);
         arenaSettings.treeSeed = Number(document.getElementById('inp-tree-seed').value);
         arenaSettings.treeColor = document.getElementById('inp-tree-color').value;
+        arenaSettings.levelEnemyPerStep = Number(document.getElementById('inp-level-enemies').value);
+        arenaSettings.levelBossPerStep = Number(document.getElementById('inp-level-bosses').value);
+        arenaSettings.levelEnemyRadiusStep = Number(document.getElementById('inp-level-enemy-rad').value);
+        arenaSettings.levelPlayerRadiusStep = Number(document.getElementById('inp-level-player-rad').value);
         updateSetupLabelsFromSettings();
     }
 
@@ -5082,6 +5992,13 @@
         clearEnemiesAndTargets();
         clearImpulseWaves();
         clearAreaTarget();
+        clearTeleportTarget();
+        for (const fx of teleportFlashes) {
+            scene.remove(fx.mesh);
+            fx.mesh.geometry.dispose();
+            fx.mesh.material.dispose();
+        }
+        teleportFlashes.length = 0;
         for (const r of rockets) scene.remove(r);
         rockets.length = 0;
         for (const ex of areaExplosions) scene.remove(ex.mesh);
@@ -5099,8 +6016,14 @@
         stopFlamethrower();
         cancelLaserCharge();
         resetMovementKeys();
+        victoryPhase = 'none';
+        victoryShown = false;
+        removeLevelDoor();
+        currentLevel = 1;
+        runBaseSettings = null;
         bossesToSpawn = 0;
         rangedMode = false;
+        setThirdPersonView(false);
         rangedCamPitch = 0;
         rangedCamYaw = 0;
         updateRangedVisual();
@@ -5121,6 +6044,12 @@
     function startGame() {
         resetMovementKeys();
         readArenaSettingsFromUI();
+        currentLevel = 1;
+        captureRunBaseSettings();
+        applySettingsForLevel(1);
+        victoryPhase = 'none';
+        victoryShown = false;
+        removeLevelDoor();
         applyJumpFromSettings();
         rebuildArenaGeometry();
         clearCombatState();
@@ -5137,7 +6066,7 @@
         lastAreaStrike = 0;
         resetWeaponProgress();
         setWeapon(WEAPON.STANDARD);
-        victoryShown = false;
+        setThirdPersonView(false);
         rotate = 0;
         relocatePlayerToSpawn();
         gameOverEl.classList.remove('visible');
@@ -5151,7 +6080,7 @@
             ? ` · 🔫 только стандарт — ищите <b>${weaponPickups.length}</b> дропа на поле`
             : '';
         infoEl.innerHTML =
-            `🎮 3D Арена<div style="font-size:12px; opacity:0.85;">`
+            `🎮 Уровень <b>${currentLevel}</b><div style="font-size:12px; opacity:0.85;">`
             + `На поле <b>${total}</b> врагов · опасных <b>${danger}</b>`
             + weaponHint
             + ` · радар справа внизу</div>`;
@@ -5186,11 +6115,12 @@
         'inp-enemy-hp', 'inp-enemy-patrol', 'inp-enemy-chase', 'inp-enemy-chase-spd',
         'inp-enemy-shoot', 'inp-enemy-fr-sh', 'inp-enemy-fr-ch', 'inp-enemy-contact',
         'inp-enemy-bullet', 'inp-enemy-charge-t', 'inp-static-hp', 'inp-enemy-radius',
-        'inp-jump', 'inp-player-radius', 'inp-maze-floors',
+        'inp-jump', 'inp-player-radius', 'inp-maze-floors', 'inp-maze-foot-snap', 'inp-maze-foot-inset',
         'inp-maze-enemies', 'inp-boss-count', 'inp-boss-hp', 'inp-boss-glow', 'inp-boss-pulse',
         'inp-boss-charge', 'inp-boss-cooldown', 'inp-boss-bullet-lives', 'inp-boss-chase',
         'inp-boss-chase-speed', 'inp-boss-shoot-range',
-        'inp-tree-count', 'inp-tree-layers', 'inp-tree-height', 'inp-tree-radius', 'inp-tree-scale'
+        'inp-tree-count', 'inp-tree-layers', 'inp-tree-height', 'inp-tree-radius', 'inp-tree-scale',
+        'inp-level-enemies', 'inp-level-bosses', 'inp-level-enemy-rad', 'inp-level-player-rad'
     ]) {
         document.getElementById(id).addEventListener('input', syncSetupLabels);
     }
@@ -5221,21 +6151,45 @@
     document.addEventListener('mouseleave', () => crosshairEl.classList.remove('visible'));
     updateCrosshair(window.innerWidth / 2, window.innerHeight / 2);
 
+    if (victoryContinueBtn) {
+        victoryContinueBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            beginVictoryDoorPhase();
+        });
+    }
+    victoryEl.addEventListener('click', () => {
+        if (victoryPhase === 'overlay') beginVictoryDoorPhase();
+    });
+
     renderer.domElement.addEventListener('mousedown', (e) => {
         if (e.button === 0) {
-            if (gameActive && currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
+            if (victoryPhase === 'overlay') {
+                beginVictoryDoorPhase();
+                return;
+            }
+            if (!gameActive || !canUseCombatAfterVictory()) return;
+            if (currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
             else handlePrimaryClick(e);
-        } else if (e.button === 2) handleSecondaryDown(e);
+        } else if (e.button === 2 && gameActive && canUseCombatAfterVictory()) {
+            handleSecondaryDown(e);
+        }
     });
     window.addEventListener('mouseup', (e) => {
         if (e.button === 0) stopFlamethrower();
     });
     renderer.domElement.addEventListener('wheel', (e) => {
-        if (!rangedMode) return;
-        e.preventDefault();
-        rangedFov += e.deltaY * 0.04;
-        rangedFov = Math.max(RANGED_FOV_MIN, Math.min(RANGED_FOV_MAX, rangedFov));
-        targetFov = rangedFov;
+        if (rangedMode) {
+            e.preventDefault();
+            rangedFov += e.deltaY * 0.04;
+            rangedFov = Math.max(RANGED_FOV_MIN, Math.min(RANGED_FOV_MAX, rangedFov));
+            targetFov = rangedFov;
+            return;
+        }
+        if (thirdPersonView && gameActive) {
+            e.preventDefault();
+            thirdPersonDist += e.deltaY * 0.012;
+            thirdPersonDist = Math.max(THIRD_PERSON_DIST_MIN, Math.min(THIRD_PERSON_DIST_MAX, thirdPersonDist));
+        }
     }, { passive: false });
 
     function isWeaponKey(event) {
@@ -5253,20 +6207,22 @@
             Digit4: WEAPON.MINE,
             Digit5: WEAPON.FLAMETHROWER,
             Digit6: WEAPON.LASER,
+            Digit7: WEAPON.TELEPORT,
             Numpad1: WEAPON.STANDARD,
             Numpad2: WEAPON.SNIPER,
             Numpad3: WEAPON.AREA,
             Numpad4: WEAPON.MINE,
             Numpad5: WEAPON.FLAMETHROWER,
-            Numpad6: WEAPON.LASER
+            Numpad6: WEAPON.LASER,
+            Numpad7: WEAPON.TELEPORT
         };
         let weaponId = byCode[event.code];
         if (weaponId == null) {
             const byKey = {
                 '1': WEAPON.STANDARD, '2': WEAPON.SNIPER, '3': WEAPON.AREA, '4': WEAPON.MINE,
-                '5': WEAPON.FLAMETHROWER, '6': WEAPON.LASER,
+                '5': WEAPON.FLAMETHROWER, '6': WEAPON.LASER, '7': WEAPON.TELEPORT,
                 '!': WEAPON.STANDARD, '@': WEAPON.SNIPER, '#': WEAPON.AREA, '$': WEAPON.MINE,
-                '%': WEAPON.FLAMETHROWER, '^': WEAPON.LASER
+                '%': WEAPON.FLAMETHROWER, '^': WEAPON.LASER, '&': WEAPON.TELEPORT
             };
             weaponId = byKey[event.key];
         }
@@ -5288,6 +6244,11 @@
     }
 
     function keyDown(event) {
+        if (victoryPhase === 'overlay' && (event.code === 'Enter' || event.code === 'Space')) {
+            if (!event.repeat) beginVictoryDoorPhase();
+            event.preventDefault();
+            return;
+        }
         if (event.code === 'KeyR') {
             resetMovementKeys();
             openSetupPanel();
@@ -5302,15 +6263,18 @@
         if (!gameActive) return;
         switch (event.code) {
             case 'Space':
-                if (!event.repeat && canPlayerJump()) {
-                    velocityY = JUMP_VELOCITY;
-                    onGround = false;
-                }
+                if (!event.repeat) tryPlayerJump();
                 event.preventDefault();
                 break;
             case 'KeyG':
                 if (!event.repeat) {
                     toggleRangedMode();
+                    event.preventDefault();
+                }
+                break;
+            case 'KeyV':
+                if (!event.repeat && !rangedMode) {
+                    setThirdPersonView(!thirdPersonView);
                     event.preventDefault();
                 }
                 break;
@@ -5327,11 +6291,7 @@
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') resetMovementKeys();
     });
-    window.addEventListener('mouseup', () => {
-        if (!canAcceptMovementKeys()) resetMovementKeys();
-    });
     renderer.domElement.addEventListener('blur', () => {
-        resetMovementKeys();
         stopFlamethrower();
     });
     renderer.domElement.focus();
@@ -5352,15 +6312,20 @@
         const time = now * 0.001;
 
         if (gameActive) {
-            if (!document.hasFocus() || victoryShown) resetMovementKeys();
+            if (victoryShown && victoryPhase !== 'door') resetMovementKeys();
             updateEnemyRadar();
             const moveSpeed = 3.4 * delta;
             const rotSpeed = 2.0 * delta;
             const isSniper = currentWeapon === WEAPON.SNIPER;
 
+            // --- Движение: в G отдельная ветка (см. комментарий у RANGED_STRAFE_MULT). Не объединять с обычной ходьбой. ---
             if (rangedMode) {
                 updateRangedAimCamera(delta);
-            } else if (!victoryShown) {
+                applyMovementKeysFromPressed();
+                if (canPlayerMoveThisFrame()) {
+                    applyPlayerStrafeMove(delta, RANGED_STRAFE_MULT, true);
+                }
+            } else if (canPlayerMoveThisFrame()) {
                 if (keys.a && !keys.d) rotate += rotSpeed;
                 if (!keys.a && keys.d) rotate -= rotSpeed;
 
@@ -5395,11 +6360,9 @@
             playerY += velocityY * delta;
             const footY = getFootY();
             const nextFootY = footY;
-            const landedY = sweepMazeLanding(prevFootY, nextFootY);
-            if (landedY !== null) {
-                playerY = landedY;
-                velocityY = 0;
-                onGround = true;
+            const mazeLanding = sweepMazeLanding(prevFootY, nextFootY);
+            if (mazeLanding !== null) {
+                applyMazeLanding(mazeLanding);
             } else {
                 const supportY = velocityY < -0.15
                     ? getSupportYAt(
@@ -5437,11 +6400,18 @@
             updateMines(time, delta);
             updateWeaponPickups(time);
             checkEnemyContact();
+            if (victoryPhase === 'door') {
+                updateLevelDoor(time);
+                checkLevelDoorProximity();
+            } else if (!victoryShown) {
+                checkVictory();
+            }
         }
 
         camera.fov += (targetFov - camera.fov) * Math.min(1, delta * 12);
         camera.updateProjectionMatrix();
 
+        updatePlayerMesh();
         applyCameraLook();
 
         updateBullets(bullets, delta, true);
@@ -5454,6 +6424,15 @@
         updateRockets(delta);
         updateAreaExplosions(delta);
         if (areaMarker) areaMarker.material.opacity = 0.55 + Math.sin(time * 4) * 0.2;
+        if (teleportMarker) {
+            teleportMarker.children.forEach((ch, i) => {
+                if (ch.material?.opacity != null) {
+                    const base = i === 0 ? 0.88 : (i === 1 ? 0.38 : 0.72);
+                    ch.material.opacity = base + Math.sin(time * 5 + i) * 0.12;
+                }
+            });
+        }
+        updateTeleportFlashes(delta);
         renderer.render(scene, camera);
     }
 
