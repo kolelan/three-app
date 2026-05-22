@@ -3,6 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script>
+        (function () {
+            function detectMobileLayout() {
+                var ua = navigator.userAgent || '';
+                if (/iPhone|iPod|iPad|Android|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return true;
+                if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+                if (navigator.maxTouchPoints > 0) return true;
+                if (navigator.userAgentData && navigator.userAgentData.mobile) return true;
+                try {
+                    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return true;
+                    if (window.matchMedia('(pointer: coarse)').matches) return true;
+                } catch (e) { /* ignore */ }
+                var w = (window.visualViewport && window.visualViewport.width) || window.innerWidth;
+                var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+                if (Math.min(w, h) <= 600) return true;
+                return w <= 1024;
+            }
+            if (detectMobileLayout()) {
+                document.documentElement.classList.add('mobile-device');
+            }
+        })();
+    </script>
     <title>3D Арена</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d0d18">
@@ -223,6 +245,12 @@
         }
         #setup-panel h2 { margin: 0 0 6px; font-size: 20px; color: #aad8ff; }
         #setup-panel .setup-sub { font-size: 12px; opacity: 0.75; margin: 0; }
+        #setup-panel .setup-mobile-hint {
+            display: none; font-size: 12px; color: #9fd8ff; margin: 8px 0 0;
+            padding: 8px 10px; border-radius: 8px;
+            background: rgba(40, 80, 120, 0.35); border: 1px solid rgba(120, 200, 255, 0.35);
+        }
+        html.mobile-device #setup-panel .setup-mobile-hint { display: block; }
         #setup-panel .setup-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px 16px;
             align-items: start;
@@ -364,13 +392,47 @@
         }
         #mobile-controls.active { display: block; }
         #mobile-look-zone {
-            position: absolute; top: 0; right: 0; width: 58%; height: 100%;
-            pointer-events: auto; touch-action: none;
+            position: absolute; top: 0; right: 0; width: 58%;
+            bottom: max(196px, calc(186px + env(safe-area-inset-bottom)));
+            z-index: 1; pointer-events: auto; touch-action: none;
+        }
+        #mobile-weapon-bar {
+            display: none; position: fixed; z-index: 11;
+            top: max(8px, env(safe-area-inset-top));
+            left: max(8px, env(safe-area-inset-left));
+            right: max(8px, env(safe-area-inset-right));
+            justify-content: center; align-items: center; gap: 6px;
+            pointer-events: auto; flex-wrap: wrap; padding: 0 48px;
+        }
+        body.mobile-game #mobile-weapon-bar { display: flex; }
+        .mobile-wpn-btn {
+            width: 40px; height: 40px; padding: 0; border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.28);
+            background: rgba(0, 0, 0, 0.55); font-size: 20px; line-height: 1;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation; backdrop-filter: blur(4px);
+        }
+        .mobile-wpn-btn.active {
+            border-color: rgba(255, 220, 100, 0.9);
+            background: rgba(60, 50, 20, 0.75);
+            box-shadow: 0 0 10px rgba(255, 200, 80, 0.35);
+        }
+        .mobile-wpn-btn.locked { opacity: 0.35; filter: grayscale(0.7); }
+        #mobile-strafe-row {
+            position: absolute;
+            left: calc(14px + env(safe-area-inset-left) + 60px);
+            bottom: calc(134px + env(safe-area-inset-bottom));
+            transform: translateX(calc(-48px - 6px));
+            display: flex; gap: 12px; pointer-events: auto; z-index: 3;
         }
         #mobile-joystick {
             position: absolute; left: max(14px, env(safe-area-inset-left));
             bottom: max(14px, env(safe-area-inset-bottom));
-            width: 120px; height: 120px; pointer-events: auto; touch-action: none;
+            width: 120px; height: 120px; pointer-events: auto; touch-action: none; z-index: 3;
+        }
+        #mobile-joystick .mobile-stick-base,
+        #mobile-joystick .mobile-stick-knob {
+            pointer-events: none;
         }
         .mobile-stick-base {
             position: absolute; inset: 0; border-radius: 50%;
@@ -384,14 +446,17 @@
             transform: translate(0, 0); transition: transform 0.05s ease-out;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
         }
-        .mobile-actions {
-            position: absolute; right: max(12px, env(safe-area-inset-right));
-            bottom: max(12px, env(safe-area-inset-bottom));
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-            width: min(168px, 42vw); pointer-events: auto;
+        .mobile-actions-wrap {
+            position: absolute; right: max(10px, env(safe-area-inset-right));
+            bottom: max(10px, env(safe-area-inset-bottom));
+            display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+            pointer-events: auto; max-width: min(280px, 72vw); z-index: 3;
+        }
+        .mobile-actions-row {
+            display: flex; align-items: center; gap: 8px;
         }
         .mobile-btn {
-            min-width: 48px; min-height: 48px; padding: 0;
+            min-width: 52px; min-height: 52px; padding: 0;
             border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35);
             background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 20px; line-height: 1;
             cursor: pointer; -webkit-tap-highlight-color: transparent;
@@ -401,66 +466,130 @@
         .mobile-btn:active, .mobile-btn.pressed {
             background: rgba(80, 120, 200, 0.65); transform: scale(0.94);
         }
-        .mobile-btn-jump { grid-row: 1; grid-column: 1; }
-        .mobile-btn-weapon { grid-row: 1; grid-column: 2; }
-        .mobile-btn-alt { grid-row: 1; grid-column: 3; }
-        .mobile-btn-scope { grid-row: 2; grid-column: 1; }
-        .mobile-btn-fire {
-            grid-row: 2; grid-column: 2; min-width: 56px; min-height: 56px; font-size: 22px;
-            border-color: rgba(255, 120, 100, 0.75); background: rgba(80, 20, 20, 0.7);
+        .mobile-btn-strafe {
+            min-width: 48px; min-height: 48px; font-size: 16px;
+            border-radius: 50%;
         }
-        .mobile-btn-scope.active {
+        .mobile-btn-strafe.pressed {
+            background: rgba(70, 90, 140, 0.75);
+        }
+        .mobile-btn-action {
+            min-width: 52px; min-height: 52px;
+        }
+        .mobile-btn-zoom { font-size: 18px; }
+        .mobile-btn-zoom.active {
             border-color: rgba(255, 100, 100, 0.9);
             background: rgba(120, 30, 30, 0.85);
             box-shadow: 0 0 12px rgba(255, 80, 60, 0.45);
+        }
+        .mobile-btn-autoaim { font-size: 17px; font-weight: 700; }
+        .mobile-btn-autoaim.active {
+            border-color: rgba(120, 255, 160, 0.9);
+            background: rgba(25, 90, 55, 0.88);
+            box-shadow: 0 0 12px rgba(80, 255, 140, 0.45);
+            color: #c8ffdd;
+        }
+        .mobile-btn-jump { font-size: 20px; }
+        .mobile-btn-fire {
+            min-width: 58px; min-height: 58px; font-size: 22px;
+            border-color: rgba(255, 120, 100, 0.75); background: rgba(80, 20, 20, 0.7);
+            touch-action: none;
+        }
+        .mobile-btn-alt {
+            border-color: rgba(120, 200, 255, 0.55);
+            touch-action: manipulation;
+        }
+        .mobile-btn-help {
+            font-size: 17px; font-weight: 700;
+            border-color: rgba(255, 238, 120, 0.5); color: #ffeeaa;
+        }
+        .mobile-btn-help.active {
+            background: rgba(80, 70, 30, 0.85);
+            border-color: rgba(255, 220, 100, 0.85);
+        }
+        #mobile-action-help {
+            display: none; width: 100%; padding: 8px 10px; border-radius: 8px;
+            background: rgba(0, 0, 0, 0.78); border: 1px solid rgba(255, 255, 255, 0.22);
+            font-size: 11px; line-height: 1.45; color: #e8e8ff; text-align: right;
+        }
+        #mobile-action-help.visible { display: block; }
+        #mobile-action-help .help-lmb { color: #ffccaa; }
+        #mobile-action-help .help-rmb { color: #aad8ff; margin-top: 4px; }
+        #mobile-view-tools {
+            display: none; flex-direction: column; align-items: flex-end;
+            gap: 8px; pointer-events: auto; margin-bottom: 4px;
+        }
+        #mobile-view-tools.visible { display: flex; }
+        #mobile-wheel-col {
+            display: none; flex-direction: column; align-items: flex-end; gap: 8px;
+        }
+        #mobile-wheel-col.visible { display: flex; }
+        .mobile-btn-wheel {
+            min-width: 48px; min-height: 48px; font-size: 22px; font-weight: 700;
+            border-radius: 50%; line-height: 1;
+        }
+        .mobile-btn-view {
+            font-size: 15px; font-weight: 700;
+        }
+        .mobile-btn-view.active {
+            border-color: rgba(140, 200, 255, 0.85);
+            background: rgba(40, 70, 120, 0.85);
+            box-shadow: 0 0 10px rgba(100, 160, 255, 0.35);
         }
         body.mobile-game {
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
+            --mobile-hud-panel-w: 118px;
         }
+        #stats-panel-wrap { display: contents; }
+        #mobile-restart-hold { display: none; }
         body.mobile-game #controls { display: none; }
-        body.mobile-game #info {
-            top: max(8px, env(safe-area-inset-top));
-            left: max(8px, env(safe-area-inset-left));
-            max-width: min(46vw, 200px); font-size: 11px; padding: 6px 10px;
-        }
-        body.mobile-game #stats {
+        body.mobile-game #info { display: none; }
+        body.mobile-game #restart-btn { display: none; }
+        body.mobile-game #stats-panel-wrap {
+            display: block;
+            position: absolute;
             top: max(8px, env(safe-area-inset-top));
             right: max(8px, env(safe-area-inset-right));
-            left: auto; max-width: min(52vw, 220px); font-size: 11px; padding: 6px 10px;
-            pointer-events: none;
+            width: var(--mobile-hud-panel-w);
+            z-index: 11;
+        }
+        body.mobile-game #stats {
+            position: relative;
+            top: auto; right: auto; left: auto; bottom: auto;
+            width: 100%; max-width: none; box-sizing: border-box;
+            font-size: 11px; padding: 6px 8px; pointer-events: none;
+        }
+        body.mobile-game #mobile-restart-hold {
+            display: block;
+            position: absolute; inset: 0; z-index: 2;
+            pointer-events: auto; touch-action: manipulation;
+            background: transparent; border-radius: 8px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body.mobile-game #mobile-restart-hold.holding {
+            background: rgba(255, 70, 70, 0.14);
+            box-shadow: inset 0 0 0 2px rgba(255, 100, 100, 0.35);
         }
         body.mobile-game #stats > div:nth-child(5),
         body.mobile-game #stats > div:nth-child(6),
         body.mobile-game #stats > div:nth-child(7) { display: none; }
-        body.mobile-game #weapon-panel {
-            pointer-events: auto; margin-top: 6px; padding: 6px 8px;
-        }
-        body.mobile-game #weapon-slots { gap: 4px; }
-        body.mobile-game .weapon-slot {
-            min-height: 36px; padding: 6px 2px; font-size: 9px;
-            pointer-events: auto; cursor: pointer;
-        }
-        body.mobile-game #weapon-panel-main { gap: 6px; }
-        body.mobile-game #weapon-icon { font-size: 22px; width: 28px; }
-        body.mobile-game #weapon-title { font-size: 13px; }
-        body.mobile-game #weapon-desc { font-size: 10px; }
+        body.mobile-game #weapon-panel { display: none; }
         body.mobile-game #enemy-radar {
-            bottom: max(148px, calc(130px + env(safe-area-inset-bottom)));
-            left: max(10px, env(safe-area-inset-left));
-            right: auto; width: 118px; padding: 6px 8px;
+            top: max(8px, env(safe-area-inset-top));
+            left: max(8px, env(safe-area-inset-left));
+            bottom: auto; right: auto;
+            width: var(--mobile-hud-panel-w); padding: 6px 8px;
+            box-sizing: border-box;
         }
         body.mobile-game #radar-canvas { width: 100px; height: 100px; }
         body.mobile-game #enemy-radar .radar-legend { font-size: 8px; }
-        body.mobile-game #restart-btn {
-            top: max(10px, env(safe-area-inset-top));
-            bottom: auto;
-            right: max(10px, env(safe-area-inset-right));
-            padding: 8px 12px; font-size: 12px; min-height: 40px; min-width: 40px;
-        }
         body.mobile-game #crosshair { width: 18px; height: 18px; }
-        @media (max-width: 767px), (hover: none) and (pointer: coarse) {
+        html.mobile-device #setup-panel {
+            padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+        }
+        @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
             #setup-panel { padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
         }
     </style>
@@ -471,6 +600,7 @@
     🎮 3D Арена
     <div style="font-size:12px; opacity:0.8;">Укрывайся за блоками · красные враги опасны</div>
 </div>
+<div id="stats-panel-wrap">
 <div id="stats">
     <div id="lives">❤️ Жизни: 5</div>
     <div id="stat-level-line">📊 Уровень: <span id="stat-level">1</span></div>
@@ -500,6 +630,8 @@
         </div>
     </div>
 </div>
+<div id="mobile-restart-hold" aria-label="Удержите для рестарта" hidden></div>
+</div>
 <div id="scope-overlay"></div>
 <div id="scope-reticle"></div>
 <div id="controls">
@@ -516,18 +648,42 @@
     <div class="radar-behind" id="radar-behind-hint"></div>
 </div>
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
+<div id="mobile-weapon-bar" aria-label="Оружие" aria-hidden="true">
+    <button type="button" class="mobile-wpn-btn" data-slot="1" aria-label="Стандарт">🔫</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="2" aria-label="Винтовка">🎯</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="3" aria-label="Ракета">🚀</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="4" aria-label="Мины">💣</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="5" aria-label="Огнемёт">🔥</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="6" aria-label="Лазер">⚡</button>
+    <button type="button" class="mobile-wpn-btn" data-slot="7" aria-label="Телепорт">🌀</button>
+</div>
 <div id="mobile-controls" aria-hidden="true">
     <div id="mobile-look-zone" aria-hidden="true"></div>
+    <div id="mobile-strafe-row" role="group" aria-label="Шаг вбок">
+        <button type="button" class="mobile-btn mobile-btn-strafe" id="mb-strafe-left" aria-label="Шаг влево">◀</button>
+        <button type="button" class="mobile-btn mobile-btn-strafe" id="mb-strafe-right" aria-label="Шаг вправо">▶</button>
+    </div>
     <div id="mobile-joystick" aria-label="Движение">
         <div class="mobile-stick-base"></div>
         <div class="mobile-stick-knob" id="mobile-stick-knob"></div>
     </div>
-    <div class="mobile-actions" role="group" aria-label="Действия">
-        <button type="button" class="mobile-btn mobile-btn-jump" id="mb-jump" aria-label="Прыжок">⬆</button>
-        <button type="button" class="mobile-btn mobile-btn-weapon" id="mb-weapon" aria-label="Смена оружия">🔫</button>
-        <button type="button" class="mobile-btn mobile-btn-alt" id="mb-alt" aria-label="Доп. действие">⊕</button>
-        <button type="button" class="mobile-btn mobile-btn-fire" id="mb-fire" aria-label="Атака">🎯</button>
-        <button type="button" class="mobile-btn mobile-btn-scope" id="mb-scope" aria-label="Прицел">◎</button>
+    <div class="mobile-actions-wrap">
+        <div id="mobile-action-help" aria-live="polite"></div>
+        <div id="mobile-view-tools" aria-hidden="true">
+            <div id="mobile-wheel-col" role="group" aria-label="Масштаб">
+                <button type="button" class="mobile-btn mobile-btn-wheel" id="mb-wheel-in" aria-label="Приблизить (колесо на себя)">＋</button>
+                <button type="button" class="mobile-btn mobile-btn-wheel" id="mb-wheel-out" aria-label="Отдалить (колесо от себя)">－</button>
+            </div>
+        </div>
+        <div class="mobile-actions-row" role="group" aria-label="Бой">
+            <button type="button" class="mobile-btn mobile-btn-action mobile-btn-help" id="mb-help" aria-label="Подсказка ЛКМ и ПКМ" aria-expanded="false">?</button>
+            <button type="button" class="mobile-btn mobile-btn-action mobile-btn-jump" id="mb-jump" aria-label="Прыжок">⬆</button>
+            <button type="button" class="mobile-btn mobile-btn-action mobile-btn-view" id="mb-third-person" aria-label="Вид сзади (V)">V</button>
+            <button type="button" class="mobile-btn mobile-btn-action mobile-btn-zoom" id="mb-zoom" aria-label="Дальний бой (G)">🔍</button>
+            <button type="button" class="mobile-btn mobile-btn-action mobile-btn-autoaim" id="mb-autoaim" aria-label="Автонаведение">◎</button>
+            <button type="button" class="mobile-btn mobile-btn-fire" id="mb-fire" aria-label="ЛКМ — атака">🎯</button>
+            <button type="button" class="mobile-btn mobile-btn-alt" id="mb-alt" aria-label="ПКМ — доп. действие">⊕</button>
+        </div>
     </div>
 </div>
 <div id="game-over">
@@ -556,6 +712,7 @@
         <div class="setup-header">
             <h2>⚙️ Настройка игры</h2>
             <p class="setup-sub">Настройте арену · «Перегенерировать» — новый рельеф и лабиринт · «Переместить» — к точке спавна</p>
+            <p class="setup-mobile-hint">📱 Мобильное управление: нажмите «Начать игру» — появятся джойстик и кнопки на экране.</p>
             <div class="setup-difficulty" role="group" aria-label="Сложность">
                 <button type="button" class="diff-btn" data-diff="easy" id="btn-diff-easy">🟢 Легко</button>
                 <button type="button" class="diff-btn active" data-diff="normal" id="btn-diff-normal">🔵 Нормально</button>
@@ -879,6 +1036,58 @@
             '<p>Проверьте интернет или положите файл <code>three.module.js</code> в папку <code>web/vendor/</code>.</p>' +
             '<p>Источник: <a href="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js" style="color:#8cf">jsDelivr</a></p></div>';
         throw new Error('Three.js load failed');
+    }
+
+    const MOBILE_LAYOUT_MAX_W = 1024;
+
+    function getLayoutViewportWidth() {
+        return window.visualViewport?.width ?? window.innerWidth;
+    }
+
+    function getLayoutViewportHeight() {
+        return window.visualViewport?.height ?? window.innerHeight;
+    }
+
+    function isMobileUserAgent() {
+        const ua = navigator.userAgent || '';
+        if (/iPhone|iPod|iPad|Android|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return true;
+        if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return true;
+        if (navigator.userAgentData?.mobile === true) return true;
+        return false;
+    }
+
+    function isTouchCapableDevice() {
+        return navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+    }
+
+    function isCoarsePointerDevice() {
+        return window.matchMedia('(hover: none) and (pointer: coarse)').matches
+            || window.matchMedia('(pointer: coarse)').matches;
+    }
+
+    function shouldUseMobileControls() {
+        if (document.documentElement.classList.contains('touch-confirmed')) return true;
+        if (isMobileUserAgent()) return true;
+        if (isTouchCapableDevice()) return true;
+        if (isCoarsePointerDevice()) return true;
+        const w = getLayoutViewportWidth();
+        const h = getLayoutViewportHeight();
+        if (Math.min(w, h) <= 600) return true;
+        return w <= MOBILE_LAYOUT_MAX_W;
+    }
+
+    function applyMobileDeviceClass() {
+        const mobile = shouldUseMobileControls();
+        document.documentElement.classList.toggle('mobile-device', mobile);
+        document.body.classList.toggle('mobile-device', mobile);
+        document.documentElement.dataset.mobileLayout = mobile ? 'on' : 'off';
+    }
+
+    function refreshMobileLayoutMode() {
+        applyMobileDeviceClass();
+        if (typeof updateMobileControlsVisibility === 'function') {
+            updateMobileControlsVisibility();
+        }
     }
 
     const WORLD = {
@@ -1220,6 +1429,7 @@
     renderer.domElement.style.position = 'fixed';
     renderer.domElement.style.inset = '0';
     renderer.domElement.style.zIndex = '0';
+    renderer.domElement.style.touchAction = 'none';
     renderer.domElement.addEventListener('click', () => renderer.domElement.focus());
 
     scene.add(new THREE.AmbientLight(0x353550));
@@ -2647,6 +2857,10 @@
         keys.d = false;
         keys.strafeLeft = false;
         keys.strafeRight = false;
+        if (shouldUseMobileControls()) {
+            mbStrafeLeftEl?.classList.remove('pressed');
+            mbStrafeRightEl?.classList.remove('pressed');
+        }
     }
 
     function canAcceptMovementKeys() {
@@ -2754,14 +2968,27 @@
     const crosshairEl = document.getElementById('crosshair');
     const setupPanelEl = document.getElementById('setup-panel');
     const mobileControlsEl = document.getElementById('mobile-controls');
+    const mobileWeaponBarEl = document.getElementById('mobile-weapon-bar');
+    const mobileWpnBtns = document.querySelectorAll('.mobile-wpn-btn');
     const mobileLookZoneEl = document.getElementById('mobile-look-zone');
     const mobileJoystickEl = document.getElementById('mobile-joystick');
     const mobileStickKnobEl = document.getElementById('mobile-stick-knob');
-    const mbJumpEl = document.getElementById('mb-jump');
+    const mbStrafeLeftEl = document.getElementById('mb-strafe-left');
+    const mbStrafeRightEl = document.getElementById('mb-strafe-right');
     const mbFireEl = document.getElementById('mb-fire');
     const mbAltEl = document.getElementById('mb-alt');
-    const mbWeaponEl = document.getElementById('mb-weapon');
-    const mbScopeEl = document.getElementById('mb-scope');
+    const mbJumpEl = document.getElementById('mb-jump');
+    const mbZoomEl = document.getElementById('mb-zoom');
+    const mbAutoAimEl = document.getElementById('mb-autoaim');
+    const mbThirdPersonEl = document.getElementById('mb-third-person');
+    const mobileViewToolsEl = document.getElementById('mobile-view-tools');
+    const mobileWheelColEl = document.getElementById('mobile-wheel-col');
+    const mbWheelInEl = document.getElementById('mb-wheel-in');
+    const mbWheelOutEl = document.getElementById('mb-wheel-out');
+    const mbHelpEl = document.getElementById('mb-help');
+    const mobileActionHelpEl = document.getElementById('mobile-action-help');
+    const mobileRestartHoldEl = document.getElementById('mobile-restart-hold');
+    let mobileActionHelpVisible = false;
 
     function getFootY() {
         return playerY - WORLD.eyeOffset;
@@ -4266,7 +4493,7 @@
 
     function getCrosshairAimDirection() {
         applyCameraLook();
-        const origin = tmpVec.set(position.x, playerY, position.z);
+        const origin = getCombatAimOrigin(tmpVec);
         raycaster.setFromCamera(aimMouse, camera);
         const hits = raycaster.intersectObjects(getRangedRaycastTargets(), true);
         if (hits.length > 0) {
@@ -4277,6 +4504,8 @@
     }
 
     function getRangedAimDirection() {
+        const autoDir = getMobileAutoAimDirection();
+        if (autoDir) return autoDir;
         return getCrosshairAimDirection();
     }
 
@@ -4318,6 +4547,47 @@
         if (thirdPersonView) thirdPersonDist = THIRD_PERSON_DIST;
         ensurePlayerMesh();
         playerMeshGroup.visible = thirdPersonView && gameActive;
+        updateMobileViewTools();
+    }
+
+    /** Имитация колеса: deltaY > 0 — «от себя» (отдалить), < 0 — «на себя» (приблизить). */
+    function applyZoomWheelDelta(deltaY) {
+        if (rangedMode) {
+            rangedFov += deltaY * 0.04;
+            rangedFov = Math.max(RANGED_FOV_MIN, Math.min(RANGED_FOV_MAX, rangedFov));
+            targetFov = rangedFov;
+            return true;
+        }
+        if (thirdPersonView && gameActive) {
+            thirdPersonDist += deltaY * 0.012;
+            thirdPersonDist = Math.max(THIRD_PERSON_DIST_MIN, Math.min(THIRD_PERSON_DIST_MAX, thirdPersonDist));
+            return true;
+        }
+        return false;
+    }
+
+    function updateMobileViewTools() {
+        const mobile = shouldUseMobileControls() && gameActive && !setupPanelEl.classList.contains('visible');
+        const showWheel = mobile && (rangedMode || thirdPersonView);
+        if (mobileViewToolsEl) {
+            mobileViewToolsEl.classList.toggle('visible', showWheel);
+            mobileViewToolsEl.setAttribute('aria-hidden', showWheel ? 'false' : 'true');
+        }
+        if (mobileWheelColEl) mobileWheelColEl.classList.toggle('visible', showWheel);
+        if (mbThirdPersonEl) mbThirdPersonEl.classList.toggle('active', thirdPersonView);
+    }
+
+    function mobileToggleThirdPersonView() {
+        if (!gameActive) return;
+        if (thirdPersonView) {
+            setThirdPersonView(false);
+            return;
+        }
+        if (rangedMode) {
+            toggleRangedMode();
+            return;
+        }
+        setThirdPersonView(true);
     }
 
     function pullThirdPersonCamera(camPos, lookAt) {
@@ -4362,6 +4632,13 @@
             );
             pullThirdPersonCamera(camera.position, target);
             camera.lookAt(target);
+        } else if (
+            shouldUseMobileControls() && gameActive && mobileAutoAim && mobileAutoAimTarget
+        ) {
+            getEnemyAimPoint(mobileAutoAimTarget, target);
+            camera.position.set(position.x, playerY, position.z);
+            camera.rotation.set(0, 0, 0, 'YXZ');
+            camera.lookAt(target);
         } else {
             camera.position.set(position.x, playerY, position.z);
             camera.rotation.set(0, 0, 0, 'YXZ');
@@ -4374,8 +4651,174 @@
         applyCameraLook();
     }
 
+    function isEnemyAutoAimCandidate(enemy) {
+        if (!enemy?.userData?.shootable || enemy.userData.health <= 0) return false;
+        if (enemy.userData.isBoss) {
+            if (enemy.userData.spawnState !== 'active' || enemy.userData.dying) return false;
+        }
+        return true;
+    }
+
+    function findNearestVisibleEnemy(maxRadius) {
+        const origin = getPlayerPos();
+        let best = null;
+        let bestDist = maxRadius + 1;
+        const tryTarget = (obj, aimX, aimY, aimZ) => {
+            tmpVec2.set(aimX, aimY, aimZ);
+            const dist = origin.distanceTo(tmpVec2);
+            if (dist > maxRadius || dist >= bestDist) return;
+            if (!lineOfSight(origin, tmpVec2, 0.35)) return;
+            bestDist = dist;
+            best = obj;
+        };
+        for (const enemy of enemies) {
+            if (!isEnemyAutoAimCandidate(enemy)) continue;
+            getEnemyAimPoint(enemy, tmpVec3);
+            tryTarget(enemy, tmpVec3.x, tmpVec3.y, tmpVec3.z);
+        }
+        for (const target of shootables) {
+            if (enemies.includes(target) || !target.userData.shootable || target.userData.health <= 0) continue;
+            getEnemyAimPoint(target, tmpVec3);
+            tryTarget(target, tmpVec3.x, tmpVec3.y, tmpVec3.z);
+        }
+        return best;
+    }
+
+    function isAutoAimTargetValid(target) {
+        if (!target?.userData?.shootable || target.userData.health <= 0) return false;
+        if (enemies.includes(target) || target.userData.enemy) return isEnemyAutoAimCandidate(target);
+        return true;
+    }
+
+    function isAutoAimTargetInRange(target, radiusMul = 1) {
+        if (!isAutoAimTargetValid(target)) return false;
+        getEnemyAimPoint(target, tmpVec3);
+        return getPlayerPos().distanceTo(tmpVec3) <= MOBILE_AUTO_AIM_RADIUS * radiusMul;
+    }
+
+    function updateMobileAutoAimTarget() {
+        if (!mobileAutoAim || !gameActive) {
+            mobileAutoAimTarget = null;
+            mobileAutoAimSticky = null;
+            mobileAutoAimLosLostAt = 0;
+            return;
+        }
+        const now = performance.now();
+        const found = findNearestVisibleEnemy(MOBILE_AUTO_AIM_RADIUS);
+
+        if (mobileAutoAimSticky && isAutoAimTargetInRange(mobileAutoAimSticky, MOBILE_AUTO_AIM_STICKY_RADIUS_MUL)) {
+            getEnemyAimPoint(mobileAutoAimSticky, tmpVec3);
+            const hasLos = lineOfSight(getPlayerPos(), tmpVec3, 0.4);
+            if (hasLos) {
+                mobileAutoAimLosLostAt = 0;
+                mobileAutoAimTarget = mobileAutoAimSticky;
+                if (found && found !== mobileAutoAimSticky) {
+                    getEnemyAimPoint(found, tmpVec2);
+                    const dNew = getPlayerPos().distanceTo(tmpVec2);
+                    const dSticky = getPlayerPos().distanceTo(tmpVec3);
+                    if (dNew < dSticky * 0.7) {
+                        mobileAutoAimTarget = found;
+                        mobileAutoAimSticky = found;
+                    }
+                }
+                return;
+            }
+            if (!mobileAutoAimLosLostAt) mobileAutoAimLosLostAt = now;
+            if (now - mobileAutoAimLosLostAt < MOBILE_AUTO_AIM_STICKY_MS) {
+                mobileAutoAimTarget = mobileAutoAimSticky;
+                return;
+            }
+        }
+
+        mobileAutoAimTarget = found;
+        mobileAutoAimSticky = found;
+        mobileAutoAimLosLostAt = 0;
+    }
+
+    function getMobileAutoAimDirection() {
+        if (!mobileAutoAim || !mobileAutoAimTarget) return null;
+        const origin = getCombatAimOrigin(tmpVec);
+        getEnemyAimPoint(mobileAutoAimTarget, tmpVec2);
+        const dir = tmpVec3.copy(tmpVec2).sub(origin);
+        if (dir.lengthSq() < 0.04) return null;
+        return dir.normalize();
+    }
+
+    function mobileJoystickWantsTurn() {
+        return pressedMovementCodes.has('KeyA') || pressedMovementCodes.has('KeyD');
+    }
+
+    function applyMobileAutoAimBodyYaw() {
+        if (!mobileAutoAim || !mobileAutoAimTarget || rangedMode || mobileJoystickWantsTurn()) return;
+        const dx = mobileAutoAimTarget.position.x - position.x;
+        const dz = mobileAutoAimTarget.position.z - position.z;
+        if (Math.hypot(dx, dz) > 0.08) rotate = Math.atan2(dx, dz);
+    }
+
+    function updateMobileAutoAimVisuals() {
+        const on = mobileAutoAim && shouldUseMobileControls() && gameActive;
+        if (mbAutoAimEl) mbAutoAimEl.classList.toggle('active', on);
+    }
+
+    let mobileAutoAimCrosshairX = null;
+    let mobileAutoAimCrosshairY = null;
+
+    function updateMobileAutoAimCrosshair() {
+        if (
+            !shouldUseMobileControls() || !gameActive || !mobileAutoAim
+            || !mobileAutoAimTarget || rangedMode
+        ) {
+            return;
+        }
+        getEnemyAimPoint(mobileAutoAimTarget, tmpVec2);
+        tmpVec2.project(camera);
+        let cx;
+        let cy;
+        if (tmpVec2.z > 1) {
+            if (mobileAutoAimCrosshairX == null) return;
+            cx = mobileAutoAimCrosshairX;
+            cy = mobileAutoAimCrosshairY;
+        } else {
+            cx = (tmpVec2.x * 0.5 + 0.5) * window.innerWidth;
+            cy = (-tmpVec2.y * 0.5 + 0.5) * window.innerHeight;
+            mobileAutoAimCrosshairX = cx;
+            mobileAutoAimCrosshairY = cy;
+        }
+        updateCrosshair(cx, cy);
+        setMouseNDCFromClient(cx, cy);
+        crosshairEl.classList.add('visible');
+    }
+
+    function setMobileAutoAim(enabled) {
+        mobileAutoAim = !!enabled && shouldUseMobileControls() && gameActive;
+        if (!mobileAutoAim) {
+            mobileAutoAimTarget = null;
+            mobileAutoAimSticky = null;
+            mobileAutoAimLosLostAt = 0;
+            mobileAutoAimCrosshairX = null;
+            mobileAutoAimCrosshairY = null;
+            updateAimFromClient(lastMouseClientX, lastMouseClientY);
+        } else {
+            updateMobileAutoAimTarget();
+        }
+        updateRangedVisual();
+    }
+
+    function toggleMobileAutoAim() {
+        setMobileAutoAim(!mobileAutoAim);
+    }
+
+    function getCombatAimDirection() {
+        const autoDir = getMobileAutoAimDirection();
+        if (autoDir) return autoDir;
+        if (rangedMode) return getRangedAimDirection();
+        return getCrosshairAimDirection();
+    }
+
     function getShootDirectionFromMouse(event) {
-        setMouseNDC(event);
+        if (!mobileAutoAim && event) setMouseNDC(event);
+        const autoDir = getMobileAutoAimDirection();
+        if (autoDir) return autoDir.clone();
         if (rangedMode) return getRangedAimDirection();
         return getCrosshairAimDirection();
     }
@@ -4629,6 +5072,49 @@
                 ? WEAPON_INFO[id].slotLabel
                 : `${WEAPON_INFO[id].slotLabel} 🔒`;
         });
+        updateMobileWeaponBar();
+    }
+
+    function getWeaponTouchHints(weaponId) {
+        const desc = WEAPON_INFO[weaponId]?.desc || '';
+        let lmb = 'ЛКМ — основное действие';
+        let rmb = 'ПКМ — нет';
+        for (const part of desc.split('·')) {
+            const t = part.trim();
+            if (t.startsWith('ЛКМ')) lmb = t;
+            else if (t.startsWith('ПКМ')) rmb = t;
+        }
+        if (!desc.includes('ПКМ')) rmb = 'ПКМ — не используется';
+        return { lmb, rmb };
+    }
+
+    function updateMobileActionHelpPanel() {
+        if (!mobileActionHelpEl) return;
+        const { lmb, rmb } = getWeaponTouchHints(currentWeapon);
+        mobileActionHelpEl.innerHTML =
+            `<div class="help-lmb"><b>ЛКМ:</b> ${lmb.replace(/^ЛКМ\s*—\s*/, '')}</div>`
+            + `<div class="help-rmb"><b>ПКМ:</b> ${rmb.replace(/^ПКМ\s*—\s*/, '')}</div>`;
+    }
+
+    function setMobileActionHelpVisible(visible) {
+        mobileActionHelpVisible = visible;
+        if (!mobileActionHelpEl || !mbHelpEl) return;
+        mobileActionHelpEl.classList.toggle('visible', visible);
+        mbHelpEl.classList.toggle('active', visible);
+        mbHelpEl.setAttribute('aria-expanded', visible ? 'true' : 'false');
+        if (visible) updateMobileActionHelpPanel();
+    }
+
+    function updateMobileWeaponBar() {
+        if (!mobileWpnBtns.length) return;
+        mobileWpnBtns.forEach((btn) => {
+            const id = Number(btn.dataset.slot);
+            const unlocked = isWeaponUnlocked(id);
+            btn.classList.toggle('active', unlocked && id === currentWeapon);
+            btn.classList.toggle('locked', !unlocked);
+            btn.disabled = !unlocked;
+        });
+        if (mobileActionHelpVisible) updateMobileActionHelpPanel();
     }
 
     let lastMouseClientX = window.innerWidth / 2;
@@ -4647,14 +5133,19 @@
     }
 
     function updateRangedVisual() {
-        scopeOverlayEl.classList.toggle('active', rangedMode);
-        scopeReticleEl.classList.toggle('active', rangedMode);
+        const showScope = rangedMode && !mobileAutoAim;
+        scopeOverlayEl.classList.toggle('active', showScope);
+        scopeReticleEl.classList.toggle('active', showScope);
         targetFov = rangedMode ? rangedFov : NORMAL_FOV;
-        if (rangedMode) {
+        if (showScope) {
             updateRangedScopeAtMouse(lastMouseClientX, lastMouseClientY);
         }
-        crosshairEl.classList.toggle('visible', !rangedMode);
-        if (mbScopeEl) mbScopeEl.classList.toggle('active', rangedMode);
+        if (!mobileAutoAim) {
+            crosshairEl.classList.toggle('visible', !rangedMode);
+        }
+        if (mbZoomEl) mbZoomEl.classList.toggle('active', rangedMode);
+        updateMobileViewTools();
+        updateMobileAutoAimVisuals();
     }
 
     function toggleRangedMode() {
@@ -4709,6 +5200,13 @@
 
     function markArea(event) {
         if (!gameActive) return false;
+        if (mobileAutoAim && mobileAutoAimTarget) {
+            const x = mobileAutoAimTarget.position.x;
+            const z = mobileAutoAimTarget.position.z;
+            areaTarget = { x, y: getTerrainHeight(x, z), z };
+            updateAreaMarker();
+            return true;
+        }
         const point = raycastGround(event);
         if (!point) return false;
         areaTarget = { x: point.x, y: point.y, z: point.z };
@@ -4838,6 +5336,18 @@
 
     function markTeleport(event) {
         if (!gameActive) return false;
+        if (mobileAutoAim && mobileAutoAimTarget) {
+            const x = mobileAutoAimTarget.position.x;
+            const z = mobileAutoAimTarget.position.z;
+            teleportTarget = {
+                x,
+                z,
+                y: getTerrainHeight(x, z),
+                fromAbove: false
+            };
+            updateTeleportMarker();
+            return true;
+        }
         const point = raycastTeleportMarkPoint(event);
         if (!point) return false;
         teleportTarget = point;
@@ -5070,8 +5580,7 @@
     }
 
     function getLaserAimDirection() {
-        if (rangedMode) return getRangedAimDirection();
-        return getCrosshairAimDirection();
+        return getCombatAimDirection();
     }
 
     function getLaserOrigin(direction) {
@@ -5301,8 +5810,7 @@
     }
 
     function getFlameAimDirection() {
-        if (rangedMode) return getRangedAimDirection();
-        return getCrosshairAimDirection();
+        return getCombatAimDirection();
     }
 
     /** Точка выхода струи — впереди игрока, не в центре камеры. */
@@ -5474,9 +5982,32 @@
         impulseWaves.length = 0;
     }
 
+    const enemyAimBox = new THREE.Box3();
+
     function getEnemyCenterY(enemy) {
         if (enemy.userData.isBoss) return enemy.position.y + 1.15;
+        if (enemy.userData.flying || enemy.userData.isBossDrone) return enemy.position.y + 0.4;
         return enemy.position.y + (enemy.userData.dangerous ? 0.55 : 0.35);
+    }
+
+    /** Точка прицеливания по видимому объёму врага (центр масс, чуть выше геом. центра). */
+    function getEnemyAimPoint(enemy, out) {
+        enemy.updateWorldMatrix(true, true);
+        enemyAimBox.setFromObject(enemy);
+        if (enemyAimBox.isEmpty()) {
+            return out.set(enemy.position.x, getEnemyCenterY(enemy), enemy.position.z);
+        }
+        const h = enemyAimBox.max.y - enemyAimBox.min.y;
+        out.set(
+            (enemyAimBox.min.x + enemyAimBox.max.x) * 0.5,
+            enemyAimBox.min.y + h * 0.58,
+            (enemyAimBox.min.z + enemyAimBox.max.z) * 0.5
+        );
+        return out;
+    }
+
+    function getCombatAimOrigin(out) {
+        return out.set(position.x, playerY - 0.12, position.z);
     }
 
     function capEnemyKnockback(enemy) {
@@ -6601,6 +7132,13 @@
     }
 
     function openSetupPanel() {
+        mobileAutoAim = false;
+        mobileAutoAimTarget = null;
+        mobileAutoAimSticky = null;
+        mobileAutoAimLosLostAt = 0;
+        mobileAutoAimCrosshairX = null;
+        mobileAutoAimCrosshairY = null;
+        resetMobileCombatButtons();
         gameActive = false;
         stopFlamethrower();
         cancelLaserCharge();
@@ -6628,6 +7166,7 @@
         updateSetupLabelsFromSettings();
         setActiveDifficultyButton(activeDifficulty || 'normal');
         applyCameraLook();
+        applyMobileDeviceClass();
         updateMobileControlsVisibility();
     }
 
@@ -6694,24 +7233,89 @@
 
     const MOBILE_JOY_DEAD = 14;
     const MOBILE_JOY_MAX = 48;
+    const MOBILE_AUTO_AIM_RADIUS = 55;
+    const MOBILE_AUTO_AIM_STICKY_MS = 500;
+    const MOBILE_AUTO_AIM_STICKY_RADIUS_MUL = 1.3;
+    let mobileAutoAim = false;
+    let mobileAutoAimTarget = null;
+    let mobileAutoAimSticky = null;
+    let mobileAutoAimLosLostAt = 0;
     let mobileJoyTouchId = null;
-    let mobileLookTouchId = null;
+    let mobileLookPointerId = null;
+    let mobileAimPointerId = null;
     let mobileJoyCenterX = 0;
     let mobileJoyCenterY = 0;
     let mobileLookLastX = 0;
     let mobileLookLastY = 0;
+    let mobileFireHeld = false;
+    let mobileFirePointerId = null;
+    let mobileAltLock = false;
 
-    function shouldUseMobileControls() {
-        return window.matchMedia('(max-width: 767px), (hover: none) and (pointer: coarse)').matches;
+    function resetMobileCombatButtons() {
+        mobileFirePointerId = null;
+        mobileAltLock = false;
+        const wasHeld = mobileFireHeld;
+        mobileFireHeld = false;
+        if (wasHeld) mobileFireUp();
+        else stopFlamethrower();
+        if (mbFireEl) mbFireEl.classList.remove('pressed');
     }
 
     function updateMobileControlsVisibility() {
         const show = shouldUseMobileControls() && gameActive && !setupPanelEl.classList.contains('visible');
         mobileControlsEl.classList.toggle('active', show);
         mobileControlsEl.setAttribute('aria-hidden', show ? 'false' : 'true');
+        if (mobileWeaponBarEl) {
+            mobileWeaponBarEl.setAttribute('aria-hidden', show ? 'false' : 'true');
+        }
         document.body.classList.toggle('mobile-game', show);
-        if (!show) resetMobileJoystick();
-        if (show) mbScopeEl.classList.toggle('active', rangedMode);
+        if (!show) {
+            resetMobileJoystick();
+            resetMobileStrafe();
+            resetMobileCombatButtons();
+            setMobileActionHelpVisible(false);
+            setMobileAutoAim(false);
+            if (mobileRestartHoldEl) {
+                mobileRestartHoldEl.hidden = true;
+                mobileRestartHoldEl.classList.remove('holding');
+            }
+        } else {
+            updateMobileWeaponBar();
+            if (mobileRestartHoldEl) mobileRestartHoldEl.hidden = false;
+        }
+        updateMobileViewTools();
+    }
+
+    function resetMobileStrafe() {
+        pressedMovementCodes.delete('KeyQ');
+        pressedMovementCodes.delete('KeyE');
+        pressedMovementCodes.delete('ArrowLeft');
+        pressedMovementCodes.delete('ArrowRight');
+        applyMovementKeysFromPressed();
+        mbStrafeLeftEl?.classList.remove('pressed');
+        mbStrafeRightEl?.classList.remove('pressed');
+    }
+
+    function bindStrafeHold(btn, codes, pressedClass) {
+        const press = (e) => {
+            e.preventDefault();
+            if (!canAcceptMovementKeys()) return;
+            codes.forEach((c) => pressedMovementCodes.add(c));
+            applyMovementKeysFromPressed();
+            btn.classList.add('pressed');
+        };
+        const release = (e) => {
+            e.preventDefault();
+            codes.forEach((c) => pressedMovementCodes.delete(c));
+            applyMovementKeysFromPressed();
+            btn.classList.remove('pressed');
+        };
+        btn.addEventListener('touchstart', press, { passive: false });
+        btn.addEventListener('touchend', release, { passive: false });
+        btn.addEventListener('touchcancel', release, { passive: false });
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
     }
 
     function makePointerLike(clientX, clientY) {
@@ -6756,19 +7360,26 @@
         updateMobileJoystickKeys(dx, dy);
     }
 
-    function handleMobileLook(clientX, clientY, isFirst) {
-        if (!gameActive) return;
-        if (!isFirst) {
-            const dx = clientX - mobileLookLastX;
-            if (!rangedMode && canPlayerMoveThisFrame()) {
-                rotate -= dx * 0.0042;
-            }
+    function isMobileUiControlTarget(el) {
+        return el && el.closest(
+            '#mobile-joystick, #mobile-strafe-row, .mobile-actions-wrap, .mobile-wpn-btn, '
+            + '#mb-fire, #mb-alt, #mobile-controls .mobile-btn, #mobile-weapon-bar, #stats-panel-wrap, '
+            + '#enemy-radar, #mobile-restart-hold, #restart-btn, #victory, #game-over, #setup-panel'
+        );
+    }
+
+    function syncMobileAimBeforeCombat() {
+        if (!shouldUseMobileControls() || !gameActive || mobileAutoAim) return;
+        if (mobileLookPointerId != null) {
+            updateAimFromClient(mobileLookLastX, mobileLookLastY);
         }
-        mobileLookLastX = clientX;
-        mobileLookLastY = clientY;
+    }
+
+    function updateAimFromClient(clientX, clientY) {
+        if (mobileAutoAim) return;
+        setMouseNDCFromClient(clientX, clientY);
         lastMouseClientX = clientX;
         lastMouseClientY = clientY;
-        setMouseNDCFromClient(clientX, clientY);
         if (rangedMode) {
             updateRangedScopeAtMouse(clientX, clientY);
             crosshairEl.classList.remove('visible');
@@ -6778,12 +7389,92 @@
         }
     }
 
+    function handleMobileLook(clientX, clientY, isFirst) {
+        if (!gameActive || mobileAutoAim) return;
+        if (!isFirst) {
+            const dx = clientX - mobileLookLastX;
+            if (!rangedMode && canPlayerMoveThisFrame()) {
+                rotate -= dx * 0.0042;
+            }
+        }
+        mobileLookLastX = clientX;
+        mobileLookLastY = clientY;
+        updateAimFromClient(clientX, clientY);
+    }
+
+    function bindMobilePointerAim() {
+        const onPointerDown = (e) => {
+            if (!shouldUseMobileControls() || !gameActive) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            const hit = document.elementFromPoint(e.clientX, e.clientY);
+            if (isMobileUiControlTarget(e.target) || isMobileUiControlTarget(hit)) return;
+            if (mobileAutoAim) return;
+
+            if (hit?.closest('#mobile-look-zone')) {
+                if (mobileLookPointerId != null) return;
+                mobileLookPointerId = e.pointerId;
+                try {
+                    mobileLookZoneEl.setPointerCapture(e.pointerId);
+                } catch (_) { /* ignore */ }
+                handleMobileLook(e.clientX, e.clientY, true);
+                e.preventDefault();
+                return;
+            }
+
+            if (e.pointerId !== mobileJoyTouchId) {
+                mobileAimPointerId = e.pointerId;
+                updateAimFromClient(e.clientX, e.clientY);
+            }
+        };
+
+        const onPointerMove = (e) => {
+            if (!shouldUseMobileControls() || !gameActive || mobileAutoAim) return;
+            if (e.pointerId === mobileLookPointerId) {
+                handleMobileLook(e.clientX, e.clientY, false);
+                e.preventDefault();
+            } else if (e.pointerId === mobileAimPointerId) {
+                updateAimFromClient(e.clientX, e.clientY);
+            }
+        };
+
+        const onPointerEnd = (e) => {
+            if (e.pointerId === mobileFirePointerId) {
+                mobileFireHeld = false;
+                mobileFirePointerId = null;
+                mobileFireUp();
+                if (mbFireEl) mbFireEl.classList.remove('pressed');
+            }
+            if (e.pointerId === mobileLookPointerId) {
+                try {
+                    if (mobileLookZoneEl.hasPointerCapture(e.pointerId)) {
+                        mobileLookZoneEl.releasePointerCapture(e.pointerId);
+                    }
+                } catch (_) { /* ignore */ }
+                mobileLookPointerId = null;
+                endMobileLook();
+            }
+            if (e.pointerId === mobileAimPointerId) mobileAimPointerId = null;
+        };
+
+        document.addEventListener('pointerdown', onPointerDown, { capture: true });
+        document.addEventListener('pointermove', onPointerMove, { capture: true });
+        document.addEventListener('pointerup', onPointerEnd, { capture: true });
+        document.addEventListener('pointercancel', onPointerEnd, { capture: true });
+        mobileLookZoneEl.addEventListener('lostpointercapture', (e) => {
+            if (e.pointerId === mobileLookPointerId) {
+                mobileLookPointerId = null;
+                endMobileLook();
+            }
+        });
+    }
+
     function endMobileLook() {
-        mobileLookTouchId = null;
+        mobileLookPointerId = null;
     }
 
     function mobileFireDown() {
         if (!gameActive || !canUseCombatAfterVictory()) return;
+        syncMobileAimBeforeCombat();
         const ev = makePointerLike(lastMouseClientX, lastMouseClientY);
         if (currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
         else handlePrimaryClick(ev);
@@ -6792,110 +7483,203 @@
 
     function mobileFireUp() {
         stopFlamethrower();
-        mbFireEl.classList.remove('pressed');
+        mbFireEl?.classList.remove('pressed');
+    }
+
+    function bindMobileCombatButtons() {
+        if (!mbFireEl || !mbAltEl) return;
+
+        const endMobileFire = (e) => {
+            if (mobileFirePointerId != null && e && e.pointerId !== mobileFirePointerId) return;
+            if (!mobileFireHeld) return;
+            mobileFireHeld = false;
+            mobileFirePointerId = null;
+            if (e) {
+                try {
+                    if (mbFireEl.hasPointerCapture(e.pointerId)) {
+                        mbFireEl.releasePointerCapture(e.pointerId);
+                    }
+                } catch (_) { /* ignore */ }
+            }
+            mobileFireUp();
+        };
+
+        mbFireEl.addEventListener('pointerdown', (e) => {
+            if (!shouldUseMobileControls() || !gameActive) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            e.stopPropagation();
+            if (mobileFireHeld) endMobileFire(e);
+            mobileFireHeld = true;
+            mobileFirePointerId = e.pointerId;
+            try {
+                mbFireEl.setPointerCapture(e.pointerId);
+            } catch (_) { /* ignore */ }
+            mobileFireDown();
+        });
+        mbFireEl.addEventListener('pointerup', endMobileFire);
+        mbFireEl.addEventListener('pointercancel', endMobileFire);
+        mbFireEl.addEventListener('lostpointercapture', (e) => {
+            if (e.pointerId === mobileFirePointerId) endMobileFire(e);
+        });
+
+        const triggerMobileAlt = () => {
+            if (!shouldUseMobileControls() || !gameActive || !canUseCombatAfterVictory()) return;
+            if (mobileAltLock) return;
+            mobileAltLock = true;
+            window.setTimeout(() => { mobileAltLock = false; }, 220);
+            syncMobileAimBeforeCombat();
+            handleSecondaryDown(makePointerLike(lastMouseClientX, lastMouseClientY));
+        };
+
+        mbAltEl.addEventListener('pointerdown', (e) => {
+            if (!shouldUseMobileControls()) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            e.stopPropagation();
+            e.preventDefault();
+            triggerMobileAlt();
+        });
+    }
+
+    function initMobileRestartHold() {
+        if (!mobileRestartHoldEl) return;
+        const HOLD_MS = 750;
+        let holdTimer = null;
+        let holdStartX = 0;
+        let holdStartY = 0;
+
+        const clearHold = () => {
+            if (holdTimer != null) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            mobileRestartHoldEl.classList.remove('holding');
+        };
+
+        const startHold = (clientX, clientY) => {
+            if (!shouldUseMobileControls() || !gameActive) return;
+            clearHold();
+            holdStartX = clientX;
+            holdStartY = clientY;
+            mobileRestartHoldEl.classList.add('holding');
+            holdTimer = setTimeout(() => {
+                holdTimer = null;
+                mobileRestartHoldEl.classList.remove('holding');
+                resetGame();
+            }, HOLD_MS);
+        };
+
+        mobileRestartHoldEl.addEventListener('touchstart', (e) => {
+            if (!shouldUseMobileControls() || !gameActive) return;
+            const t = e.changedTouches[0];
+            startHold(t.clientX, t.clientY);
+            e.preventDefault();
+        }, { passive: false });
+
+        mobileRestartHoldEl.addEventListener('touchmove', (e) => {
+            if (holdTimer == null) return;
+            const t = e.changedTouches[0];
+            if (Math.hypot(t.clientX - holdStartX, t.clientY - holdStartY) > 14) clearHold();
+        }, { passive: true });
+
+        mobileRestartHoldEl.addEventListener('touchend', clearHold);
+        mobileRestartHoldEl.addEventListener('touchcancel', clearHold);
+
+        mobileRestartHoldEl.addEventListener('mousedown', (e) => {
+            if (!shouldUseMobileControls() || !gameActive) return;
+            startHold(e.clientX, e.clientY);
+        });
+        mobileRestartHoldEl.addEventListener('mouseup', clearHold);
+        mobileRestartHoldEl.addEventListener('mouseleave', clearHold);
     }
 
     function initMobileControls() {
-        mobileJoystickEl.addEventListener('touchstart', (e) => {
+        mobileJoystickEl.addEventListener('pointerdown', (e) => {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
             if (mobileJoyTouchId != null) return;
-            const t = e.changedTouches[0];
-            mobileJoyTouchId = t.identifier;
+            mobileJoyTouchId = e.pointerId;
             const rect = mobileJoystickEl.getBoundingClientRect();
             mobileJoyCenterX = rect.left + rect.width / 2;
             mobileJoyCenterY = rect.top + rect.height / 2;
-            moveMobileJoystick(t.clientX, t.clientY);
+            try {
+                mobileJoystickEl.setPointerCapture(e.pointerId);
+            } catch (_) { /* ignore */ }
+            moveMobileJoystick(e.clientX, e.clientY);
             e.preventDefault();
-        }, { passive: false });
-
-        mobileJoystickEl.addEventListener('touchmove', (e) => {
-            for (const t of e.changedTouches) {
-                if (t.identifier === mobileJoyTouchId) {
-                    moveMobileJoystick(t.clientX, t.clientY);
-                    e.preventDefault();
-                    break;
-                }
-            }
-        }, { passive: false });
-
-        const endJoy = (e) => {
-            for (const t of e.changedTouches) {
-                if (t.identifier === mobileJoyTouchId) {
-                    resetMobileJoystick();
-                    e.preventDefault();
-                    break;
-                }
-            }
-        };
-        mobileJoystickEl.addEventListener('touchend', endJoy, { passive: false });
-        mobileJoystickEl.addEventListener('touchcancel', endJoy, { passive: false });
-
-        mobileLookZoneEl.addEventListener('touchstart', (e) => {
-            if (mobileLookTouchId != null) return;
-            const t = e.changedTouches[0];
-            mobileLookTouchId = t.identifier;
-            handleMobileLook(t.clientX, t.clientY, true);
-            e.preventDefault();
-        }, { passive: false });
-
-        mobileLookZoneEl.addEventListener('touchmove', (e) => {
-            for (const t of e.changedTouches) {
-                if (t.identifier === mobileLookTouchId) {
-                    handleMobileLook(t.clientX, t.clientY, false);
-                    e.preventDefault();
-                    break;
-                }
-            }
-        }, { passive: false });
-
-        const endLook = (e) => {
-            for (const t of e.changedTouches) {
-                if (t.identifier === mobileLookTouchId) {
-                    endMobileLook();
-                    e.preventDefault();
-                    break;
-                }
-            }
-        };
-        mobileLookZoneEl.addEventListener('touchend', endLook, { passive: false });
-        mobileLookZoneEl.addEventListener('touchcancel', endLook, { passive: false });
-
-        mbJumpEl.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (gameActive && canPlayerMoveThisFrame()) tryPlayerJump();
-        }, { passive: false });
-
-        mbFireEl.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            mobileFireDown();
-        }, { passive: false });
-        mbFireEl.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            mobileFireUp();
-        }, { passive: false });
-        mbFireEl.addEventListener('touchcancel', () => mobileFireUp());
-
-        mbAltEl.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (!gameActive || !canUseCombatAfterVictory()) return;
-            handleSecondaryDown(makePointerLike(lastMouseClientX, lastMouseClientY));
-        }, { passive: false });
-
-        mbWeaponEl.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (gameActive) cycleWeapon();
         });
 
-        mbScopeEl.addEventListener('click', (e) => {
-            e.stopPropagation();
+        mobileJoystickEl.addEventListener('pointermove', (e) => {
+            if (mobileJoyTouchId == null || e.pointerId !== mobileJoyTouchId) return;
+            moveMobileJoystick(e.clientX, e.clientY);
+            e.preventDefault();
+        });
+
+        const endJoyPointer = (e) => {
+            if (mobileJoyTouchId == null || e.pointerId !== mobileJoyTouchId) return;
+            try {
+                if (mobileJoystickEl.hasPointerCapture(e.pointerId)) {
+                    mobileJoystickEl.releasePointerCapture(e.pointerId);
+                }
+            } catch (_) { /* ignore */ }
+            resetMobileJoystick();
+            e.preventDefault();
+        };
+        mobileJoystickEl.addEventListener('pointerup', endJoyPointer);
+        mobileJoystickEl.addEventListener('pointercancel', endJoyPointer);
+        mobileJoystickEl.addEventListener('lostpointercapture', (e) => {
+            if (e.pointerId === mobileJoyTouchId) resetMobileJoystick();
+        });
+
+        bindStrafeHold(mbStrafeLeftEl, ['KeyQ', 'ArrowLeft']);
+        bindStrafeHold(mbStrafeRightEl, ['KeyE', 'ArrowRight']);
+
+        const stopUiEvent = (e) => e.stopPropagation();
+
+        mbZoomEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
             if (!gameActive) return;
             toggleRangedMode();
         });
+        mbAutoAimEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            if (!gameActive) return;
+            toggleMobileAutoAim();
+        });
+        mbJumpEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            if (gameActive && canPlayerMoveThisFrame()) tryPlayerJump();
+        });
 
-        weaponSlotEls.forEach((slot) => {
-            slot.addEventListener('click', (e) => {
-                if (!shouldUseMobileControls()) return;
+        mbThirdPersonEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            mobileToggleThirdPersonView();
+        });
+
+        const WHEEL_STEP = 48;
+        mbWheelInEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            if (!gameActive) return;
+            applyZoomWheelDelta(-WHEEL_STEP);
+        });
+        mbWheelInEl.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            if (!gameActive) return;
+            applyZoomWheelDelta(-WHEEL_STEP);
+        });
+        mbWheelOutEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            if (!gameActive) return;
+            applyZoomWheelDelta(WHEEL_STEP);
+        });
+
+        mbHelpEl.addEventListener('click', (e) => {
+            stopUiEvent(e);
+            setMobileActionHelpVisible(!mobileActionHelpVisible);
+        });
+
+        mobileWpnBtns.forEach((btn) => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const id = Number(slot.dataset.slot);
+                const id = Number(btn.dataset.slot);
                 if (id && isWeaponUnlocked(id)) setWeapon(id);
             });
         });
@@ -6904,8 +7688,13 @@
     applyDifficultyPreset('normal');
     applyJumpFromSettings();
     buildWorld();
+    applyMobileDeviceClass();
     openSetupPanel();
     initMobileControls();
+    bindMobileCombatButtons();
+    bindMobilePointerAim();
+    initMobileRestartHold();
+    refreshMobileLayoutMode();
 
     document.getElementById('restart-btn').addEventListener('click', resetGame);
     document.getElementById('btn-start-game').addEventListener('click', startGame);
@@ -6946,16 +7735,9 @@
     }
 
     document.addEventListener('mousemove', (e) => {
-        setMouseNDCFromClient(e.clientX, e.clientY);
-        lastMouseClientX = e.clientX;
-        lastMouseClientY = e.clientY;
-        if (rangedMode) {
-            updateRangedScopeAtMouse(e.clientX, e.clientY);
-            crosshairEl.classList.remove('visible');
-        } else {
-            updateCrosshair(e.clientX, e.clientY);
-            crosshairEl.classList.add('visible');
-        }
+        if (shouldUseMobileControls()) return;
+        if (isMobileUiControlTarget(e.target)) return;
+        updateAimFromClient(e.clientX, e.clientY);
     });
     document.addEventListener('mouseleave', () => crosshairEl.classList.remove('visible'));
     updateCrosshair(window.innerWidth / 2, window.innerHeight / 2);
@@ -6971,6 +7753,13 @@
     });
 
     renderer.domElement.addEventListener('mousedown', (e) => {
+        if (shouldUseMobileControls() && isMobileUiControlTarget(e.target)) return;
+        if (shouldUseMobileControls() && e.button === 0 && !mobileAutoAim && gameActive) {
+            updateAimFromClient(e.clientX, e.clientY);
+        }
+        const aimEv = shouldUseMobileControls()
+            ? makePointerLike(lastMouseClientX, lastMouseClientY)
+            : e;
         if (e.button === 0) {
             if (victoryPhase === 'overlay') {
                 beginVictoryDoorPhase();
@@ -6978,27 +7767,16 @@
             }
             if (!gameActive || !canUseCombatAfterVictory()) return;
             if (currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
-            else handlePrimaryClick(e);
+            else handlePrimaryClick(aimEv);
         } else if (e.button === 2 && gameActive && canUseCombatAfterVictory()) {
-            handleSecondaryDown(e);
+            handleSecondaryDown(aimEv);
         }
     });
     window.addEventListener('mouseup', (e) => {
         if (e.button === 0) stopFlamethrower();
     });
     renderer.domElement.addEventListener('wheel', (e) => {
-        if (rangedMode) {
-            e.preventDefault();
-            rangedFov += e.deltaY * 0.04;
-            rangedFov = Math.max(RANGED_FOV_MIN, Math.min(RANGED_FOV_MAX, rangedFov));
-            targetFov = rangedFov;
-            return;
-        }
-        if (thirdPersonView && gameActive) {
-            e.preventDefault();
-            thirdPersonDist += e.deltaY * 0.012;
-            thirdPersonDist = Math.max(THIRD_PERSON_DIST_MIN, Math.min(THIRD_PERSON_DIST_MAX, thirdPersonDist));
-        }
+        if (applyZoomWheelDelta(e.deltaY)) e.preventDefault();
     }, { passive: false });
 
     function isWeaponKey(event) {
@@ -7096,20 +7874,39 @@
 
     window.addEventListener('keydown', keyDown, true);
     window.addEventListener('keyup', keyUp, true);
-    window.addEventListener('blur', resetMovementKeys);
+    window.addEventListener('blur', () => {
+        resetMovementKeys();
+        resetMobileCombatButtons();
+    });
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') resetMovementKeys();
+        if (document.visibilityState === 'hidden') {
+            resetMovementKeys();
+            resetMobileCombatButtons();
+        }
     });
     renderer.domElement.addEventListener('blur', () => {
-        stopFlamethrower();
+        resetMobileCombatButtons();
     });
     renderer.domElement.focus();
     window.addEventListener('resize', () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        updateMobileControlsVisibility();
+        refreshMobileLayoutMode();
     });
+    window.addEventListener('orientationchange', () => {
+        window.setTimeout(refreshMobileLayoutMode, 100);
+        window.setTimeout(refreshMobileLayoutMode, 400);
+    });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', refreshMobileLayoutMode);
+        window.visualViewport.addEventListener('scroll', refreshMobileLayoutMode);
+    }
+    window.addEventListener('pageshow', refreshMobileLayoutMode);
+    document.addEventListener('touchstart', () => {
+        document.documentElement.classList.add('touch-confirmed');
+        refreshMobileLayoutMode();
+    }, { once: true, passive: true });
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
     let lastTime = performance.now();
@@ -7123,15 +7920,19 @@
 
         if (gameActive) {
             if (victoryShown && victoryPhase !== 'door') resetMovementKeys();
+            if (mobileAutoAim) {
+                updateMobileAutoAimTarget();
+                applyMobileAutoAimBodyYaw();
+            }
             updateEnemyRadar();
             const moveSpeed = 3.4 * delta;
             const rotSpeed = 2.0 * delta;
             const isSniper = currentWeapon === WEAPON.SNIPER;
 
             // --- Движение: в G отдельная ветка (см. комментарий у RANGED_STRAFE_MULT). Не объединять с обычной ходьбой. ---
+            applyMovementKeysFromPressed();
             if (rangedMode) {
                 updateRangedAimCamera(delta);
-                applyMovementKeysFromPressed();
                 if (canPlayerMoveThisFrame()) {
                     applyPlayerStrafeMove(delta, RANGED_STRAFE_MULT, true);
                 }
@@ -7223,6 +8024,7 @@
 
         updatePlayerMesh();
         applyCameraLook();
+        updateMobileAutoAimCrosshair();
 
         updateBullets(bullets, delta, true);
         updateBullets(enemyBullets, delta, false);
