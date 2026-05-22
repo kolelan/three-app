@@ -116,6 +116,22 @@
 
 `#restart-btn` дублирует `R` (клик → `openSetupPanel`).
 
+## Компонент: мобильное управление (`#mobile-controls`)
+
+Показывается при `gameActive` и условии `shouldUseMobileControls()` (узкий экран ≤767px или сенсор `pointer: coarse`).
+
+| Элемент | Назначение |
+|---------|------------|
+| `#mobile-joystick` | Виртуальный стик → `KeyW` / `KeyA` / `KeyS` / `KeyD` |
+| `#mobile-look-zone` | Правая зона экрана — поворот (`rotate`) и прицел |
+| `#mb-fire` | ЛКМ / огнемёт (удержание) |
+| `#mb-alt` | ПКМ |
+| `#mb-jump` | Прыжок |
+| `#mb-weapon` | Смена оружия (`cycleWeapon`) |
+| `#mb-scope` | Режим G (`toggleRangedMode`) |
+
+На мобильных скрывается `#controls`, компактится HUD (`body.mobile-game`).
+
 ## Canvas WebGL
 
 `renderer.domElement` — фокус для клавиатуры (`tabIndex = 0`). События:

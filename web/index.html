@@ -350,6 +350,118 @@
             #controls { max-width: calc(100vw - 32px); }
             #stats { max-width: calc(100vw - 32px); }
             #setup-panel .setup-card { padding: 16px; }
+            #setup-panel .diff-btn { min-height: 44px; }
+            #setup-panel button { min-height: 44px; }
+            #setup-panel .setup-actions { flex-direction: column; }
+            #setup-panel .setup-actions button { width: 100%; }
+            #victory .victory-card { padding: 20px 18px; }
+            #victory-continue-btn { min-height: 48px; width: 100%; }
+        }
+        /* --- Мобильное управление в игре --- */
+        #mobile-controls {
+            display: none; position: fixed; inset: 0; z-index: 8;
+            pointer-events: none; touch-action: none;
+        }
+        #mobile-controls.active { display: block; }
+        #mobile-look-zone {
+            position: absolute; top: 0; right: 0; width: 58%; height: 100%;
+            pointer-events: auto; touch-action: none;
+        }
+        #mobile-joystick {
+            position: absolute; left: max(14px, env(safe-area-inset-left));
+            bottom: max(14px, env(safe-area-inset-bottom));
+            width: 120px; height: 120px; pointer-events: auto; touch-action: none;
+        }
+        .mobile-stick-base {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.35); border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+        .mobile-stick-knob {
+            position: absolute; left: 50%; top: 50%; width: 52px; height: 52px;
+            margin: -26px 0 0 -26px; border-radius: 50%;
+            background: rgba(120, 160, 255, 0.45); border: 2px solid rgba(200, 220, 255, 0.7);
+            transform: translate(0, 0); transition: transform 0.05s ease-out;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+        }
+        .mobile-actions {
+            position: absolute; right: max(12px, env(safe-area-inset-right));
+            bottom: max(12px, env(safe-area-inset-bottom));
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            width: min(168px, 42vw); pointer-events: auto;
+        }
+        .mobile-btn {
+            min-width: 48px; min-height: 48px; padding: 0;
+            border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.35);
+            background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 20px; line-height: 1;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+            backdrop-filter: blur(4px); touch-action: manipulation;
+            user-select: none; font-family: inherit;
+        }
+        .mobile-btn:active, .mobile-btn.pressed {
+            background: rgba(80, 120, 200, 0.65); transform: scale(0.94);
+        }
+        .mobile-btn-jump { grid-row: 1; grid-column: 1; }
+        .mobile-btn-weapon { grid-row: 1; grid-column: 2; }
+        .mobile-btn-alt { grid-row: 1; grid-column: 3; }
+        .mobile-btn-scope { grid-row: 2; grid-column: 1; }
+        .mobile-btn-fire {
+            grid-row: 2; grid-column: 2; min-width: 56px; min-height: 56px; font-size: 22px;
+            border-color: rgba(255, 120, 100, 0.75); background: rgba(80, 20, 20, 0.7);
+        }
+        .mobile-btn-scope.active {
+            border-color: rgba(255, 100, 100, 0.9);
+            background: rgba(120, 30, 30, 0.85);
+            box-shadow: 0 0 12px rgba(255, 80, 60, 0.45);
+        }
+        body.mobile-game {
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body.mobile-game #controls { display: none; }
+        body.mobile-game #info {
+            top: max(8px, env(safe-area-inset-top));
+            left: max(8px, env(safe-area-inset-left));
+            max-width: min(46vw, 200px); font-size: 11px; padding: 6px 10px;
+        }
+        body.mobile-game #stats {
+            top: max(8px, env(safe-area-inset-top));
+            right: max(8px, env(safe-area-inset-right));
+            left: auto; max-width: min(52vw, 220px); font-size: 11px; padding: 6px 10px;
+            pointer-events: none;
+        }
+        body.mobile-game #stats > div:nth-child(5),
+        body.mobile-game #stats > div:nth-child(6),
+        body.mobile-game #stats > div:nth-child(7) { display: none; }
+        body.mobile-game #weapon-panel {
+            pointer-events: auto; margin-top: 6px; padding: 6px 8px;
+        }
+        body.mobile-game #weapon-slots { gap: 4px; }
+        body.mobile-game .weapon-slot {
+            min-height: 36px; padding: 6px 2px; font-size: 9px;
+            pointer-events: auto; cursor: pointer;
+        }
+        body.mobile-game #weapon-panel-main { gap: 6px; }
+        body.mobile-game #weapon-icon { font-size: 22px; width: 28px; }
+        body.mobile-game #weapon-title { font-size: 13px; }
+        body.mobile-game #weapon-desc { font-size: 10px; }
+        body.mobile-game #enemy-radar {
+            bottom: max(148px, calc(130px + env(safe-area-inset-bottom)));
+            left: max(10px, env(safe-area-inset-left));
+            right: auto; width: 118px; padding: 6px 8px;
+        }
+        body.mobile-game #radar-canvas { width: 100px; height: 100px; }
+        body.mobile-game #enemy-radar .radar-legend { font-size: 8px; }
+        body.mobile-game #restart-btn {
+            top: max(10px, env(safe-area-inset-top));
+            bottom: auto;
+            right: max(10px, env(safe-area-inset-right));
+            padding: 8px 12px; font-size: 12px; min-height: 40px; min-width: 40px;
+        }
+        body.mobile-game #crosshair { width: 18px; height: 18px; }
+        @media (max-width: 767px), (hover: none) and (pointer: coarse) {
+            #setup-panel { padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
@@ -400,10 +512,24 @@
         <span class="radar-count"><span id="radar-count-alive">0</span> / <span id="radar-count-total">0</span></span>
     </div>
     <canvas id="radar-canvas" width="132" height="132"></canvas>
-    <div class="radar-legend">▲ вы · 🔴 опасные · 🟢 патруль · 🟣 босс</div>
+    <div class="radar-legend">▲ вы · 🔴 опасные · 🟢 патруль · 🟣 босс · 🟠 дрон</div>
     <div class="radar-behind" id="radar-behind-hint"></div>
 </div>
 <button type="button" id="restart-btn">↻ Рестарт (R)</button>
+<div id="mobile-controls" aria-hidden="true">
+    <div id="mobile-look-zone" aria-hidden="true"></div>
+    <div id="mobile-joystick" aria-label="Движение">
+        <div class="mobile-stick-base"></div>
+        <div class="mobile-stick-knob" id="mobile-stick-knob"></div>
+    </div>
+    <div class="mobile-actions" role="group" aria-label="Действия">
+        <button type="button" class="mobile-btn mobile-btn-jump" id="mb-jump" aria-label="Прыжок">⬆</button>
+        <button type="button" class="mobile-btn mobile-btn-weapon" id="mb-weapon" aria-label="Смена оружия">🔫</button>
+        <button type="button" class="mobile-btn mobile-btn-alt" id="mb-alt" aria-label="Доп. действие">⊕</button>
+        <button type="button" class="mobile-btn mobile-btn-fire" id="mb-fire" aria-label="Атака">🎯</button>
+        <button type="button" class="mobile-btn mobile-btn-scope" id="mb-scope" aria-label="Прицел">◎</button>
+    </div>
+</div>
 <div id="game-over">
     <div>💀 Игра окончена</div>
     <div style="font-size:14px; margin-top:12px; opacity:0.8">Нажми R — настройка арены и новая игра</div>
@@ -685,6 +811,14 @@
                     <label class="setup-label">Дальность выстрела <span class="val" id="val-boss-shoot-range">42</span> м</label>
                     <input type="range" id="inp-boss-shoot-range" min="18" max="60" step="1" value="42">
                 </div>
+                <div class="setup-row">
+                    <input type="checkbox" id="inp-boss-drones" checked>
+                    <label for="inp-boss-drones">Выпускать дронов (70% / 50% / 30% HP)</label>
+                </div>
+                <div class="setup-field">
+                    <label class="setup-label">Дронов за фазу <span class="val" id="val-boss-drones-count">1</span></label>
+                    <input type="range" id="inp-boss-drones-count" min="1" max="3" step="1" value="1">
+                </div>
             </section>
             <section class="setup-col setup-col-levels" aria-labelledby="setup-col-levels">
                 <h3 id="setup-col-levels">Уровни</h3>
@@ -812,6 +946,15 @@
         bossChaseRange: 24,
         bossChaseSpeed: 3.2,
         bossShootRange: 42,
+        bossDronesEnabled: true,
+        bossDronesPerPhase: 1,
+        bossDroneChaseRange: 48,
+        bossDroneShootRange: 52,
+        bossDroneChaseSpeed: 4.8,
+        bossDroneContactDamage: 3,
+        bossThreatDuration: 9,
+        bossFogDuration: 28,
+        bossFogRadius: 11,
         bossSpawnAnim: 1.1,
         bossDeathAnim: 1.15,
         spawnInMaze: false,
@@ -889,6 +1032,8 @@
     let activeDifficulty = 'normal';
 
     const shellMeshes = [];
+    const arenaLedgePieces = [];
+    const ledgeMeshes = [];
     const pitMeshes = [];
     const mazePieces = [];
     const mazeGroundSpawns = [];
@@ -899,6 +1044,9 @@
     let mazeRngState = 1;
     let bossesToSpawn = 0;
     const bossVfx = [];
+    const bossFogPatches = [];
+    const BOSS_FOG_HP_THRESHOLDS = [0.6, 0.45, 0.3, 0.15];
+    const BOSS_DRONE_HP_THRESHOLDS = [0.7, 0.5, 0.3];
     let JUMP_VELOCITY = 5.2;
     const MAZE_FLOOR_BOUNCE_RESTITUTION = 0.64;
     const MAZE_FLOOR_BOUNCE_MIN_VY = 2.0;
@@ -1123,6 +1271,7 @@
         trees.length = 0;
         for (const m of shellMeshes) disposeMesh(m);
         shellMeshes.length = 0;
+        clearArenaLedges();
         clearMaze();
     }
 
@@ -1262,6 +1411,88 @@
         ceiling.position.y = WORLD.ceilingY;
         scene.add(ceiling);
         shellMeshes.push(ceiling);
+    }
+
+    /** Немного выступов на стенах: телепорт и удержание игрока (как плиты лабиринта). */
+    const WALL_LEDGE_LAYOUT = [
+        { wall: 'n', along: -0.32, height: 4.4, w: 3.4, d: 1.4 },
+        { wall: 'n', along: 0.26, height: 8.8, w: 3.0, d: 1.25 },
+        { wall: 's', along: 0.14, height: 5.6, w: 3.2, d: 1.35 },
+        { wall: 'w', along: -0.24, height: 7.2, w: 2.8, d: 1.2 },
+        { wall: 'e', along: 0.38, height: 6.4, w: 3.0, d: 1.3 }
+    ];
+
+    function clearArenaLedges() {
+        for (const m of ledgeMeshes) disposeMesh(m);
+        ledgeMeshes.length = 0;
+        arenaLedgePieces.length = 0;
+    }
+
+    function registerArenaLedge(def) {
+        const piece = {
+            x: def.x, z: def.z, w: def.w, d: def.d, h: def.h,
+            yBase: def.yBase, hw: def.w / 2, hd: def.d / 2,
+            jumpable: true,
+            bouncy: false,
+            blocksBullets: true,
+            blocksMovement: false,
+            isArenaLedge: true
+        };
+        arenaLedgePieces.push(piece);
+        return piece;
+    }
+
+    function wallLedgeCenter(wall, along, inset) {
+        const margin = 5;
+        const spanX = WORLD.halfW - margin;
+        const spanZ = WORLD.halfD - margin;
+        switch (wall) {
+            case 'n': return { x: along * spanX, z: -WORLD.halfD + inset };
+            case 's': return { x: along * spanX, z: WORLD.halfD - inset };
+            case 'w': return { x: -WORLD.halfW + inset, z: along * spanZ };
+            case 'e': return { x: WORLD.halfW - inset, z: along * spanZ };
+            default: return { x: 0, z: 0 };
+        }
+    }
+
+    function buildArenaWallLedges() {
+        clearArenaLedges();
+        const inset = 2.25;
+        const platH = 0.38;
+        const mat = new THREE.MeshStandardMaterial({
+            color: 0x3d6b48, roughness: 0.62, metalness: 0.12,
+            emissive: 0x0a1820, emissiveIntensity: 0.35
+        });
+        const lipMat = new THREE.MeshStandardMaterial({
+            color: 0x55aacc, roughness: 0.45, metalness: 0.2,
+            emissive: 0x113344, emissiveIntensity: 0.55
+        });
+
+        for (const spec of WALL_LEDGE_LAYOUT) {
+            const topY = spec.height;
+            if (topY > WORLD.wallHeight - 1.2) continue;
+            const c = wallLedgeCenter(spec.wall, spec.along, inset);
+            const yBase = topY - platH;
+            const piece = registerArenaLedge({
+                x: c.x, z: c.z, w: spec.w, d: spec.d, h: platH, yBase
+            });
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(spec.w, platH, spec.d), mat.clone());
+            mesh.position.set(c.x, yBase + platH / 2, c.z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.userData.mazePiece = piece;
+            scene.add(mesh);
+            ledgeMeshes.push(mesh);
+
+            const lip = new THREE.Mesh(
+                new THREE.BoxGeometry(spec.w * 0.92, 0.06, spec.d * 0.88),
+                lipMat.clone()
+            );
+            lip.position.set(c.x, topY + 0.03, c.z);
+            lip.userData.mazePiece = piece;
+            scene.add(lip);
+            ledgeMeshes.push(lip);
+        }
     }
 
     function treeRand() {
@@ -1768,17 +1999,28 @@
         return Math.abs(x - p.x) <= p.hw + margin && Math.abs(z - p.z) <= p.hd + margin;
     }
 
+    function footOnWalkPiece(p, x, z) {
+        if (p.isArenaLedge) return footOnMazePieceWide(p, x, z, 0.2);
+        return footXZOnMazeWalkPiece(p, x, z);
+    }
+
+    function eachWalkPiece(fn) {
+        for (const p of mazePieces) fn(p);
+        for (const p of arenaLedgePieces) fn(p);
+    }
+
     function mazePieceIsBouncy(p) {
         return !!p.bouncy || (p.jumpable && p.h <= 0.35);
     }
 
     function getMazeHighestWalkTop(x, z, margin = 0.38) {
         let best = -Infinity;
-        for (const p of mazePieces) {
-            if (!p.jumpable) continue;
-            if (!footOnMazePieceWide(p, x, z, margin)) continue;
+        eachWalkPiece((p) => {
+            if (!p.jumpable) return;
+            const m = p.isArenaLedge ? 0.2 : margin;
+            if (!footOnMazePieceWide(p, x, z, m)) return;
             best = Math.max(best, p.yBase + p.h);
-        }
+        });
         return best;
     }
 
@@ -1795,14 +2037,14 @@
 
     function getMazeWalkHeight(x, z, refFootY, maxAbove = 0.55, maxBelow = 1.15) {
         let best = -Infinity;
-        for (const p of mazePieces) {
-            if (!p.jumpable) continue;
-            if (!footXZOnMazeWalkPiece(p, x, z)) continue;
+        eachWalkPiece((p) => {
+            if (!p.jumpable) return;
+            if (!footOnWalkPiece(p, x, z)) return;
             const top = p.yBase + p.h;
             if (top <= refFootY + maxAbove && top >= refFootY - maxBelow) {
                 best = Math.max(best, top);
             }
-        }
+        });
         return best;
     }
 
@@ -1819,7 +2061,7 @@
     }
 
     function getMazeMarkTargets() {
-        const list = [...covers, ...mazeMeshes];
+        const list = [...covers, ...mazeMeshes, ...ledgeMeshes];
         if (terrain) list.unshift(terrain);
         return list;
     }
@@ -1939,7 +2181,8 @@
     }
 
     function getMazeLosMeshes() {
-        return mazeMeshes.filter((m) => m.userData.mazePiece?.blocksBullets);
+        const block = (m) => m.userData.mazePiece?.blocksBullets;
+        return mazeMeshes.filter(block).concat(ledgeMeshes.filter(block));
     }
 
     function rebuildArenaGeometry() {
@@ -1950,6 +2193,7 @@
         buildArenaShell();
         buildCovers();
         buildMaze();
+        buildArenaWallLedges();
         buildTrees();
         resolveSpawnPoint();
         applySpawnPosition();
@@ -2151,6 +2395,7 @@
         buildArenaShell();
         buildCovers();
         buildMaze();
+        buildArenaWallLedges();
         relocatePlayerToSpawn();
     }
 
@@ -2508,6 +2753,15 @@
     const scopeReticleEl = document.getElementById('scope-reticle');
     const crosshairEl = document.getElementById('crosshair');
     const setupPanelEl = document.getElementById('setup-panel');
+    const mobileControlsEl = document.getElementById('mobile-controls');
+    const mobileLookZoneEl = document.getElementById('mobile-look-zone');
+    const mobileJoystickEl = document.getElementById('mobile-joystick');
+    const mobileStickKnobEl = document.getElementById('mobile-stick-knob');
+    const mbJumpEl = document.getElementById('mb-jump');
+    const mbFireEl = document.getElementById('mb-fire');
+    const mbAltEl = document.getElementById('mb-alt');
+    const mbWeaponEl = document.getElementById('mb-weapon');
+    const mbScopeEl = document.getElementById('mb-scope');
 
     function getFootY() {
         return playerY - WORLD.eyeOffset;
@@ -2533,9 +2787,9 @@
     function sweepMazeLanding(prevFootY, nextFootY) {
         let bestTop = null;
         let bestBouncy = false;
-        for (const p of mazePieces) {
-            if (!p.jumpable) continue;
-            if (!footOnMazePieceWide(p, position.x, position.z)) continue;
+        eachWalkPiece((p) => {
+            if (!p.jumpable) return;
+            if (!footOnWalkPiece(p, position.x, position.z)) return;
             const top = p.yBase + p.h;
             const crossedDown = prevFootY > top - 0.12 && nextFootY <= top + 0.48;
             const onPlatform = nextFootY <= top + 0.12 && nextFootY >= top - 0.5
@@ -2546,7 +2800,7 @@
                     bestBouncy = mazePieceIsBouncy(p);
                 }
             }
-        }
+        });
         if (bestTop == null) return null;
         return { eyeY: bestTop + WORLD.eyeOffset, bouncy: bestBouncy };
     }
@@ -2990,9 +3244,21 @@
             if (enemy.userData.isBoss) {
                 color = '#cc66ff';
                 dotR = 5;
+            } else if (enemy.userData.isBossDrone) {
+                color = '#ffaa33';
+                dotR = 4;
             } else if (enemy.userData.dangerous) {
                 color = '#ff3355';
                 dotR = 4;
+            }
+
+            if (enemy.userData.isBoss) {
+                const vis = getBossRadarVisibility(enemy);
+                if (vis < 0.22) continue;
+                if (vis < 0.65) {
+                    color = '#6a4488';
+                    dotR = Math.max(2, dotR * vis);
+                }
             }
 
             if (localF < -1) {
@@ -3341,11 +3607,264 @@
         addBossVfx(flash, 0.45);
     }
 
+    function faceBossTowardDir(boss, dir) {
+        if (!dir || Math.hypot(dir.x, dir.z) < 0.15) return;
+        boss.rotation.y = Math.atan2(dir.x, dir.z);
+    }
+
     function faceBossTowardPlayer(boss, playerPos) {
         const dx = playerPos.x - boss.position.x;
         const dz = playerPos.z - boss.position.z;
         if (Math.hypot(dx, dz) > 0.2) {
             boss.rotation.y = Math.atan2(dx, dz);
+        }
+    }
+
+    function bossHasActiveThreat(boss, nowSec) {
+        return !!(boss.userData.threatDir
+            && boss.userData.threatUntil > nowSec);
+    }
+
+    function notifyBossRangedHit(boss, hitPoint) {
+        const nowSec = performance.now() / 1000;
+        const pp = getPlayerPos();
+        let ax = pp.x;
+        let az = pp.z;
+        if (hitPoint) {
+            const hx = hitPoint.x - boss.position.x;
+            const hz = hitPoint.z - boss.position.z;
+            const hLen = Math.hypot(hx, hz);
+            if (hLen > 0.08) {
+                ax = boss.position.x + hx / hLen * 30;
+                az = boss.position.z + hz / hLen * 30;
+            }
+        }
+        const dx = ax - boss.position.x;
+        const dz = az - boss.position.z;
+        const len = Math.hypot(dx, dz);
+        if (len < 0.2) return;
+        boss.userData.threatDir = { x: dx / len, z: dz / len };
+        boss.userData.threatUntil = nowSec + arenaSettings.bossThreatDuration;
+        faceBossTowardDir(boss, boss.userData.threatDir);
+    }
+
+    function getBossAimPoint(boss, nowSec) {
+        if (bossHasActiveThreat(boss, nowSec) && boss.userData.threatDir) {
+            const td = boss.userData.threatDir;
+            return tmpVec3.set(
+                boss.position.x + td.x * 24,
+                boss.position.y + 1.2,
+                boss.position.z + td.z * 24
+            );
+        }
+        getPlayerPos();
+        return tmpVec3.copy(tmpVec);
+    }
+
+    function purgeBossFog(boss) {
+        for (let i = bossFogPatches.length - 1; i >= 0; i--) {
+            if (bossFogPatches[i].owner !== boss) continue;
+            const fog = bossFogPatches[i];
+            scene.remove(fog.mesh);
+            fog.mesh.geometry?.dispose();
+            fog.mesh.material?.dispose();
+            bossFogPatches.splice(i, 1);
+        }
+    }
+
+    function getBossRadarVisibility(boss) {
+        let vis = 1;
+        for (const fog of bossFogPatches) {
+            if (fog.owner !== boss) continue;
+            const strength = (fog.life / fog.maxLife) * fog.peakOpacity;
+            if (strength < 0.12) continue;
+            const db = Math.hypot(
+                boss.position.x - fog.x,
+                boss.position.z - fog.z
+            );
+            if (db > fog.radius * 1.05) continue;
+            const dp = Math.hypot(position.x - fog.x, position.z - fog.z);
+            if (dp > fog.radius * 0.55) {
+                vis *= Math.max(0.08, 1 - strength * 0.92);
+            }
+        }
+        return vis;
+    }
+
+    function clearBossFog() {
+        for (const fog of bossFogPatches) {
+            scene.remove(fog.mesh);
+            fog.mesh.geometry?.dispose();
+            fog.mesh.material?.dispose();
+        }
+        bossFogPatches.length = 0;
+    }
+
+    function updateBossFog(delta) {
+        const col = parseBossColor();
+        for (let i = bossFogPatches.length - 1; i >= 0; i--) {
+            const fog = bossFogPatches[i];
+            if (fog.owner && enemies.includes(fog.owner)) {
+                fog.x = fog.owner.position.x;
+                fog.z = fog.owner.position.z;
+            }
+            fog.life -= delta;
+            const t = Math.max(0, fog.life / fog.maxLife);
+            const pulse = 0.88 + Math.sin(performance.now() * 0.002 + fog.phase) * 0.08;
+            const opacity = t * fog.peakOpacity * pulse;
+            fog.mesh.position.set(fog.x, fog.y, fog.z);
+            fog.mesh.material.opacity = opacity;
+            fog.mesh.scale.setScalar(fog.baseScale * (0.75 + (1 - t) * 0.35));
+            if (fog.mesh.material.color) {
+                fog.mesh.material.color.setHex(col);
+            }
+            if (fog.life <= 0) {
+                scene.remove(fog.mesh);
+                fog.mesh.geometry?.dispose();
+                fog.mesh.material?.dispose();
+                bossFogPatches.splice(i, 1);
+            }
+        }
+    }
+
+    function spawnBossFog(boss, hpRatio) {
+        const s = arenaSettings;
+        const radius = s.bossFogRadius * (0.85 + (1 - hpRatio) * 0.35);
+        const y = boss.position.y + 1.1;
+        const mat = new THREE.MeshBasicMaterial({
+            color: parseBossColor(),
+            transparent: true,
+            opacity: 0.5,
+            depthWrite: false
+        });
+        const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(radius, 16, 12),
+            mat
+        );
+        mesh.position.set(boss.position.x, y, boss.position.z);
+        scene.add(mesh);
+        bossFogPatches.push({
+            mesh,
+            owner: boss,
+            x: boss.position.x,
+            z: boss.position.z,
+            y,
+            radius,
+            life: s.bossFogDuration,
+            maxLife: s.bossFogDuration,
+            peakOpacity: 0.52,
+            baseScale: 1,
+            phase: Math.random() * Math.PI * 2
+        });
+        const ring = new THREE.Mesh(
+            new THREE.RingGeometry(radius * 0.35, radius * 0.95, 32),
+            new THREE.MeshBasicMaterial({
+                color: parseBossColor(),
+                transparent: true,
+                opacity: 0.65,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        ring.position.set(boss.position.x, boss.position.y + 0.2, boss.position.z);
+        ring.userData.peakOpacity = 0.65;
+        ring.userData.grow = 1.4;
+        addBossVfx(ring, 0.9);
+    }
+
+    function createBossDroneVisual() {
+        const group = new THREE.Group();
+        const col = parseBossColor();
+        const body = new THREE.Mesh(
+            new THREE.TetrahedronGeometry(0.38, 0),
+            new THREE.MeshStandardMaterial({
+                color: 0xffaa33,
+                emissive: emissiveFromColor(col, 0.55),
+                metalness: 0.55,
+                roughness: 0.3
+            })
+        );
+        body.position.y = 0.2;
+        const wing = new THREE.Mesh(
+            new THREE.BoxGeometry(1.1, 0.06, 0.22),
+            new THREE.MeshStandardMaterial({
+                color: 0xffcc66,
+                emissive: 0x442200,
+                metalness: 0.4,
+                roughness: 0.35
+            })
+        );
+        wing.position.y = 0.28;
+        const glow = new THREE.PointLight(0xffaa44, 0.65, 7);
+        glow.position.y = 0.35;
+        group.add(body, wing, glow);
+        group.userData.glow = glow;
+        group.userData.enemyBody = body;
+        return group;
+    }
+
+    function spawnBossDrone(boss) {
+        if (!arenaSettings.bossDronesEnabled) return;
+        const count = Math.max(1, Math.min(3, arenaSettings.bossDronesPerPhase));
+        const s = arenaSettings;
+        for (let i = 0; i < count; i++) {
+            const ang = (i / count) * Math.PI * 2 + Math.random() * 0.6;
+            const ox = Math.cos(ang) * 2.2;
+            const oz = Math.sin(ang) * 2.2;
+            const x = boss.position.x + ox;
+            const z = boss.position.z + oz;
+            const group = createBossDroneVisual();
+            const gy = getTerrainHeight(x, z) + 4.5 + i * 0.35;
+            group.position.set(x, gy, z);
+            group.userData.shootable = true;
+            group.userData.enemy = true;
+            group.userData.isBossDrone = true;
+            group.userData.flying = true;
+            group.userData.flyHeight = 4.2 + i * 0.45;
+            group.userData.dangerous = true;
+            group.userData.type = 'chaser';
+            group.userData.health = 1;
+            group.userData.maxHealth = 1;
+            group.userData.basePos = { x, z };
+            group.userData.homePos = { x, z };
+            group.userData.chaseRange = s.bossDroneChaseRange;
+            group.userData.shootRange = s.bossDroneShootRange;
+            group.userData.chaseSpeed = s.bossDroneChaseSpeed;
+            group.userData.fireRate = 1.05;
+            group.userData.contactDamage = s.bossDroneContactDamage;
+            group.userData.bulletLives = 3;
+            group.userData.phase = Math.random() * Math.PI * 2;
+            group.userData.lastShot = performance.now() / 1000;
+            group.userData.spawnedByBoss = boss;
+            scene.add(group);
+            shootables.push(group);
+            enemies.push(group);
+        }
+        enemiesFieldTotal = enemies.length;
+    }
+
+    function checkBossHpMilestones(boss, prevHealth) {
+        const maxH = boss.userData.maxHealth;
+        if (!maxH) return;
+        const prevRatio = prevHealth / maxH;
+        const newRatio = boss.userData.health / maxH;
+        if (!boss.userData.phaseTriggered) {
+            boss.userData.phaseTriggered = { fog: {}, drone: {} };
+        }
+        for (const th of BOSS_FOG_HP_THRESHOLDS) {
+            const key = String(th);
+            if (prevRatio > th && newRatio <= th && !boss.userData.phaseTriggered.fog[key]) {
+                boss.userData.phaseTriggered.fog[key] = true;
+                spawnBossFog(boss, th);
+            }
+        }
+        for (const th of BOSS_DRONE_HP_THRESHOLDS) {
+            const key = String(th);
+            if (prevRatio > th && newRatio <= th && !boss.userData.phaseTriggered.drone[key]) {
+                boss.userData.phaseTriggered.drone[key] = true;
+                spawnBossDrone(boss);
+            }
         }
     }
 
@@ -3437,6 +3956,7 @@
 
     function startBossDeath(boss) {
         if (boss.userData.dying) return;
+        purgeBossFog(boss);
         boss.userData.dying = true;
         boss.userData.deathTime = 0;
         boss.userData.shootable = false;
@@ -3445,17 +3965,18 @@
         stats.destroyed++;
     }
 
-    function bossShoot(enemy) {
+    function bossShoot(enemy, nowSec) {
         if (!arenaSettings.bossDangerous) return;
         const from = new THREE.Vector3(
             enemy.position.x,
             enemy.position.y + 1.35,
             enemy.position.z
         );
-        if (playerBehindCover(from)) return;
-        const toPlayer = getPlayerPos();
-        if (!lineOfSight(from, toPlayer, 0.35)) return;
-        const dir = toPlayer.clone().sub(from).normalize();
+        const aimPoint = getBossAimPoint(enemy, nowSec ?? performance.now() / 1000);
+        const threatShot = bossHasActiveThreat(enemy, nowSec ?? performance.now() / 1000);
+        if (!threatShot && playerBehindCover(from)) return;
+        if (!lineOfSight(from, aimPoint, 0.35)) return;
+        const dir = aimPoint.clone().sub(from).normalize();
         const mat = new THREE.MeshBasicMaterial({
             color: parseBossColor(),
             transparent: true,
@@ -3499,7 +4020,12 @@
 
     function updateBossCombat(boss, playerPos, dist, canSee, hidden, nowSec, delta) {
         if (boss.userData.spawnState !== 'active' || boss.userData.dying) return;
-        faceBossTowardPlayer(boss, playerPos);
+        const threat = bossHasActiveThreat(boss, nowSec);
+        if (threat) {
+            faceBossTowardDir(boss, boss.userData.threatDir);
+        } else {
+            faceBossTowardPlayer(boss, playerPos);
+        }
 
         if (!arenaSettings.bossDangerous) return;
 
@@ -3507,14 +4033,25 @@
             boss.userData.chargeProgress = (boss.userData.chargeProgress || 0)
                 + delta / arenaSettings.bossChargeTime;
             if (boss.userData.chargeProgress >= 1) {
-                bossShoot(boss);
+                bossShoot(boss, nowSec);
             }
             return;
         }
 
         const since = nowSec - (boss.userData.lastShot || 0);
-        if (dist < boss.userData.shootRange && canSee && !hidden
-            && since >= arenaSettings.bossFireCooldown) {
+        const aimPoint = getBossAimPoint(boss, nowSec);
+        const aimDist = Math.hypot(
+            aimPoint.x - boss.position.x,
+            aimPoint.z - boss.position.z
+        );
+        const canShootThreat = threat
+            && aimDist < boss.userData.shootRange
+            && lineOfSight(
+                tmpVec.set(boss.position.x, boss.position.y + 0.5, boss.position.z),
+                aimPoint
+            );
+        const canShootPlayer = dist < boss.userData.shootRange && canSee && !hidden;
+        if ((canShootThreat || canShootPlayer) && since >= arenaSettings.bossFireCooldown) {
             boss.userData.charging = true;
             boss.userData.chargeProgress = 0;
         }
@@ -3526,7 +4063,7 @@
         const dangerous = arenaSettings.bossDangerous;
         infoEl.innerHTML = dangerous
             ? '⚠️ Опасные боссы!<div style="font-size:12px; opacity:0.85;">'
-                + 'Заряжают энергию и стреляют · преследуют вблизи · не заходят в лабиринт</div>'
+                + 'Реагируют на дальний огонь · туман и дроны по HP · не заходят в лабиринт</div>'
             : '⚠️ Боссы снаружи<div style="font-size:12px; opacity:0.85;">'
                 + 'Статичные — без выстрелов · зачистите лабиринт</div>';
         const nowSec = performance.now() / 1000;
@@ -3557,6 +4094,9 @@
             group.userData.chargeProgress = 0;
             group.userData.spawnState = 'spawning';
             group.userData.spawnTime = 0;
+            group.userData.phaseTriggered = { fog: {}, drone: {} };
+            group.userData.threatUntil = 0;
+            group.userData.threatDir = null;
             scene.add(group);
             shootables.push(group);
             enemies.push(group);
@@ -3853,6 +4393,17 @@
     function onTargetHit(target, damage = 1, hitPoint = null) {
         if (!target.userData.shootable) return;
         if (hitPoint && !canDamageEnemyAt(target, hitPoint)) return;
+        const prevHealth = target.userData.health;
+        if (target.userData.isBoss && hitPoint) {
+            const pp = getPlayerPos();
+            const distP = Math.hypot(
+                pp.x - target.position.x,
+                pp.z - target.position.z
+            );
+            if (distP > target.userData.chaseRange * 0.92) {
+                notifyBossRangedHit(target, hitPoint);
+            }
+        }
         for (let d = 0; d < damage; d++) {
             if (target.userData.health <= 0) break;
             stats.hits++;
@@ -3883,6 +4434,9 @@
                 if (wasDangerous) checkVictory();
                 return;
             }
+        }
+        if (target.userData.isBoss && target.userData.health > 0) {
+            checkBossHpMilestones(target, prevHealth);
         }
         updateStatsUI();
     }
@@ -4100,6 +4654,7 @@
             updateRangedScopeAtMouse(lastMouseClientX, lastMouseClientY);
         }
         crosshairEl.classList.toggle('visible', !rangedMode);
+        if (mbScopeEl) mbScopeEl.classList.toggle('active', rangedMode);
     }
 
     function toggleRangedMode() {
@@ -4938,6 +5493,10 @@
     }
 
     function getEnemyGroundY(enemy, x, z) {
+        if (enemy.userData.flying) {
+            const base = getTerrainHeight(x, z);
+            return base + (enemy.userData.flyHeight ?? 4.5);
+        }
         if (enemy.userData.inMaze) {
             return getSupportYAt(x, z, getTerrainHeight(x, z) + 0.55);
         }
@@ -5147,7 +5706,7 @@
         bullet.userData.velocity = dir.multiplyScalar(ENEMY_BULLET_SPEED);
         bullet.userData.life = 3;
         bullet.userData.fromPlayer = false;
-        bullet.userData.livesLoss = arenaSettings.enemyBulletLives;
+        bullet.userData.livesLoss = enemy.userData.bulletLives ?? arenaSettings.enemyBulletLives;
         bullet.userData.prevPos = from.clone();
         scene.add(bullet);
         enemyBullets.push(bullet);
@@ -5461,6 +6020,7 @@
         removeLevelDoor();
         resetMovementKeys();
         gameOverEl.classList.add('visible');
+        updateMobileControlsVisibility();
     }
 
     function respawnPlayer() {
@@ -5501,7 +6061,6 @@
         for (const enemy of enemies) {
             if (enemy.userData.isBoss) {
                 updateBossVisuals(enemy, time, delta);
-                enemy.rotation.y += delta * 1.8;
                 if (enemy.userData.spawnState === 'spawning') {
                     placeEnemyAt(enemy, enemy.position.x, enemy.position.z, delta);
                     continue;
@@ -5542,7 +6101,16 @@
                 continue;
             }
 
-            if (type === 'chaser' && !enemy.userData.charging
+            const bossThreat = enemy.userData.isBoss
+                && bossHasActiveThreat(enemy, nowSec);
+            if (bossThreat && enemy.userData.threatDir) {
+                const td = enemy.userData.threatDir;
+                x = enemy.position.x + td.x * enemy.userData.chaseSpeed * delta;
+                z = enemy.position.z + td.z * enemy.userData.chaseSpeed * delta;
+                const clamped = clampBossOutsideBuilding(x, z);
+                x = clamped.x;
+                z = clamped.z;
+            } else if (type === 'chaser' && !enemy.userData.charging
                 && dist < enemy.userData.chaseRange && canSee && !hidden) {
                 const dx = playerPos.x - enemy.position.x;
                 const dz = playerPos.z - enemy.position.z;
@@ -5574,9 +6142,20 @@
                 }
             }
 
+            if (enemy.userData.isBoss && enemy.userData.spawnState === 'active'
+                && !enemy.userData.dying) {
+                if (bossThreat) {
+                    faceBossTowardDir(enemy, enemy.userData.threatDir);
+                } else {
+                    enemy.rotation.y += delta * 1.8;
+                }
+            }
+
             let resolved;
             if (enemy.userData.isBoss) {
                 resolved = resolveBossMovement(x, z);
+            } else if (enemy.userData.isBossDrone || enemy.userData.flying) {
+                resolved = resolveCoverCollision(x, z);
             } else {
                 const footY = enemy.position.y - 0.4;
                 const headY = footY + 1.5;
@@ -5819,6 +6398,8 @@
         document.getElementById('inp-boss-chase').value = s.bossChaseRange;
         document.getElementById('inp-boss-chase-speed').value = s.bossChaseSpeed;
         document.getElementById('inp-boss-shoot-range').value = s.bossShootRange;
+        document.getElementById('inp-boss-drones').checked = s.bossDronesEnabled !== false;
+        document.getElementById('inp-boss-drones-count').value = s.bossDronesPerPhase ?? 1;
         document.getElementById('inp-spawn-outside').checked = !s.spawnInMaze;
         document.getElementById('inp-spawn-maze').checked = s.spawnInMaze;
         document.getElementById('inp-weapons-on-field').checked = !!s.weaponsOnField;
@@ -5875,6 +6456,11 @@
         document.getElementById('val-boss-chase').textContent = arenaSettings.bossChaseRange;
         document.getElementById('val-boss-chase-speed').textContent = arenaSettings.bossChaseSpeed.toFixed(1);
         document.getElementById('val-boss-shoot-range').textContent = arenaSettings.bossShootRange;
+        document.getElementById('val-boss-drones-count').textContent = arenaSettings.bossDronesPerPhase;
+        const dronesCountInp = document.getElementById('inp-boss-drones-count');
+        if (dronesCountInp) {
+            dronesCountInp.disabled = !arenaSettings.bossDronesEnabled;
+        }
         const maxEnemies = BASE_ENEMY_LAYOUT.length;
         const maxPits = BASE_PITS.length;
         const maxCovers = BASE_COVERS.length;
@@ -5965,6 +6551,8 @@
         arenaSettings.bossChaseRange = Number(document.getElementById('inp-boss-chase').value);
         arenaSettings.bossChaseSpeed = Number(document.getElementById('inp-boss-chase-speed').value);
         arenaSettings.bossShootRange = Number(document.getElementById('inp-boss-shoot-range').value);
+        arenaSettings.bossDronesEnabled = document.getElementById('inp-boss-drones').checked;
+        arenaSettings.bossDronesPerPhase = Number(document.getElementById('inp-boss-drones-count').value);
         arenaSettings.spawnInMaze = document.getElementById('inp-spawn-maze').checked;
         arenaSettings.weaponsOnField = document.getElementById('inp-weapons-on-field').checked;
         arenaSettings.treeCount = Number(document.getElementById('inp-tree-count').value);
@@ -6009,6 +6597,7 @@
         clearLaserBeams();
         clearWeaponPickups();
         clearBossVfx();
+        clearBossFog();
     }
 
     function openSetupPanel() {
@@ -6039,6 +6628,7 @@
         updateSetupLabelsFromSettings();
         setActiveDifficultyButton(activeDifficulty || 'normal');
         applyCameraLook();
+        updateMobileControlsVisibility();
     }
 
     function startGame() {
@@ -6088,16 +6678,234 @@
         gameActive = true;
         enemyRadarEl.classList.add('visible');
         renderer.domElement.focus();
+        updateMobileControlsVisibility();
+        if (shouldUseMobileControls()) {
+            const cx = window.innerWidth * 0.72;
+            const cy = window.innerHeight * 0.42;
+            updateCrosshair(cx, cy);
+            setMouseNDCFromClient(cx, cy);
+            crosshairEl.classList.add('visible');
+        }
     }
 
     function resetGame() {
         openSetupPanel();
     }
 
+    const MOBILE_JOY_DEAD = 14;
+    const MOBILE_JOY_MAX = 48;
+    let mobileJoyTouchId = null;
+    let mobileLookTouchId = null;
+    let mobileJoyCenterX = 0;
+    let mobileJoyCenterY = 0;
+    let mobileLookLastX = 0;
+    let mobileLookLastY = 0;
+
+    function shouldUseMobileControls() {
+        return window.matchMedia('(max-width: 767px), (hover: none) and (pointer: coarse)').matches;
+    }
+
+    function updateMobileControlsVisibility() {
+        const show = shouldUseMobileControls() && gameActive && !setupPanelEl.classList.contains('visible');
+        mobileControlsEl.classList.toggle('active', show);
+        mobileControlsEl.setAttribute('aria-hidden', show ? 'false' : 'true');
+        document.body.classList.toggle('mobile-game', show);
+        if (!show) resetMobileJoystick();
+        if (show) mbScopeEl.classList.toggle('active', rangedMode);
+    }
+
+    function makePointerLike(clientX, clientY) {
+        return {
+            clientX,
+            clientY,
+            preventDefault() {}
+        };
+    }
+
+    function resetMobileJoystick() {
+        mobileJoyTouchId = null;
+        if (mobileStickKnobEl) mobileStickKnobEl.style.transform = 'translate(0, 0)';
+        if (gameActive) {
+            ['KeyW', 'KeyA', 'KeyS', 'KeyD'].forEach((c) => pressedMovementCodes.delete(c));
+            applyMovementKeysFromPressed();
+        }
+    }
+
+    function updateMobileJoystickKeys(dx, dy) {
+        if (!canAcceptMovementKeys()) return;
+        ['KeyW', 'KeyA', 'KeyS', 'KeyD'].forEach((c) => pressedMovementCodes.delete(c));
+        const mag = Math.hypot(dx, dy);
+        if (mag >= MOBILE_JOY_DEAD) {
+            if (dy < -MOBILE_JOY_DEAD * 0.45) pressedMovementCodes.add('KeyW');
+            if (dy > MOBILE_JOY_DEAD * 0.45) pressedMovementCodes.add('KeyS');
+            if (dx < -MOBILE_JOY_DEAD * 0.45) pressedMovementCodes.add('KeyA');
+            if (dx > MOBILE_JOY_DEAD * 0.45) pressedMovementCodes.add('KeyD');
+        }
+        applyMovementKeysFromPressed();
+    }
+
+    function moveMobileJoystick(clientX, clientY) {
+        let dx = clientX - mobileJoyCenterX;
+        let dy = clientY - mobileJoyCenterY;
+        const dist = Math.hypot(dx, dy);
+        if (dist > MOBILE_JOY_MAX) {
+            dx = (dx / dist) * MOBILE_JOY_MAX;
+            dy = (dy / dist) * MOBILE_JOY_MAX;
+        }
+        mobileStickKnobEl.style.transform = `translate(${dx}px, ${dy}px)`;
+        updateMobileJoystickKeys(dx, dy);
+    }
+
+    function handleMobileLook(clientX, clientY, isFirst) {
+        if (!gameActive) return;
+        if (!isFirst) {
+            const dx = clientX - mobileLookLastX;
+            if (!rangedMode && canPlayerMoveThisFrame()) {
+                rotate -= dx * 0.0042;
+            }
+        }
+        mobileLookLastX = clientX;
+        mobileLookLastY = clientY;
+        lastMouseClientX = clientX;
+        lastMouseClientY = clientY;
+        setMouseNDCFromClient(clientX, clientY);
+        if (rangedMode) {
+            updateRangedScopeAtMouse(clientX, clientY);
+            crosshairEl.classList.remove('visible');
+        } else {
+            updateCrosshair(clientX, clientY);
+            crosshairEl.classList.add('visible');
+        }
+    }
+
+    function endMobileLook() {
+        mobileLookTouchId = null;
+    }
+
+    function mobileFireDown() {
+        if (!gameActive || !canUseCombatAfterVictory()) return;
+        const ev = makePointerLike(lastMouseClientX, lastMouseClientY);
+        if (currentWeapon === WEAPON.FLAMETHROWER) startFlamethrower();
+        else handlePrimaryClick(ev);
+        mbFireEl.classList.add('pressed');
+    }
+
+    function mobileFireUp() {
+        stopFlamethrower();
+        mbFireEl.classList.remove('pressed');
+    }
+
+    function initMobileControls() {
+        mobileJoystickEl.addEventListener('touchstart', (e) => {
+            if (mobileJoyTouchId != null) return;
+            const t = e.changedTouches[0];
+            mobileJoyTouchId = t.identifier;
+            const rect = mobileJoystickEl.getBoundingClientRect();
+            mobileJoyCenterX = rect.left + rect.width / 2;
+            mobileJoyCenterY = rect.top + rect.height / 2;
+            moveMobileJoystick(t.clientX, t.clientY);
+            e.preventDefault();
+        }, { passive: false });
+
+        mobileJoystickEl.addEventListener('touchmove', (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === mobileJoyTouchId) {
+                    moveMobileJoystick(t.clientX, t.clientY);
+                    e.preventDefault();
+                    break;
+                }
+            }
+        }, { passive: false });
+
+        const endJoy = (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === mobileJoyTouchId) {
+                    resetMobileJoystick();
+                    e.preventDefault();
+                    break;
+                }
+            }
+        };
+        mobileJoystickEl.addEventListener('touchend', endJoy, { passive: false });
+        mobileJoystickEl.addEventListener('touchcancel', endJoy, { passive: false });
+
+        mobileLookZoneEl.addEventListener('touchstart', (e) => {
+            if (mobileLookTouchId != null) return;
+            const t = e.changedTouches[0];
+            mobileLookTouchId = t.identifier;
+            handleMobileLook(t.clientX, t.clientY, true);
+            e.preventDefault();
+        }, { passive: false });
+
+        mobileLookZoneEl.addEventListener('touchmove', (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === mobileLookTouchId) {
+                    handleMobileLook(t.clientX, t.clientY, false);
+                    e.preventDefault();
+                    break;
+                }
+            }
+        }, { passive: false });
+
+        const endLook = (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === mobileLookTouchId) {
+                    endMobileLook();
+                    e.preventDefault();
+                    break;
+                }
+            }
+        };
+        mobileLookZoneEl.addEventListener('touchend', endLook, { passive: false });
+        mobileLookZoneEl.addEventListener('touchcancel', endLook, { passive: false });
+
+        mbJumpEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameActive && canPlayerMoveThisFrame()) tryPlayerJump();
+        }, { passive: false });
+
+        mbFireEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            mobileFireDown();
+        }, { passive: false });
+        mbFireEl.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            mobileFireUp();
+        }, { passive: false });
+        mbFireEl.addEventListener('touchcancel', () => mobileFireUp());
+
+        mbAltEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (!gameActive || !canUseCombatAfterVictory()) return;
+            handleSecondaryDown(makePointerLike(lastMouseClientX, lastMouseClientY));
+        }, { passive: false });
+
+        mbWeaponEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (gameActive) cycleWeapon();
+        });
+
+        mbScopeEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!gameActive) return;
+            toggleRangedMode();
+        });
+
+        weaponSlotEls.forEach((slot) => {
+            slot.addEventListener('click', (e) => {
+                if (!shouldUseMobileControls()) return;
+                e.stopPropagation();
+                const id = Number(slot.dataset.slot);
+                if (id && isWeaponUnlocked(id)) setWeapon(id);
+            });
+        });
+    }
+
     applyDifficultyPreset('normal');
     applyJumpFromSettings();
     buildWorld();
     openSetupPanel();
+    initMobileControls();
 
     document.getElementById('restart-btn').addEventListener('click', resetGame);
     document.getElementById('btn-start-game').addEventListener('click', startGame);
@@ -6118,7 +6926,7 @@
         'inp-jump', 'inp-player-radius', 'inp-maze-floors', 'inp-maze-foot-snap', 'inp-maze-foot-inset',
         'inp-maze-enemies', 'inp-boss-count', 'inp-boss-hp', 'inp-boss-glow', 'inp-boss-pulse',
         'inp-boss-charge', 'inp-boss-cooldown', 'inp-boss-bullet-lives', 'inp-boss-chase',
-        'inp-boss-chase-speed', 'inp-boss-shoot-range',
+        'inp-boss-chase-speed', 'inp-boss-shoot-range', 'inp-boss-drones-count',
         'inp-tree-count', 'inp-tree-layers', 'inp-tree-height', 'inp-tree-radius', 'inp-tree-scale',
         'inp-level-enemies', 'inp-level-bosses', 'inp-level-enemy-rad', 'inp-level-player-rad'
     ]) {
@@ -6130,6 +6938,7 @@
     document.getElementById('inp-boss-shape').addEventListener('change', syncSetupLabels);
     document.getElementById('inp-terrain-seed').addEventListener('change', syncSetupLabels);
     document.getElementById('inp-boss-dangerous').addEventListener('change', syncSetupLabels);
+    document.getElementById('inp-boss-drones').addEventListener('change', syncSetupLabels);
 
     function updateCrosshair(clientX, clientY) {
         crosshairEl.style.left = `${clientX}px`;
@@ -6299,6 +7108,7 @@
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        updateMobileControlsVisibility();
     });
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -6421,6 +7231,7 @@
         updateLaserCharge(delta, time);
         updateLaserBeams(delta);
         updateBossVfx(delta);
+        updateBossFog(delta);
         updateRockets(delta);
         updateAreaExplosions(delta);
         if (areaMarker) areaMarker.material.opacity = 0.55 + Math.sin(time * 4) * 0.2;
